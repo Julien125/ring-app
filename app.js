@@ -553,6 +553,7 @@ function renderReps(ex, ss, totalRounds) {
   q('#s03-cat').className          = `cat-tag cat-tag--${ex.category}`;
   q('#s03-cat').textContent        = ex.category;
   q('#s03-name').textContent       = ex.name;
+  q('#s03-desc').textContent       = ex.desc || '';
   // Show auto-adjusted target if progression kicked in
   const isAutoAdjusted = lastLogged !== null && lastLogged > target;
   q('#s03-target').textContent     = isAutoAdjusted ? `${currentReps}` : `${target}`;
@@ -615,6 +616,7 @@ function renderHold(ex, ss, totalRounds) {
   q('#s04-cat').className          = `cat-tag cat-tag--${ex.category}`;
   q('#s04-cat').textContent        = ex.category;
   q('#s04-name').textContent       = ex.name;
+  q('#s04-desc').textContent       = ex.desc || '';
   q('#s04-target').textContent     = `${target}s`;
   q('#s04-setnum').textContent     = `${A.round}/${totalRounds}`;
   q('#s04-pills').innerHTML        = buildSetPills(ex, ss);

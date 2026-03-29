@@ -71,6 +71,7 @@
   --cat-lowback:  #C96040;
   --cat-straight: #4A9FD4;
   --cat-pelican:  #B85885;
+  --cat-legs:     #7CB87C;
 
   /* Category backgrounds */
   --cat-pull-bg:     rgba(108, 127, 216, 0.08);
@@ -79,6 +80,7 @@
   --cat-lowback-bg:  rgba(201, 96,  64,  0.08);
   --cat-straight-bg: rgba(74,  159, 212, 0.08);
   --cat-pelican-bg:  rgba(184, 88,  133, 0.08);
+  --cat-legs-bg:     rgba(124, 184, 124, 0.08);
 
   /* Category borders */
   --cat-pull-border:     rgba(108, 127, 216, 0.30);
@@ -87,6 +89,7 @@
   --cat-lowback-border:  rgba(201, 96,  64,  0.30);
   --cat-straight-border: rgba(74,  159, 212, 0.30);
   --cat-pelican-border:  rgba(184, 88,  133, 0.30);
+  --cat-legs-border:     rgba(124, 184, 124, 0.30);
 
   /* Status badge tokens */
   --badge-pr-color:    #D4A017;
@@ -394,6 +397,7 @@ body {
 .cat-tag--lowback  { color: var(--cat-lowback);  background: var(--cat-lowback-bg);  border-color: var(--cat-lowback-border);  }
 .cat-tag--straight { color: var(--cat-straight); background: var(--cat-straight-bg); border-color: var(--cat-straight-border); }
 .cat-tag--pelican  { color: var(--cat-pelican);  background: var(--cat-pelican-bg);  border-color: var(--cat-pelican-border);  }
+.cat-tag--legs     { color: var(--cat-legs);     background: var(--cat-legs-bg);     border-color: var(--cat-legs-border);     }
 
 /* Round / context pill */
 .round-pill {
@@ -420,6 +424,7 @@ body {
 .dot--lowback  { background: var(--cat-lowback);  }
 .dot--straight { background: var(--cat-straight); }
 .dot--pelican  { background: var(--cat-pelican);  }
+.dot--legs     { background: var(--cat-legs);     }
 .dot--done     { background: var(--txt); opacity: 0.3; }
 
 
@@ -504,6 +509,15 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+
+/* Exercise description */
+.ex-desc {
+  font-size: 13px;
+  color: var(--txt-2);
+  line-height: 1.55;
+  opacity: 0.85;
+}
+.ex-desc:empty { display: none; }
 
 /* Coaching note */
 .coaching-note {
