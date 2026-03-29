@@ -1,0 +1,661 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  RING APP — Design System
+ *  Based on ring_app_sketch.html
+ * ═══════════════════════════════════════════════════════════
+ *
+ *  Fonts (include in <head>):
+ *  https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap
+ *
+ *  Table of contents:
+ *  1.  Reset
+ *  2.  Design tokens
+ *  3.  Typography
+ *  4.  Layout primitives
+ *  5.  Navigation — bottom bar
+ *  6.  Buttons
+ *  7.  Badges & pills
+ *  8.  Category colors
+ *  9.  Indicators — dots, strips, progress
+ * 10.  Cards & containers
+ * 11.  Screen — Overview
+ * 12.  Screen — Active exercise
+ * 13.  Screen — Rest timer
+ * 14.  Screen — Post-session summary
+ * 15.  Utility
+ * ═══════════════════════════════════════════════════════════
+ */
+
+
+/* ─────────────────────────────────────────────────────────
+   1. RESET
+───────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   2. DESIGN TOKENS
+───────────────────────────────────────────────────────── */
+
+:root {
+
+  /* Backgrounds */
+  --bg:        #0f0f10;   /* page / screen base */
+  --bg-2:      #181819;   /* cards, columns, shell */
+  --bg-3:      #222224;   /* inputs, chips, active states */
+  --bg-rest:   #080a0d;   /* rest timer screen */
+
+  /* Borders */
+  --line:        rgba(255, 255, 255, 0.07);
+  --line-2:      rgba(255, 255, 255, 0.12);
+  --line-active: rgba(240, 237, 232, 0.25);
+
+  /* Text */
+  --txt:   #f0ede8;
+  --txt-2: rgba(240, 237, 232, 0.45);
+  --txt-3: rgba(240, 237, 232, 0.20);
+
+  /* Semantic */
+  --accent:  #f0ede8;
+  --danger:  #E05050;
+
+  /* Category colors */
+  --cat-pull:     #6C7FD8;
+  --cat-core:     #2BA88A;
+  --cat-shoulder: #D4A017;
+  --cat-lowback:  #C96040;
+  --cat-straight: #4A9FD4;
+  --cat-pelican:  #B85885;
+
+  /* Category backgrounds */
+  --cat-pull-bg:     rgba(108, 127, 216, 0.08);
+  --cat-core-bg:     rgba(43,  168, 138, 0.08);
+  --cat-shoulder-bg: rgba(212, 160, 23,  0.08);
+  --cat-lowback-bg:  rgba(201, 96,  64,  0.08);
+  --cat-straight-bg: rgba(74,  159, 212, 0.08);
+  --cat-pelican-bg:  rgba(184, 88,  133, 0.08);
+
+  /* Category borders */
+  --cat-pull-border:     rgba(108, 127, 216, 0.30);
+  --cat-core-border:     rgba(43,  168, 138, 0.30);
+  --cat-shoulder-border: rgba(212, 160, 23,  0.30);
+  --cat-lowback-border:  rgba(201, 96,  64,  0.30);
+  --cat-straight-border: rgba(74,  159, 212, 0.30);
+  --cat-pelican-border:  rgba(184, 88,  133, 0.30);
+
+  /* Status badge tokens */
+  --badge-pr-color:    #D4A017;
+  --badge-pr-bg:       rgba(212, 160, 23,  0.15);
+  --badge-pr-border:   rgba(212, 160, 23,  0.30);
+
+  --badge-ok-color:    #2BA88A;
+  --badge-ok-bg:       rgba(43,  168, 138, 0.10);
+  --badge-ok-border:   rgba(43,  168, 138, 0.25);
+
+  --badge-miss-color:  #C96040;
+  --badge-miss-bg:     rgba(201, 96,  64,  0.10);
+  --badge-miss-border: rgba(201, 96,  64,  0.25);
+
+  /* Progress / ring timer */
+  --progress:   #6C7FD8;
+  --progress-2: rgba(108, 127, 216, 0.30);
+  --progress-3: rgba(108, 127, 216, 0.20);
+  --progress-4: rgba(108, 127, 216, 0.10);
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 14px;
+  --sp-5: 16px;
+  --sp-6: 20px;
+  --sp-7: 22px;   /* standard horizontal screen padding */
+  --sp-8: 24px;
+
+  /* Border radius */
+  --r-sm:  4px;
+  --r-md:  8px;
+  --r-lg:  10px;
+  --r-xl:  12px;
+  --r-2xl: 14px;
+
+  /* Touch targets — 48px Android baseline, stepper buttons 56px */
+  --touch:        48px;
+  --touch-stepper: 56px;
+
+  /* Transitions */
+  --t-fast: 0.10s ease;
+  --t-base: 0.15s ease;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   3. TYPOGRAPHY
+───────────────────────────────────────────────────────── */
+
+/*
+ *  'Unbounded'  — exercise names, timers, CTAs, section titles
+ *  'DM Mono'    — all labels, metadata, notes, breadcrumbs
+ *
+ *  Rule: if it needs to be read at arm's length or in sunlight,
+ *  it uses Unbounded. Everything else uses DM Mono.
+ */
+
+body {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: var(--txt);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display scale */
+.t-display-xl { font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: var(--txt); }
+.t-display-lg { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: var(--txt); }
+.t-display-md { font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 900; line-height: 1.10; letter-spacing: -0.02em; color: var(--txt); }
+.t-display-sm { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; color: var(--txt); }
+
+/* Number scale */
+.t-num-xl { font-family: 'Unbounded', sans-serif; font-size: 44px; font-weight: 900; line-height: 1; letter-spacing: -0.04em; color: var(--txt); }
+.t-num-lg { font-family: 'Unbounded', sans-serif; font-size: 26px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; color: var(--txt); }
+.t-num-md { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; color: var(--txt); }
+.t-num-sm { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; line-height: 1; letter-spacing:  0.00em; color: var(--txt); }
+
+/* Mono label scale */
+.t-label    { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--txt-3); }
+.t-label-sm { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--txt-3); }
+.t-label-xs { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--txt-3); }
+.t-body      { font-family: 'DM Mono', monospace; font-size: 9px; line-height: 1.6; color: var(--txt-2); }
+.t-note      { font-family: 'DM Mono', monospace; font-size: 8.5px; font-style: italic; line-height: 1.6; color: var(--txt-3); }
+
+
+/* ─────────────────────────────────────────────────────────
+   4. LAYOUT PRIMITIVES
+───────────────────────────────────────────────────────── */
+
+.px-screen { padding-left: var(--sp-7); padding-right: var(--sp-7); }
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px var(--sp-8) var(--sp-2);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--txt-3);
+  letter-spacing: 0.05em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   5. NAVIGATION — BOTTOM BAR
+───────────────────────────────────────────────────────── */
+
+.bottom-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 54px;
+  background: rgba(15, 15, 16, 0.96);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--sp-3) 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  opacity: 0.3;
+  cursor: pointer;
+  min-width: var(--touch);
+  min-height: var(--touch);
+  justify-content: center;
+  transition: opacity var(--t-base);
+}
+
+.nav-item.active            { opacity: 1; }
+.nav-item.active .nav-label { color: var(--progress); }
+.nav-item.active .nav-icon  { color: var(--progress); }
+
+.nav-icon  { font-size: 16px; line-height: 1; }
+.nav-label { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--txt-2); }
+
+
+/* ─────────────────────────────────────────────────────────
+   6. BUTTONS
+───────────────────────────────────────────────────────── */
+
+/* Primary CTA — "Start session", "Done — start rest" */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  background: var(--txt);
+  color: var(--bg);
+  border-radius: var(--r-2xl);
+  padding: 18px var(--sp-5);
+  font-family: 'Unbounded', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--t-base);
+}
+.btn-primary:active { opacity: 0.85; }
+
+/* Ghost — neutral secondary action */
+.btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: var(--touch);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  padding: 14px var(--sp-2);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--txt-3);
+  cursor: pointer;
+  transition: opacity var(--t-base);
+}
+.btn-ghost:active { opacity: 0.65; }
+
+/* Accent ghost — "+15s" */
+.btn-accent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: var(--touch);
+  background: var(--progress-4);
+  border: 1px solid var(--progress-2);
+  border-radius: var(--r-xl);
+  padding: 14px var(--sp-2);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8A9BE0;
+  cursor: pointer;
+  transition: opacity var(--t-base);
+}
+.btn-accent:active { opacity: 0.65; }
+
+/* Text — "skip exercise" */
+.btn-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch);
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--txt-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--t-base);
+}
+.btn-text:active { color: var(--txt-2); }
+
+/* Stepper — large +/− for rep logging */
+.stepper {
+  display: flex;
+  align-items: center;
+}
+
+.stepper__btn {
+  width: var(--touch-stepper);
+  height: var(--touch-stepper);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  color: var(--txt-2);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  padding-bottom: 2px;
+  transition: background var(--t-fast);
+}
+.stepper__btn:active { background: rgba(255, 255, 255, 0.10); }
+
+.stepper__val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--txt);
+  width: 64px;
+  text-align: center;
+  letter-spacing: -0.03em;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   7. BADGES & PILLS
+───────────────────────────────────────────────────────── */
+
+/* Base badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 7px;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.badge--pr   { color: var(--badge-pr-color);   background: var(--badge-pr-bg);   border-color: var(--badge-pr-border);   }
+.badge--ok   { color: var(--badge-ok-color);   background: var(--badge-ok-bg);   border-color: var(--badge-ok-border);   }
+.badge--miss { color: var(--badge-miss-color); background: var(--badge-miss-bg); border-color: var(--badge-miss-border); }
+
+/* Category tag */
+.cat-tag {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--r-sm);
+  border: 1px solid;
+}
+
+.cat-tag--pull     { color: var(--cat-pull);     background: var(--cat-pull-bg);     border-color: var(--cat-pull-border);     }
+.cat-tag--core     { color: var(--cat-core);     background: var(--cat-core-bg);     border-color: var(--cat-core-border);     }
+.cat-tag--shoulder { color: var(--cat-shoulder); background: var(--cat-shoulder-bg); border-color: var(--cat-shoulder-border); }
+.cat-tag--lowback  { color: var(--cat-lowback);  background: var(--cat-lowback-bg);  border-color: var(--cat-lowback-border);  }
+.cat-tag--straight { color: var(--cat-straight); background: var(--cat-straight-bg); border-color: var(--cat-straight-border); }
+.cat-tag--pelican  { color: var(--cat-pelican);  background: var(--cat-pelican-bg);  border-color: var(--cat-pelican-border);  }
+
+/* Round / context pill */
+.round-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: rgba(108, 127, 216, 0.8);
+  border: 1px solid rgba(108, 127, 216, 0.25);
+  border-radius: var(--r-sm);
+  padding: 4px 9px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   8. CATEGORY DOTS
+───────────────────────────────────────────────────────── */
+
+.dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+.dot--pull     { background: var(--cat-pull);     }
+.dot--core     { background: var(--cat-core);     }
+.dot--shoulder { background: var(--cat-shoulder); }
+.dot--lowback  { background: var(--cat-lowback);  }
+.dot--straight { background: var(--cat-straight); }
+.dot--pelican  { background: var(--cat-pelican);  }
+.dot--done     { background: var(--txt); opacity: 0.3; }
+
+
+/* ─────────────────────────────────────────────────────────
+   9. INDICATORS — progress, strips, set pills
+───────────────────────────────────────────────────────── */
+
+/* Round dots ● ● ○ */
+.round-dots { display: flex; gap: 3px; align-items: center; }
+
+.round-dot         { width: 6px; height: 6px; border-radius: 50%; background: var(--line-2); }
+.round-dot--done   { background: var(--txt-2); }
+.round-dot--active { background: var(--txt);   }
+
+/* Exercise progress strip */
+.progress-strip  { display: flex; gap: 4px; }
+
+.strip-seg        { flex: 1; height: 3px; border-radius: 2px; background: var(--line); }
+.strip-seg--done  { background: var(--progress-2); }
+.strip-seg--next  { background: var(--progress-3); }
+
+/* Exercise position dots (active screen) */
+.ex-dots { display: flex; gap: 4px; align-items: center; }
+
+.ex-dot        { width: 5px; height: 5px; border-radius: 50%; background: var(--line-2); }
+.ex-dot--done  { background: var(--txt-3); }
+.ex-dot--now   { background: var(--txt);   }
+
+/* Set pills */
+.set-tracker { display: flex; gap: 6px; align-items: center; }
+
+.set-pill {
+  height: var(--touch);
+  flex: 1;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  color: var(--txt-3);
+}
+
+.set-pill--done    { background: var(--bg-3); border-color: var(--line-2); color: var(--txt-2); }
+.set-pill--current { background: var(--txt);  border-color: var(--txt);   color: var(--bg); font-weight: 700; }
+
+
+/* ─────────────────────────────────────────────────────────
+   10. CARDS & CONTAINERS
+───────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+
+/* Metric chip */
+.chip {
+  flex: 1;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 10px var(--sp-2);
+  text-align: center;
+}
+
+.chip__val       { font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 700; color: var(--txt); line-height: 1; letter-spacing: -0.02em; }
+.chip__val small { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400; color: var(--txt-3); }
+.chip__label     { font-family: 'DM Mono', monospace; font-size: 7px; color: var(--txt-3); letter-spacing: 0.10em; text-transform: uppercase; margin-top: 3px; }
+
+/* Rep logger row */
+.rep-logger {
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-2xl);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Coaching note */
+.coaching-note {
+  padding: 9px var(--sp-3);
+  border-left: 2px solid var(--line-2);
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  font-style: italic;
+  color: var(--txt-3);
+  line-height: 1.6;
+}
+
+/* Stat block — post-session summary */
+.stat-block {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 10px var(--sp-2);
+  text-align: center;
+}
+
+.stat-block__val       { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; color: var(--txt); letter-spacing: -0.03em; line-height: 1; }
+.stat-block__val small { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 400; color: var(--txt-3); }
+.stat-block__label     { font-family: 'DM Mono', monospace; font-size: 7px; color: var(--txt-3); letter-spacing: 0.10em; text-transform: uppercase; margin-top: 3px; }
+
+/* Chart container */
+.chart-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--r-xl); padding: var(--sp-3) 14px; }
+.chart-card__title { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--txt-3); letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 10px; }
+
+
+/* ─────────────────────────────────────────────────────────
+   11. SCREEN — OVERVIEW
+───────────────────────────────────────────────────────── */
+
+.screen-overview { background: var(--bg); display: flex; flex-direction: column; flex: 1; }
+
+.ss-grid { display: flex; gap: 6px; padding: 0 14px; flex: 1; }
+
+.ss-col {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--t-base);
+}
+
+.ss-col:active           { border-color: var(--line-2);     }
+.ss-col.is-current       { border-color: var(--line-active); }
+.ss-col.is-done .ss-col__letter { color: var(--txt-3); }
+
+.ss-col__head   { padding: 8px 10px 7px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.ss-col__letter { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900; color: var(--txt); line-height: 1; }
+.ss-col__name   { font-family: 'DM Mono', monospace; font-size: 7px; color: var(--txt-3); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.3; }
+
+.ss-ex-row { display: flex; align-items: center; gap: 6px; padding: 4px 10px; }
+.ss-ex-row__name { font-family: 'DM Mono', monospace; font-size: 7.5px; color: var(--txt-2); line-height: 1.3; flex: 1; }
+.ss-ex-row.is-current .ss-ex-row__name { color: var(--txt); font-weight: 500; }
+.ss-ex-row.is-done    .ss-ex-row__name { color: var(--txt-3); }
+
+
+/* ─────────────────────────────────────────────────────────
+   12. SCREEN — ACTIVE EXERCISE
+───────────────────────────────────────────────────────── */
+
+.screen-active { background: var(--bg); display: flex; flex-direction: column; flex: 1; }
+
+.act-breadcrumb { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); letter-spacing: 0.10em; text-transform: uppercase; }
+
+.act-ex-name { font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 900; color: var(--txt); line-height: 1.05; letter-spacing: -0.03em; }
+
+.act-metrics { display: flex; gap: var(--sp-2); }
+
+
+/* ─────────────────────────────────────────────────────────
+   13. SCREEN — REST TIMER
+───────────────────────────────────────────────────────── */
+
+.screen-rest { background: var(--bg-rest); display: flex; flex-direction: column; flex: 1; }
+
+.rest-confirmed { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); letter-spacing: 0.10em; text-transform: uppercase; line-height: 1.8; }
+.rest-confirmed strong { display: block; font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: rgba(240, 237, 232, 0.6); letter-spacing: 0; text-transform: none; }
+
+/* Timer ring — SVG paths:
+ *   Track: stroke="rgba(255,255,255,0.05)" stroke-width="8"
+ *   Fill:  stroke="#6C7FD8" stroke-width="8" stroke-linecap="round"
+ *          transform="rotate(-90 cx cy)"
+ *          stroke-dasharray="2πr"
+ *          stroke-dashoffset="2πr * (1 - progress)"
+ */
+
+.timer-ring-wrap { display: flex; justify-content: center; position: relative; }
+.timer-ring-wrap svg { display: block; }
+
+.timer-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+
+.timer-val          { font-family: 'Unbounded', sans-serif; font-size: 44px; font-weight: 900; color: var(--txt); letter-spacing: -0.04em; line-height: 1; }
+.timer-val.overtime { color: var(--danger); }
+.timer-unit         { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 2px; }
+
+.rest-next-label { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--txt-3); letter-spacing: 0.15em; text-transform: uppercase; text-align: center; }
+.rest-next-name  { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; color: rgba(240, 237, 232, 0.8); text-align: center; letter-spacing: -0.02em; line-height: 1.15; }
+.rest-next-meta  { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); text-align: center; letter-spacing: 0.06em; }
+
+.rest-actions { display: flex; gap: var(--sp-2); }
+
+
+/* ─────────────────────────────────────────────────────────
+   14. SCREEN — POST-SESSION SUMMARY
+───────────────────────────────────────────────────────── */
+
+.screen-post { background: var(--bg); display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
+
+.section-label { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--txt-3); letter-spacing: 0.15em; text-transform: uppercase; }
+
+.log-row { display: flex; align-items: center; gap: var(--sp-2); padding: 7px var(--sp-7); border-bottom: 1px solid var(--line); }
+.log-row__name { flex: 1; font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; color: var(--txt-2); line-height: 1.3; }
+.log-row__sets { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--txt-3); white-space: nowrap; letter-spacing: 0.04em; }
+
+.post-stats { display: flex; gap: 6px; }
+
+
+/* ─────────────────────────────────────────────────────────
+   15. UTILITY
+───────────────────────────────────────────────────────── */
+
+.flex            { display: flex; }
+.flex-col        { flex-direction: column; }
+.flex-1          { flex: 1; }
+.items-center    { align-items: center; }
+.items-start     { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center  { justify-content: center; }
+.text-center     { text-align: center; }
+.gap-1 { gap: var(--sp-1); }
+.gap-2 { gap: var(--sp-2); }
+.gap-3 { gap: var(--sp-3); }
+.gap-4 { gap: var(--sp-4); }
+
+.c-primary   { color: var(--txt);      }
+.c-secondary { color: var(--txt-2);    }
+.c-tertiary  { color: var(--txt-3);    }
+.c-danger    { color: var(--danger);   }
+.c-progress  { color: var(--progress); }
+
+.mt-1 { margin-top: var(--sp-1); }
+.mt-2 { margin-top: var(--sp-2); }
+.mt-3 { margin-top: var(--sp-3); }
+.mt-4 { margin-top: var(--sp-4); }
+.mt-5 { margin-top: var(--sp-5); }
+.mt-6 { margin-top: var(--sp-6); }
+
+.mb-nav { margin-bottom: 70px; }  /* clears bottom nav */

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0f10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Ring Workout</title>
+  <link rel="manifest" href="./manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./ring-app.css">
+  <style>
+    /* ── Contrast overrides for gym readability ────────────
+       ring-app.css defaults are too dim for bright/outdoor
+       conditions and chalk-hands squinting at a screen.
+       Bump secondary + tertiary text and borders. ───────── */
+    :root {
+      --txt-2:    rgba(240, 237, 232, 0.75);  /* was 0.45 */
+      --txt-3:    rgba(240, 237, 232, 0.52);  /* was 0.20 */
+      --line:     rgba(255, 255, 255, 0.13);  /* was 0.07 */
+      --line-2:   rgba(255, 255, 255, 0.22);  /* was 0.12 */
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* Screen visibility */
+    .screen {
+      display: none;
+      position: absolute;
+      inset: 0;
+      flex-direction: column;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen.is-active { display: flex; }
+
+    /* Dialog overlay */
+    .dialog-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: flex-end;
+    }
+    .dialog-overlay.is-active { display: flex; }
+    .dialog-sheet {
+      width: 100%;
+      background: var(--bg-2);
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid var(--line-2);
+      padding: 24px 22px 40px;
+    }
+    .dialog-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--txt);
+      margin-bottom: 6px;
+    }
+    .dialog-body {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+    .dialog-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-danger {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 56px;
+      background: rgba(224,80,80,0.15);
+      border: 1px solid rgba(224,80,80,0.4);
+      border-radius: var(--r-2xl);
+      color: var(--danger);
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+
+    /* Warmup checklist */
+    .warmup-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 22px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .warmup-item.is-done { opacity: 0.4; }
+    .warmup-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--line-2);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    .warmup-item.is-done .warmup-check {
+      background: var(--txt-3);
+      border-color: var(--txt-3);
+    }
+    .warmup-item__body { flex: 1; }
+    .warmup-item__name {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--txt);
+      margin-bottom: 2px;
+    }
+    .warmup-item__duration {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--txt-2);
+    }
+    .warmup-item__note {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    /* Skill item */
+    .skill-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+    .skill-item__name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--txt);
+    }
+    .skill-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: rgba(212,160,23,0.9);
+      border: 1px solid rgba(212,160,23,0.3);
+      border-radius: var(--r-sm);
+      padding: 4px 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .skill-badge.done {
+      color: var(--txt-3);
+      border-color: var(--line);
+    }
+
+    /* Home screen */
+    .home-hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 22px;
+    }
+    .rest-day-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1.8;
+    }
+
+    /* Muscle chips */
+    .muscle-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .muscle-chip {
+      font-family: 'DM Mono', monospace;
+      font-size: 7px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line-2);
+      color: var(--txt-3);
+    }
+
+    /* Log rows in summary */
+    .log-row__sets span { color: var(--txt-2); }
+
+    /* Chart bar */
+    .chart-bar-wrap { display: flex; align-items: flex-end; gap: 4px; height: 48px; }
+    .chart-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      min-height: 4px;
+      background: var(--progress-2);
+      transition: height 0.3s ease;
+    }
+    .chart-bar.is-max { background: var(--progress); }
+    .chart-labels { display: flex; gap: 4px; margin-top: 4px; }
+    .chart-label {
+      flex: 1;
+      font-family: 'DM Mono', monospace;
+      font-size: 6px;
+      color: var(--txt-3);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Stopwatch display on S-04 */
+    .stopwatch-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--txt);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      text-align: center;
+    }
+    .stopwatch-unit {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* Button base reset (ring-app.css omits this) */
+    button { background: transparent; border: none; }
+
+    /* Nav — Live tab pulse when session active */
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.5; }
+    }
+    #nav-live.is-live .nav-icon {
+      color: var(--danger);
+      animation: live-pulse 2s ease-in-out infinite;
+    }
+    #nav-live.is-live .nav-label { color: var(--danger); }
+    #nav-live.is-disabled { opacity: 0.18 !important; pointer-events: none; }
+
+    /* Progress screen */
+    .prog-session-card {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+    .prog-session-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .prog-session-card__label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--txt);
+    }
+    .prog-session-card__date {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      letter-spacing: 0.08em;
+    }
+    .prog-session-card__meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-2);
+      letter-spacing: 0.06em;
+    }
+    /* Session picker */
+    .pick-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      gap: 12px;
+      transition: opacity var(--t-base);
+    }
+    .pick-item:last-child { border-bottom: none; }
+    .pick-item:active { opacity: 0.7; }
+    .pick-item__body { flex: 1; }
+    .pick-item__label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--txt);
+      margin-bottom: 3px;
+    }
+    .pick-item__focus {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      letter-spacing: 0.08em;
+    }
+    .pick-item__day {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      letter-spacing: 0.06em;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .pick-item.is-today .pick-item__label { color: var(--progress); }
+    .pick-item.is-today .pick-item__day   { color: var(--progress); }
+
+    /* Week progress dots on home */
+    .week-dots {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .week-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .week-dot__pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--line-2);
+      transition: background 0.2s;
+    }
+    .week-dot--done .week-dot__pip   { background: var(--progress); }
+    .week-dot--today .week-dot__pip  { background: var(--txt); box-shadow: 0 0 0 2px rgba(255,255,255,0.15); }
+    .week-dot--rest .week-dot__pip   { background: var(--line); }
+    .week-dot__label {
+      font-family: 'DM Mono', monospace;
+      font-size: 7px;
+      letter-spacing: 0.08em;
+      color: var(--txt-3);
+      text-transform: uppercase;
+    }
+    .week-dot--today .week-dot__label { color: var(--txt-2); }
+    .week-dot--done .week-dot__label  { color: var(--progress); opacity: 0.7; }
+
+    /* Last set reference on S-03 */
+    .last-set-ref {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .last-set-ref strong {
+      color: var(--txt-2);
+      font-weight: 500;
+    }
+
+    .prog-empty {
+      text-align: center;
+      padding: 48px 22px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── S-01 Home ──────────────────────────────────────── -->
+  <section id="s-01" class="screen">
+    <div class="status-bar px-screen">
+      <span id="s01-date" class="t-label"></span>
+      <span id="s01-week" class="t-label"></span>
+    </div>
+    <div class="home-hero">
+      <div id="s01-week-dots" class="week-dots mb-4"></div>
+      <div id="s01-phase" class="t-label mb-2"></div>
+      <div id="s01-label" class="t-display-md mb-2"></div>
+      <div id="s01-focus" class="t-body mb-5"></div>
+      <button id="s01-cta" class="btn-primary"></button>
+      <button id="s01-secondary" class="btn-text mt-3" style="display:none"></button>
+      <button id="s01-pick" class="btn-text mt-2" style="display:none"></button>
+    </div>
+  </section>
+
+  <!-- ── S-15 Warm-up ───────────────────────────────────── -->
+  <section id="s-15" class="screen">
+    <div class="status-bar px-screen">
+      <span class="t-label">Warm-up</span>
+      <span id="s15-session" class="t-label"></span>
+    </div>
+    <div class="px-screen mt-3 mb-3">
+      <div id="s15-title" class="t-display-sm"></div>
+    </div>
+    <div id="s15-list"></div>
+    <div style="flex:1"></div>
+    <div class="px-screen mb-nav mt-4" style="padding-bottom:24px">
+      <button id="s15-cta" class="btn-primary" disabled>Done — start skills</button>
+      <button id="s15-skip" class="btn-text mt-2">Skip warm-up</button>
+    </div>
+  </section>
+
+  <!-- ── S-08 Skill block ───────────────────────────────── -->
+  <section id="s-08" class="screen">
+    <div class="status-bar px-screen">
+      <span class="t-label">Skills</span>
+      <span id="s08-session" class="t-label"></span>
+    </div>
+    <div class="px-screen mt-3 mb-4">
+      <div class="t-display-sm">Skill Block</div>
+      <div class="t-body mt-2">Log each skill as done or skip to continue to the strength block.</div>
+    </div>
+    <div id="s08-list"></div>
+    <div style="flex:1"></div>
+    <div class="px-screen" style="padding-bottom:24px">
+      <button id="s08-cta" class="btn-primary mb-nav">Continue to strength</button>
+    </div>
+  </section>
+
+  <!-- ── S-02 Overview ─────────────────────────────────── -->
+  <section id="s-02" class="screen screen-overview">
+    <div class="status-bar px-screen">
+      <div>
+        <div id="s02-phase" class="t-label"></div>
+        <div id="s02-title" class="t-display-md mt-1"></div>
+      </div>
+      <button id="s02-quit" class="btn-text">✕ Quit</button>
+    </div>
+    <div class="ss-grid" id="s02-grid"></div>
+    <div class="px-screen mt-3" style="padding-bottom:24px">
+      <button id="s02-cta" class="btn-primary mb-nav"></button>
+    </div>
+  </section>
+
+  <!-- ── S-03 Active — reps ─────────────────────────────── -->
+  <section id="s-03" class="screen screen-active">
+    <div class="status-bar px-screen">
+      <span id="s03-breadcrumb" class="act-breadcrumb"></span>
+      <div class="ex-dots" id="s03-dots"></div>
+    </div>
+    <div class="px-screen mt-2">
+      <span id="s03-cat" class="cat-tag"></span>
+    </div>
+    <div class="px-screen mt-3">
+      <div id="s03-name" class="act-ex-name"></div>
+    </div>
+    <div class="px-screen mt-3">
+      <div class="act-metrics" id="s03-metrics">
+        <div class="chip">
+          <div class="chip__val" id="s03-target"></div>
+          <div class="chip__label">target</div>
+        </div>
+        <div class="chip" id="s03-tempo-chip" style="display:none">
+          <div class="chip__val" id="s03-tempo"></div>
+          <div class="chip__label">tempo</div>
+        </div>
+        <div class="chip">
+          <div class="chip__val" id="s03-setnum"></div>
+          <div class="chip__label">set</div>
+        </div>
+      </div>
+    </div>
+    <div class="px-screen mt-3">
+      <div class="muscle-chips" id="s03-muscles"></div>
+    </div>
+    <div class="px-screen mt-2">
+      <div class="coaching-note" id="s03-note"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="px-screen mt-4">
+      <div class="t-label-xs mb-2" style="color:var(--txt-3);letter-spacing:0.1em">Sets</div>
+      <div class="set-tracker" id="s03-pills"></div>
+    </div>
+    <div class="px-screen mt-2" id="s03-lastset-wrap" style="display:none">
+      <div class="last-set-ref" id="s03-lastset"></div>
+    </div>
+    <div class="px-screen mt-4">
+      <div class="stepper" style="justify-content:center; gap:0">
+        <button class="stepper__btn" id="s03-minus">−</button>
+        <div class="stepper__val" id="s03-val">5</div>
+        <button class="stepper__btn" id="s03-plus">+</button>
+      </div>
+    </div>
+    <div class="px-screen mt-4" style="padding-bottom:24px">
+      <button class="btn-primary" id="s03-done">Done — start rest</button>
+      <button class="btn-text mt-2" id="s03-skip">Skip exercise</button>
+    </div>
+  </section>
+
+  <!-- ── S-04 Active — hold ─────────────────────────────── -->
+  <section id="s-04" class="screen screen-active">
+    <div class="status-bar px-screen">
+      <span id="s04-breadcrumb" class="act-breadcrumb"></span>
+      <div class="ex-dots" id="s04-dots"></div>
+    </div>
+    <div class="px-screen mt-2">
+      <span id="s04-cat" class="cat-tag"></span>
+    </div>
+    <div class="px-screen mt-3">
+      <div id="s04-name" class="act-ex-name"></div>
+    </div>
+    <div class="px-screen mt-3">
+      <div class="act-metrics">
+        <div class="chip">
+          <div class="chip__val" id="s04-target"></div>
+          <div class="chip__label">target</div>
+        </div>
+        <div class="chip">
+          <div class="chip__val" id="s04-setnum"></div>
+          <div class="chip__label">set</div>
+        </div>
+      </div>
+    </div>
+    <div class="px-screen mt-3">
+      <div class="muscle-chips" id="s04-muscles"></div>
+    </div>
+    <div class="px-screen mt-2">
+      <div class="coaching-note" id="s04-note"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="px-screen mt-4">
+      <div class="t-label-xs mb-2" style="color:var(--txt-3);letter-spacing:0.1em">Sets</div>
+      <div class="set-tracker" id="s04-pills"></div>
+    </div>
+    <div class="px-screen mt-4 text-center">
+      <div class="stopwatch-val" id="s04-sw">0</div>
+      <div class="stopwatch-unit">seconds</div>
+    </div>
+    <div class="px-screen mt-5" style="padding-bottom:24px">
+      <div class="flex gap-2">
+        <button class="btn-ghost flex-1" id="s04-start">Start hold</button>
+        <button class="btn-primary flex-1" id="s04-stop" style="display:none">Stop &amp; log</button>
+      </div>
+      <button class="btn-text mt-2" id="s04-skip">Skip exercise</button>
+    </div>
+  </section>
+
+  <!-- ── S-05 Intra-rest ────────────────────────────────── -->
+  <section id="s-05" class="screen screen-rest">
+    <div class="status-bar px-screen">
+      <span id="s05-breadcrumb" class="act-breadcrumb" style="color:rgba(240,237,232,0.3)"></span>
+    </div>
+    <div class="px-screen mt-3">
+      <div id="s05-confirmed" class="rest-confirmed"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="timer-ring-wrap mt-2">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+        <circle id="s05-ring" cx="100" cy="100" r="88" fill="none"
+                stroke="#6C7FD8" stroke-width="8" stroke-linecap="round"
+                transform="rotate(-90 100 100)"
+                stroke-dasharray="552.9"
+                stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-center">
+        <div class="timer-val" id="s05-val">25</div>
+        <div class="timer-unit">rest</div>
+      </div>
+    </div>
+    <div class="px-screen mt-4 text-center">
+      <div class="rest-next-label">next up</div>
+      <div class="rest-next-name mt-1" id="s05-next-name"></div>
+      <div class="rest-next-meta mt-1" id="s05-next-meta"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="px-screen mt-3 mb-nav" style="padding-bottom:24px">
+      <button class="btn-primary" id="s05-next" style="margin-bottom:10px">Next →</button>
+      <button class="btn-ghost" id="s05-add" style="width:100%">+15s</button>
+    </div>
+  </section>
+
+  <!-- ── S-06 Round rest ────────────────────────────────── -->
+  <section id="s-06" class="screen screen-rest">
+    <div class="status-bar px-screen">
+      <span id="s06-breadcrumb" class="act-breadcrumb" style="color:rgba(240,237,232,0.3)"></span>
+    </div>
+    <div class="px-screen mt-3">
+      <div id="s06-confirmed" class="rest-confirmed"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="timer-ring-wrap mt-2">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+        <circle id="s06-ring" cx="100" cy="100" r="88" fill="none"
+                stroke="#6C7FD8" stroke-width="8" stroke-linecap="round"
+                transform="rotate(-90 100 100)"
+                stroke-dasharray="552.9"
+                stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-center">
+        <div class="timer-val" id="s06-val">90</div>
+        <div class="timer-unit">rest</div>
+      </div>
+    </div>
+    <div class="px-screen mt-4 text-center">
+      <div class="rest-next-label">next round</div>
+      <div class="rest-next-name mt-1" id="s06-next-name"></div>
+      <div class="rest-next-meta mt-1" id="s06-next-meta"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="px-screen mt-3 mb-nav" style="padding-bottom:24px">
+      <button class="btn-primary" id="s06-next" style="margin-bottom:10px">Next round →</button>
+      <button class="btn-ghost" id="s06-add" style="width:100%">+30s</button>
+    </div>
+  </section>
+
+  <!-- ── S-07 Summary ───────────────────────────────────── -->
+  <section id="s-07" class="screen screen-post">
+    <div class="status-bar px-screen">
+      <span class="t-label">Session complete</span>
+      <span id="s07-date" class="t-label"></span>
+    </div>
+    <div class="px-screen mt-2">
+      <div id="s07-title" class="t-display-md"></div>
+    </div>
+    <div class="px-screen mt-4">
+      <div class="post-stats" id="s07-stats"></div>
+    </div>
+    <div class="px-screen mt-5">
+      <div class="section-label mb-2">Exercises</div>
+      <div id="s07-log"></div>
+    </div>
+    <div class="px-screen mt-4">
+      <div class="chart-card">
+        <div class="chart-card__title">Sets this session</div>
+        <div class="chart-bar-wrap" id="s07-chart"></div>
+        <div class="chart-labels" id="s07-chart-labels"></div>
+      </div>
+    </div>
+    <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
+      <button class="btn-primary" id="s07-done">Done</button>
+    </div>
+  </section>
+
+  <!-- ── Session picker ───────────────────────────────────── -->
+  <div class="dialog-overlay" id="dialog-pick">
+    <div class="dialog-sheet" style="padding-bottom:48px">
+      <div class="dialog-title mb-2">Pick a session</div>
+      <div id="pick-list"></div>
+    </div>
+  </div>
+
+  <!-- ── Dialogs ────────────────────────────────────────── -->
+  <div class="dialog-overlay" id="dialog-quit">
+    <div class="dialog-sheet">
+      <div class="dialog-title">Quit session?</div>
+      <div class="dialog-body">Your progress so far will be saved and you can resume later.</div>
+      <div class="dialog-actions">
+        <button class="btn-primary" id="dq-keep">Keep going</button>
+        <button class="btn-danger" id="dq-save">Save &amp; exit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── S-13 Progress ─────────────────────────────────── -->
+  <section id="s-13" class="screen">
+    <div class="status-bar px-screen">
+      <span class="t-label">Progress</span>
+      <span id="s13-week" class="t-label"></span>
+    </div>
+    <div class="px-screen mt-2 mb-3">
+      <div class="t-display-sm">Your log</div>
+    </div>
+    <div class="px-screen" id="s13-list" style="padding-bottom:80px"></div>
+  </section>
+
+  <!-- ── Global nav ─────────────────────────────────────── -->
+  <nav id="bottom-nav" class="bottom-bar">
+    <div class="nav-item active" id="nav-today">
+      <span class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <rect x="3" y="4" width="14" height="13" rx="2.5"/>
+          <path d="M7 2v3M13 2v3M3 8h14"/>
+        </svg>
+      </span>
+      <span class="nav-label">Today</span>
+    </div>
+    <div class="nav-item is-disabled" id="nav-live">
+      <span class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10" cy="10" r="3" fill="currentColor" stroke="none"/>
+          <path d="M5.5 5.5a6.5 6.5 0 0 0 0 9M14.5 5.5a6.5 6.5 0 0 1 0 9"/>
+        </svg>
+      </span>
+      <span class="nav-label">Live</span>
+    </div>
+    <div class="nav-item" id="nav-progress">
+      <span class="nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 14l4-4 3 3 4-5 3 2"/>
+        </svg>
+      </span>
+      <span class="nav-label">Progress</span>
+    </div>
+  </nav>
+
+  <div class="dialog-overlay" id="dialog-skip">
+    <div class="dialog-sheet">
+      <div class="dialog-title">Skip exercise?</div>
+      <div class="dialog-body" id="ds-body"></div>
+      <div class="dialog-actions">
+        <button class="btn-primary" id="ds-cancel">Cancel — keep going</button>
+        <button class="btn-ghost" id="ds-skip">Yes, skip</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
