@@ -117,9 +117,10 @@ function onTimerTick(secs) {
 function onTimerDone() {
   const screen = currentScreen();
   if (screen === 's-05' || screen === 's-06') {
-    // flash the timer value red briefly, user taps to continue
     const valEl = screen === 's-05' ? q('#s05-val') : q('#s06-val');
     if (valEl) valEl.classList.add('overtime');
+    // Haptics — vibrate on rest end
+    if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
   }
 }
 
@@ -245,6 +246,19 @@ function renderHome() {
 
   // Week progress dots — Mon / Wed / Thu / Sat
   renderWeekDots();
+
+  // Streak + phase countdown
+  const streak = getStreak();
+  const sessLeft = 4 - (state.sessionCount % 4);
+  const nextWeek = state.currentWeek < 4 ? state.currentWeek + 1 : 1;
+  const nextPhaseLabel = (PHASES[nextWeek] || PHASES[1]).label;
+  const metaEl = q('#s01-meta');
+  if (metaEl) {
+    const streakHtml  = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
+    const phaseHtml   = sessLeft <= 4 ? `<span class="meta-badge">${sessLeft} session${sessLeft !== 1 ? 's' : ''} → ${nextPhaseLabel}</span>` : '';
+    metaEl.innerHTML  = streakHtml + phaseHtml;
+    metaEl.style.display = (streakHtml || phaseHtml) ? '' : 'none';
+  }
 
   if (!today) {
     // Rest day
@@ -460,6 +474,7 @@ function renderOverview() {
   cta.onclick = enterSuperset;
 
   showScreen('s-02');
+  updateProgressStrip();
   updateNav('live');
 }
 
@@ -582,6 +597,7 @@ function renderReps(ex, ss, totalRounds) {
   };
 
   showScreen('s-03');
+  updateProgressStrip();
   updateNav('live');
 }
 
@@ -621,6 +637,7 @@ function renderHold(ex, ss, totalRounds) {
   };
 
   showScreen('s-04');
+  updateProgressStrip();
   updateNav('live');
 }
 
@@ -655,6 +672,59 @@ function updateSwDisplay(secs) {
   if (el) el.textContent = secs;
 }
 
+// ─── Session progress ─────────────────────────────────────
+function sessionProgress() {
+  if (!A || !A.session) return 0;
+  const ph = phase();
+  let total = 0, done = 0;
+  A.session.supersets.forEach((ss, si) => {
+    const rounds = Math.round(ss.rounds * ph.roundMult);
+    total += ss.exercises.length * rounds;
+    if (si < A.ssIdx) {
+      done += ss.exercises.length * rounds;
+    } else if (si === A.ssIdx) {
+      ss.exercises.forEach(ex => {
+        done += Math.min((A.log[ex.id] || { sets: [] }).sets.length, rounds);
+      });
+    }
+  });
+  return total > 0 ? done / total : 0;
+}
+
+function updateProgressStrip() {
+  const strip = q('#session-strip');
+  const fill  = q('#session-strip-fill');
+  if (!strip || !fill) return;
+  if (!A || A.complete) { strip.style.display = 'none'; return; }
+  strip.style.display = '';
+  fill.style.width = `${Math.round(sessionProgress() * 100)}%`;
+}
+
+// ─── PR detection ─────────────────────────────────────────
+function isPR(exId, value) {
+  const allPrev = state.log.flatMap(e => (e.exercises[exId] || { sets: [] }).sets);
+  return allPrev.length > 0 && value > Math.max(...allPrev);
+}
+
+// ─── Streak ───────────────────────────────────────────────
+function getStreak() {
+  if (!state.log.length) return 0;
+  const getMonday = d => {
+    const date = new Date(d);
+    date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+    return date.toISOString().slice(0, 10);
+  };
+  const weeksWithSessions = new Set(state.log.map(e => getMonday(e.date)));
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 52; i++) {
+    const d = new Date(now.getTime() - i * 7 * 86400000);
+    if (weeksWithSessions.has(getMonday(d))) streak++;
+    else if (i > 0) break; // allow current week to be partial
+  }
+  return streak;
+}
+
 // ─── Log set & advance ────────────────────────────────────
 function logSet(value) {
   const ss  = A.session.supersets[A.ssIdx];
@@ -663,8 +733,13 @@ function logSet(value) {
 
   if (!A.log[ex.id]) A.log[ex.id] = { sets: [] };
   A.log[ex.id].sets.push(value);
-  saveActive();
 
+  // Track PRs
+  if (!A.prs) A.prs = {};
+  if (isPR(ex.id, value)) A.prs[ex.id] = value;
+
+  saveActive();
+  updateProgressStrip();
   advance(ss, totalRounds);
 }
 
@@ -721,8 +796,9 @@ function showRest(type, ss, nextEx) {
     ? (prevEx.type === 'hold' ? `${prevVal}s` : `${prevVal} reps`)
     : 'done';
 
+  const wasPR = prevEx && A.prs && A.prs[prevEx.id];
   confirmed.innerHTML = `
-    <strong>${prevEx ? prevEx.name : ''}</strong>
+    <strong>${prevEx ? prevEx.name : ''}${wasPR ? ' <span class="pr-badge">PR 🔥</span>' : ''}</strong>
     ${prevLabel}`;
 
   // Breadcrumb
@@ -755,6 +831,7 @@ function showRest(type, ss, nextEx) {
 
   startCountdown(secs);
   showScreen(screenId);
+  updateProgressStrip();
   updateNav('live');
 }
 
@@ -775,6 +852,8 @@ function finishSession() {
     complete:   true,
     skillsDone: A.skillsDone,
     exercises:  A.log,
+    prs:        A.prs || {},
+    rpe:        null,   // filled in on summary screen
   };
   state.log.push(entry);
   state.sessionCount++;
@@ -863,9 +942,90 @@ function renderSummary(entry) {
     });
   }
 
+  // PR callouts
+  const prEl = q('#s07-prs');
+  if (prEl) {
+    const prList = Object.entries(entry.prs || {});
+    if (prList.length) {
+      prEl.innerHTML = prList.map(([exId, val]) => {
+        const sess = SESSIONS.find(s => s.id === entry.sessionId);
+        const ex   = sess?.supersets.flatMap(ss => ss.exercises).find(e => e.id === exId);
+        const label = ex ? ex.name : exId;
+        return `<div class="pr-row">🔥 <strong>${label}</strong> — new best: ${val}${ex?.type === 'hold' ? 's' : ' reps'}</div>`;
+      }).join('');
+      prEl.style.display = '';
+    } else {
+      prEl.style.display = 'none';
+    }
+  }
+
+  // RPE selector
+  const rpeEl = q('#s07-rpe');
+  if (rpeEl) {
+    rpeEl.innerHTML = `
+      <div class="rpe-label">How hard was that?</div>
+      <div class="rpe-buttons">
+        ${[['😴','Easy'],['🙂','Moderate'],['💪','Hard'],['🔥','Very hard'],['💀','Max']].map(([e,l],i) =>
+          `<button class="rpe-btn" data-rpe="${i+1}" title="${l}">${e}</button>`
+        ).join('')}
+      </div>`;
+    rpeEl.querySelectorAll('.rpe-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rpeEl.querySelectorAll('.rpe-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        // Update the log entry's RPE
+        const idx = state.log.findIndex(e => e.id === entry.id);
+        if (idx >= 0) { state.log[idx].rpe = +btn.dataset.rpe; saveState(); }
+      });
+    });
+  }
+
   q('#s07-done').onclick = goHome;
   showScreen('s-07');
-  updateNav('today');  // session complete — live no longer active
+  updateProgressStrip(); // hide strip on summary
+  updateNav('today');
+  launchConfetti();
+}
+
+// ─── Confetti ─────────────────────────────────────────────
+function launchConfetti() {
+  const canvas = q('#confetti-canvas');
+  if (!canvas) return;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = '';
+  const ctx = canvas.getContext('2d');
+  const COLORS = ['#6C7FD8','#2BA88A','#E05050','#D4A017','#ffffff'];
+  const particles = Array.from({ length: 90 }, () => ({
+    x:  Math.random() * canvas.width,
+    y:  -12,
+    vx: (Math.random() - 0.5) * 5,
+    vy: Math.random() * 3 + 2,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    size: Math.random() * 7 + 3,
+    rot:  Math.random() * 360,
+    rotV: (Math.random() - 0.5) * 12,
+  }));
+  let raf;
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.rot += p.rotV; p.vy += 0.06;
+      if (p.y < canvas.height + 20) alive = true;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - p.y / canvas.height);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    });
+    if (alive) raf = requestAnimationFrame(draw);
+    else canvas.style.display = 'none';
+  };
+  draw();
+  setTimeout(() => { cancelAnimationFrame(raf); canvas.style.display = 'none'; }, 4000);
 }
 
 // ─── Session picker ───────────────────────────────────────

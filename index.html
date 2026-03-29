@@ -422,6 +422,83 @@
       font-weight: 500;
     }
 
+    /* Session progress strip */
+    #session-strip {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--line);
+      z-index: 300;
+    }
+    #session-strip-fill {
+      height: 100%;
+      background: var(--progress);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* Home meta badges (streak, phase countdown) */
+    .home-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .meta-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--txt-3);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-sm);
+      padding: 4px 10px;
+    }
+    .meta-badge--fire { color: rgba(212,160,23,0.9); border-color: rgba(212,160,23,0.3); }
+
+    /* PR badge inline in rest confirmed */
+    .pr-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.06em;
+      color: rgba(212,160,23,0.95);
+      background: rgba(212,160,23,0.12);
+      border-radius: 4px;
+      padding: 2px 6px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    /* PR rows on summary */
+    .pr-row {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: rgba(212,160,23,0.9);
+      letter-spacing: 0.06em;
+      line-height: 2;
+    }
+    .pr-row strong { font-weight: 500; color: rgba(212,160,23,1); }
+
+    /* RPE selector */
+    .rpe-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      color: var(--txt-3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .rpe-buttons { display: flex; gap: 8px; }
+    .rpe-btn {
+      flex: 1;
+      height: 52px;
+      font-size: 22px;
+      border-radius: var(--r-xl);
+      border: 1px solid var(--line);
+      background: var(--bg-2);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .rpe-btn.selected {
+      border-color: var(--txt-2);
+      background: var(--bg-3);
+    }
+
     .prog-empty {
       text-align: center;
       padding: 48px 22px;
@@ -434,6 +511,14 @@
   </style>
 </head>
 <body>
+<!-- Session progress strip (fixed top) -->
+<div id="session-strip" style="display:none">
+  <div id="session-strip-fill"></div>
+</div>
+
+<!-- Confetti canvas (fixed overlay) -->
+<canvas id="confetti-canvas" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:999"></canvas>
+
 <div id="app">
 
   <!-- ── S-01 Home ──────────────────────────────────────── -->
@@ -443,7 +528,8 @@
       <span id="s01-week" class="t-label"></span>
     </div>
     <div class="home-hero">
-      <div id="s01-week-dots" class="week-dots mb-4"></div>
+      <div id="s01-week-dots" class="week-dots mb-3"></div>
+      <div id="s01-meta" class="home-meta mb-3" style="display:none"></div>
       <div id="s01-phase" class="t-label mb-2"></div>
       <div id="s01-label" class="t-display-md mb-2"></div>
       <div id="s01-focus" class="t-body mb-5"></div>
@@ -687,6 +773,8 @@
     <div class="px-screen mt-4">
       <div class="post-stats" id="s07-stats"></div>
     </div>
+    <div class="px-screen mt-4" id="s07-prs" style="display:none"></div>
+    <div class="px-screen mt-4" id="s07-rpe"></div>
     <div class="px-screen mt-5">
       <div class="section-label mb-2">Exercises</div>
       <div id="s07-log"></div>
