@@ -559,7 +559,6 @@ function renderReps(ex, ss, totalRounds) {
   // "Last set" reference — show previous round's value if on round 2+
   const lastSetWrap = q('#s03-lastset-wrap');
   const lastSetEl   = q('#s03-lastset');
-  const logged = (A.log[ex.id] || { sets: [] }).sets;
   if (logged.length > 0 && A.round > 1) {
     const prev = logged[logged.length - 1];
     lastSetEl.innerHTML = `Last set: <strong>${prev} reps</strong>`;

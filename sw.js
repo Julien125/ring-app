@@ -1,4 +1,4 @@
-const CACHE = 'ring-app-v5';
+const CACHE = 'ring-app-v6';
 
 const FILES = [
   './',
@@ -8,6 +8,8 @@ const FILES = [
   './timer-worker.js',
   './data/program.js',
   './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
 self.addEventListener('install', e => {
