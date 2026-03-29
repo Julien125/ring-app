@@ -328,10 +328,6 @@ function renderWarmup() {
   list.innerHTML = '';
   const checked = new Set();
 
-  function refresh() {
-    q('#s15-cta').disabled = checked.size < sess.warmup.length;
-  }
-
   sess.warmup.forEach((item, i) => {
     const el = document.createElement('div');
     el.className = 'warmup-item';
@@ -345,7 +341,6 @@ function renderWarmup() {
     el.addEventListener('click', () => {
       const done = el.classList.toggle('is-done');
       if (done) checked.add(i); else checked.delete(i);
-      refresh();
     });
     list.appendChild(el);
   });
