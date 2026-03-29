@@ -429,7 +429,10 @@ export const SESSIONS = [
     day: 'Monday', weekday: 1,
     type: 'push', label: 'Push 1',
     focus: 'Anterior legs · Lateral core',
-    skills: ['Planche', 'Shoulderstand Press'],
+    skills: [
+      { name: 'Planche', drill: 'Planche Lean Hold', sets: '4 × 20s', note: 'Lean forward past wrists, protract scapula, posterior pelvic tilt. Straight arms.' },
+      { name: 'Shoulderstand Press', drill: 'Pike Press to Headstand', sets: '3 × 5', note: 'Slow 3s descent. Drive hips high, elbows track back, core braced throughout.' },
+    ],
     warmup: WARMUP_PUSH,
     supersets: [
       ssOverheadSkill(EX['copenhagen-plank']),
@@ -443,7 +446,10 @@ export const SESSIONS = [
     day: 'Wednesday', weekday: 3,
     type: 'pull', label: 'Pull 1',
     focus: 'Posterior legs · IAP + rotation core',
-    skills: ['Iron Cross', 'Back Lever'],
+    skills: [
+      { name: 'Iron Cross', drill: 'Cross Lean + Support Hold', sets: '4 × 10s', note: 'Rings at hip height, arms fully extended out to sides. Engage lats hard, no shrugging.' },
+      { name: 'Back Lever', drill: 'Skin the Cat + Tuck Back Lever', sets: '3 × 15s', note: 'Skin the cat, pause in tuck back lever. Push rings down, squeeze glutes.' },
+    ],
     warmup: WARMUP_PULL_WED,
     supersets: [
       ssSkillPower,
@@ -457,7 +463,10 @@ export const SESSIONS = [
     day: 'Thursday', weekday: 4,
     type: 'push', label: 'Push 2',
     focus: 'Anterior legs · Rotation core',
-    skills: ['Muscle Up', 'Manna'],
+    skills: [
+      { name: 'Muscle Up', drill: 'Low Transition Drill', sets: '3 × 5', note: 'Bar at chest height. False grip, explosive pull, fast transition. Focus on hip drive.' },
+      { name: 'Manna', drill: 'Seated Compression + Manna Lean', sets: '4 × 15s', note: 'Hands beside hips, push into floor, lift hips. Legs straight, toes pointed.' },
+    ],
     warmup: WARMUP_PUSH,
     supersets: [
       ssOverheadSkill(EX['hollow-body-hold']),
@@ -471,7 +480,10 @@ export const SESSIONS = [
     day: 'Saturday', weekday: 6,
     type: 'pull', label: 'Pull 2',
     focus: 'Posterior legs · Lateral core',
-    skills: ['FW Roll on Rings', 'BW Roll on Rings'],
+    skills: [
+      { name: 'Forward Roll on Rings', drill: 'Spotted Forward Roll', sets: '3 × 3', note: 'Start in support. Tuck chin, hollow body, roll forward slowly. Stay in control — not a fall.' },
+      { name: 'Backward Roll on Rings', drill: 'Skin the Cat to Invert', sets: '3 × 3', note: 'From hang, pull knees up and over. Control descent. Shoulders stay packed.' },
+    ],
     warmup: WARMUP_PULL_SAT,
     supersets: [
       ssSkillPower,

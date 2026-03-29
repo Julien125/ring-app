@@ -362,11 +362,22 @@ function renderSkills() {
   list.innerHTML = '';
   const doneSet = new Set();
 
-  sess.skills.forEach((name, i) => {
+  sess.skills.forEach((skill, i) => {
+    // Support both old string format and new object format
+    const name  = typeof skill === 'string' ? skill : skill.name;
+    const drill = typeof skill === 'string' ? null  : skill.drill;
+    const sets  = typeof skill === 'string' ? null  : skill.sets;
+    const note  = typeof skill === 'string' ? null  : skill.note;
+
     const el = document.createElement('div');
-    el.className = 'skill-item';
+    el.className = 'skill-item skill-item--full';
     el.innerHTML = `
-      <div class="skill-item__name">${name}</div>
+      <div class="skill-item__content">
+        <div class="skill-item__name">${name}</div>
+        ${drill ? `<div class="skill-item__drill">${drill}</div>` : ''}
+        ${sets  ? `<div class="skill-item__sets">${sets}</div>` : ''}
+        ${note  ? `<div class="skill-item__note">${note}</div>` : ''}
+      </div>
       <div class="skill-badge" data-i="${i}">Mark done</div>`;
     const badge = el.querySelector('.skill-badge');
     badge.addEventListener('click', () => {
@@ -415,10 +426,15 @@ function renderOverview() {
       const exCur  = isCurrent && ei === A.exIdx && !isDone;
       const cls    = exDone ? 'ss-ex-row is-done' : (exCur ? 'ss-ex-row is-current' : 'ss-ex-row');
       const target = ex.type === 'hold' ? `${ex.targetSecs}s` : `${ex.targetReps}r`;
+      // Show logged sets if any
+      const loggedSets = (A.log[ex.id] || { sets: [] }).sets;
+      const setsStr = loggedSets.length
+        ? loggedSets.map(v => ex.type === 'hold' ? `${v}s` : v).join(' · ')
+        : target;
       exRowsHtml += `<div class="${cls}">
         <div class="dot dot--${ex.category}"></div>
         <div class="ss-ex-row__name">${ex.name}</div>
-        <div class="t-label-xs">${target}</div>
+        <div class="t-label-xs" style="color:${loggedSets.length ? 'var(--progress)' : ''}">${setsStr}</div>
       </div>`;
     });
 
@@ -505,14 +521,20 @@ function buildMuscleChips(ex) {
 
 function renderReps(ex, ss, totalRounds) {
   const target = getTargetReps(ex);
-  let currentReps = target;
+  const logged = (A.log[ex.id] || { sets: [] }).sets;
+  const lastLogged = logged.length > 0 ? logged[logged.length - 1] : null;
+  // Auto-progression: if last round beat the target, default to lastRound − 1
+  let currentReps = (lastLogged !== null && lastLogged > target) ? lastLogged - 1 : target;
 
   q('#s03-breadcrumb').textContent = buildBreadcrumb(ss, totalRounds);
   q('#s03-dots').innerHTML         = buildExDots(ss);
   q('#s03-cat').className          = `cat-tag cat-tag--${ex.category}`;
   q('#s03-cat').textContent        = ex.category;
   q('#s03-name').textContent       = ex.name;
-  q('#s03-target').textContent     = `${target}`;
+  // Show auto-adjusted target if progression kicked in
+  const isAutoAdjusted = lastLogged !== null && lastLogged > target;
+  q('#s03-target').textContent     = isAutoAdjusted ? `${currentReps}` : `${target}`;
+  q('#s03-target').title           = isAutoAdjusted ? `Program: ${target} · Auto-adjusted from ${lastLogged}` : '';
   q('#s03-setnum').textContent     = `${A.round}/${totalRounds}`;
   q('#s03-pills').innerHTML        = buildSetPills(ex, ss);
   q('#s03-muscles').innerHTML      = buildMuscleChips(ex);

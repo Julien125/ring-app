@@ -11,16 +11,31 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./ring-app.css">
   <style>
-    /* ── Contrast overrides for gym readability ────────────
-       ring-app.css defaults are too dim for bright/outdoor
-       conditions and chalk-hands squinting at a screen.
-       Bump secondary + tertiary text and borders. ───────── */
+    /* ── Contrast + size overrides for gym readability ─────
+       ring-app.css defaults are too dim and small for bright
+       conditions and chalk-hands squinting at a screen. ─── */
     :root {
       --txt-2:    rgba(240, 237, 232, 0.75);  /* was 0.45 */
       --txt-3:    rgba(240, 237, 232, 0.52);  /* was 0.20 */
       --line:     rgba(255, 255, 255, 0.13);  /* was 0.07 */
       --line-2:   rgba(255, 255, 255, 0.22);  /* was 0.12 */
     }
+
+    /* ── Font size bumps ───────────────────────────── */
+    .t-label    { font-size: 11px; }
+    .t-body     { font-size: 11px; }
+    .t-display-md { font-size: 26px; }
+    .t-display-sm { font-size: 22px; }
+    .act-ex-name  { font-size: 32px; }
+    .chip__val    { font-size: 22px; }
+    .rest-next-name { font-size: 22px; }
+    .warmup-item__name { font-size: 14px; }
+    .warmup-item__duration { font-size: 13px; }
+    .skill-item__name { font-size: 17px; }
+    .coaching-note { font-size: 11px; }
+    .set-pill  { font-size: 13px; }
+    .stepper__val { font-size: 52px; }
+    .muscle-chip  { font-size: 9px; }
 
     html, body { height: 100%; overflow: hidden; }
 
@@ -150,12 +165,37 @@
       justify-content: space-between;
       padding: 16px 22px;
       border-bottom: 1px solid var(--line);
+      gap: 12px;
     }
+    .skill-item--full { align-items: flex-start; }
+    .skill-item__content { flex: 1; }
     .skill-item__name {
       font-family: 'Unbounded', sans-serif;
       font-size: 14px;
       font-weight: 700;
       color: var(--txt);
+      margin-bottom: 4px;
+    }
+    .skill-item__drill {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--txt-2);
+      margin-bottom: 2px;
+    }
+    .skill-item__sets {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(212,160,23,0.9);
+      margin-bottom: 4px;
+    }
+    .skill-item__note {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      font-style: italic;
+      line-height: 1.6;
     }
     .skill-badge {
       font-family: 'DM Mono', monospace;
