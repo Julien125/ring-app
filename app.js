@@ -459,14 +459,22 @@ function renderOverview() {
       <div class="round-dots" style="padding:6px 10px; border-bottom:1px solid var(--line)">${dotsHtml}</div>
       <div style="padding:4px 0">${exRowsHtml}</div>`;
 
-    if (isCurrent) {
-      col.style.cursor = 'pointer';
-      col.addEventListener('click', enterSuperset);
-    }
+    // All supersets are tappable — jump to any one freely
+    col.style.cursor = 'pointer';
+    col.addEventListener('click', () => {
+      if (i !== A.ssIdx) {
+        // Jumping to a different superset — reset position within it
+        A.ssIdx = i;
+        A.round = 1;
+        A.exIdx = 0;
+        saveActive();
+      }
+      enterSuperset();
+    });
     grid.appendChild(col);
   });
 
-  // CTA button
+  // CTA button — always points to current superset
   const cta = q('#s02-cta');
   const ss  = sess.supersets[A.ssIdx];
   cta.textContent = A.ssIdx === 0 ? 'Start first superset →' : `Start ${ss.id} — ${ss.label} →`;
