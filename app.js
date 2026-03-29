@@ -362,7 +362,6 @@ function renderWarmup() {
   q('#s15-cta').onclick = () => { A.warmupDone = true; saveActive(); renderSkills(); };
   q('#s15-skip').onclick = () => { A.warmupDone = true; saveActive(); renderSkills(); };
 
-  refresh();
   showScreen('s-15');
   updateNav('live');
 }
