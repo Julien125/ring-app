@@ -45,12 +45,14 @@ const WARMUP_PUSH = [
 const WARMUP_PULL_WED = [
   { name: '90/90 breathing',              duration: '3 min',  note: 'IAP — 3×5 deep exhales' },
   { name: 'Dead hang',                     duration: '3×30s',  note: 'Grip + shoulder decompression' },
+  { name: 'German Hang',                   duration: '2×20s',  note: 'Back lever shoulder prep — rotate slowly into position, exit with control' },
   { name: 'Cat-cow + thoracic rotation',   duration: '2 min',  note: 'Spinal mobility before hinging' },
 ];
 
 const WARMUP_PULL_SAT = [
   { name: '90/90 breathing',  duration: '3 min',  note: 'IAP — 3×5 deep exhales' },
   { name: 'Dead hang',         duration: '3×30s',  note: 'Grip + shoulder decompression' },
+  { name: 'German Hang',       duration: '2×20s',  note: 'Back lever shoulder prep — rotate slowly into position, exit with control' },
   { name: 'Band pull-aparts',  duration: '2×20',   note: 'Rear delt activation' },
 ];
 
@@ -408,6 +410,43 @@ const EX = {
     muscles: { primary: ['calves'], secondary: [] },
   },
 
+  // ── Skill support ─────────────────────────────────────
+  'false-grip-dead-hang': {
+    id: 'false-grip-dead-hang', name: 'False Grip Dead Hang',
+    category: 'pull', type: 'hold', targetSecs: 20,
+    desc: 'Hang from bar or rings with a false grip — wrist draped over the bar, not fingers wrapped around it. Let shoulders depress fully. Conditions the exact wrist position required for the muscle up.',
+    note: 'MU prerequisite — wrist + grip conditioning',
+    muscles: { primary: ['forearms', 'lats'], secondary: ['biceps', 'shoulders'] },
+  },
+  'ring-dip-deep': {
+    id: 'ring-dip-deep', name: 'Ring Dip — Deep Pause',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Ring dip with a deliberate 3-second pause at the bottom. Elbows at 90°, rings allowed to flare. Builds the chest and shoulder strength needed to push out of the muscle up transition.',
+    note: 'MU transition strength — 3s pause at bottom',
+    muscles: { primary: ['chest', 'triceps'], secondary: ['shoulders', 'serratus'] },
+  },
+  'german-hang': {
+    id: 'german-hang', name: 'German Hang',
+    category: 'shoulder', type: 'hold', targetSecs: 20,
+    desc: 'From a bar or ring hang, slowly rotate backward until hanging with arms extended behind you. Passive shoulder opener — exit slowly and controlled. Essential prerequisite for back lever.',
+    note: 'Back lever prerequisite — shoulder flexion mobility',
+    muscles: { primary: ['shoulders', 'chest'], secondary: ['biceps'] },
+  },
+  'cross-body-band-hold': {
+    id: 'cross-body-band-hold', name: 'Cross Body Band Hold',
+    category: 'straight', type: 'hold', targetSecs: 10,
+    desc: 'Band anchored at shoulder height. Hold arm extended straight to the side against the band\'s pull — isometric at the exact iron cross arm angle. Nothing else replicates this specific adduction demand.',
+    note: 'Iron cross specific — isometric at cross angle',
+    muscles: { primary: ['lats', 'chest'], secondary: ['rear-delt', 'serratus'] },
+  },
+  'wrist-extension-hold': {
+    id: 'wrist-extension-hold', name: 'Wrist Extension Hold',
+    category: 'shoulder', type: 'hold', targetSecs: 20,
+    desc: 'On hands and knees, rotate wrists so fingers point back toward your knees. Gradually shift bodyweight forward over the wrists. The wrist extension range required for manna is the most overlooked limiting factor.',
+    note: 'Manna prerequisite — wrist mobility + strength',
+    muscles: { primary: ['forearms'], secondary: [] },
+  },
+
   // ── Legs — Posterior chain (pull days) ───────────────
   'nordic-curl': {
     id: 'nordic-curl', name: 'Nordic Curl',
@@ -479,6 +518,7 @@ function ssHeavyDips(rotationEx) {
       EX['bulgarian-dips'],
       EX['korean-dips'],
       EX['archer-push-up'],
+      EX['ring-dip-deep'],
       rotationEx,
     ],
   };
@@ -494,6 +534,7 @@ const ssIsolationPush = {
     EX['pike-push-up'],
     EX['russian-push-up'],
     EX['l-sit'],
+    EX['wrist-extension-hold'],
   ],
 };
 
@@ -504,6 +545,7 @@ const ssSkillPower = {
     EX['front-lever-hold'],
     EX['chest-to-bar'],
     EX['typewriter'],
+    EX['false-grip-dead-hang'],
     EX['tuck-to-l'],
     EX['superman-hold'],
   ],
@@ -536,6 +578,7 @@ const ssIsolationPull = {
     EX['ring-hammer-curl'],
     EX['ring-y-raise'],
     EX['face-pull'],
+    EX['cross-body-band-hold'],
     EX['jefferson-curl'],
     EX['cuban-press'],
   ],
