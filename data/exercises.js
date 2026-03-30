@@ -44,8 +44,9 @@ export const EX = {
   'copenhagen-plank': {
     id: 'copenhagen-plank', name: 'Copenhagen Plank',
     category: 'core', type: 'hold', targetSecs: 20,
+    unilateral: true,
     desc: 'Side plank with the top leg resting on a bench. Bottom leg hangs free. Hold the body in a straight line — engages obliques and inner thigh simultaneously.',
-    note: 'Anti-lateral — adductor + oblique',
+    note: 'Anti-lateral — adductor + oblique · each side',
     muscles: { primary: ['core'], secondary: ['glutes', 'hamstrings'] },
   },
   'hollow-body-hold': {

@@ -51,6 +51,9 @@ let timerRestTotal = 0;
 let swInterval = null;
 let swSecs = 0;
 let swRunning = false;
+// unilateral hold state
+let swSide  = 1;   // 1 = left in progress, 2 = right in progress
+let swLeft  = 0;   // left side secs (stored after first stop)
 
 // ─── Boot ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -145,6 +148,13 @@ function onTimerDone() {
     if (valEl) valEl.classList.add('overtime');
     // Haptics — vibrate on rest end
     if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    // Auto-advance after 1.5 s — user can still tap "Next" early
+    setTimeout(() => {
+      if (currentScreen() === screen) {
+        stopTimer();
+        renderExercise();
+      }
+    }, 1500);
   }
 }
 
@@ -264,6 +274,32 @@ function bindGlobalUI() {
   q('#ds-skip').addEventListener('click', () => {
     hideDialog('dialog-skip');
     doSkipExercise();
+  });
+
+  // Swipe-left on exercise screens → skip
+  bindSwipeToSkip();
+}
+
+function bindSwipeToSkip() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const IDS = ['s-03', 's-04'];
+  IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      // Horizontal swipe left ≥ 80px, not a vertical scroll
+      if (dx < -80 && dy < 50) {
+        const skipBtn = el.querySelector('[id$="-skip"]');
+        if (skipBtn) skipBtn.click();
+      }
+    }, { passive: true });
   });
 }
 
@@ -785,7 +821,8 @@ function renderReps(ex, ss, totalRounds) {
 }
 
 function renderHold(ex, ss, totalRounds) {
-  const target = ex.targetSecs;
+  const target      = ex.targetSecs;
+  const isUnilateral = !!ex.unilateral;
 
   q('#s04-breadcrumb').textContent = buildBreadcrumb(ss, totalRounds);
   q('#s04-dots').innerHTML         = buildExDots(ss);
@@ -793,27 +830,86 @@ function renderHold(ex, ss, totalRounds) {
   q('#s04-cat').textContent        = ex.category;
   q('#s04-name').textContent       = ex.name;
   q('#s04-desc').textContent       = ex.desc || '';
-  q('#s04-target').textContent     = `${target}s`;
+  q('#s04-target').textContent     = isUnilateral ? `${target}s / side` : `${target}s`;
   q('#s04-setnum').textContent     = `${A.round}/${totalRounds}`;
   q('#s04-pills').innerHTML        = buildSetPills(ex, ss);
   q('#s04-muscles').innerHTML      = buildMuscleChips(ex);
   q('#s04-note').textContent       = ex.note || '';
 
+  // Toggle bilateral vs unilateral timer layout
+  q('#s04-sw-single').style.display = isUnilateral ? 'none' : '';
+  q('#s04-sw-dual').style.display   = isUnilateral ? '' : 'none';
+  q('#s04-side-wrap').style.display = isUnilateral ? '' : 'none';
+
   resetStopwatch();
 
-  q('#s04-start').style.display = '';
-  q('#s04-stop').style.display  = 'none';
+  if (isUnilateral) {
+    // ── Unilateral: two-phase left → right ───────────────
+    swSide = 1; swLeft = 0;
+    q('#s04-side-label').textContent = 'LEFT SIDE';
+    q('#s04-sw-left').textContent    = '0';
+    q('#s04-sw-right').textContent   = '—';
 
-  q('#s04-start').onclick = () => {
-    startStopwatch();
-    q('#s04-start').style.display = 'none';
-    q('#s04-stop').style.display  = '';
-  };
+    q('#s04-start').textContent       = 'Start — left';
+    q('#s04-start').style.display = '';
+    q('#s04-stop').style.display  = 'none';
+    q('#s04-stop').textContent    = 'Stop left';
 
-  q('#s04-stop').onclick = () => {
-    const elapsed = stopStopwatch();
-    logSet(elapsed);
-  };
+    q('#s04-start').onclick = () => {
+      startStopwatch();
+      q('#s04-start').style.display = 'none';
+      q('#s04-stop').style.display  = '';
+      q('#s04-stop').textContent    = swSide === 1 ? 'Stop left' : 'Stop right & log';
+    };
+
+    q('#s04-stop').onclick = () => {
+      const elapsed = stopStopwatch();
+      if (swSide === 1) {
+        // Left done — store it, flip to right
+        swLeft = elapsed;
+        swSide = 2;
+        q('#s04-sw-left').textContent  = elapsed;
+        q('#s04-sw-right').textContent = '0';
+        q('#s04-side-label').textContent = 'RIGHT SIDE';
+        resetStopwatch();
+        // Brief haptic cue
+        if (navigator.vibrate) navigator.vibrate(80);
+        // Show start for right side
+        q('#s04-start').textContent   = 'Start — right';
+        q('#s04-start').style.display = '';
+        q('#s04-stop').style.display  = 'none';
+        q('#s04-stop').textContent    = 'Stop right & log';
+      } else {
+        // Right done — log min(left, right)
+        q('#s04-sw-right').textContent = elapsed;
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+        logSet(Math.min(swLeft, elapsed));
+      }
+    };
+
+    // Live update for unilateral — update active side display
+    const origStart = q('#s04-start').onclick;
+    const _startOrig = startStopwatch;
+    // Override updateSwDisplay to also update the correct side cell
+    // (handled by swSide flag — see updateSwDisplay override below)
+
+  } else {
+    // ── Bilateral: single timer ───────────────────────────
+    q('#s04-start').textContent   = 'Start hold';
+    q('#s04-start').style.display = '';
+    q('#s04-stop').style.display  = 'none';
+
+    q('#s04-start').onclick = () => {
+      startStopwatch();
+      q('#s04-start').style.display = 'none';
+      q('#s04-stop').style.display  = '';
+    };
+
+    q('#s04-stop').onclick = () => {
+      const elapsed = stopStopwatch();
+      logSet(elapsed);
+    };
+  }
 
   q('#s04-skip').onclick = () => {
     q('#ds-body').textContent = `Skip "${ex.name}"? This hold won't be logged.`;
@@ -852,8 +948,17 @@ function resetStopwatch() {
 }
 
 function updateSwDisplay(secs) {
+  // Bilateral — single display
   const el = q('#s04-sw');
   if (el) el.textContent = secs;
+  // Unilateral — live-update the active side cell too
+  if (swSide === 1) {
+    const lEl = q('#s04-sw-left');
+    if (lEl && q('#s04-sw-dual')?.style.display !== 'none') lEl.textContent = secs;
+  } else {
+    const rEl = q('#s04-sw-right');
+    if (rEl && q('#s04-sw-dual')?.style.display !== 'none') rEl.textContent = secs;
+  }
 }
 
 // ─── Session progress ─────────────────────────────────────
@@ -1165,11 +1270,124 @@ function renderSummary(entry) {
     });
   }
 
+  // Muscles worked section
+  renderMusclesSummary(entry, q('#s07-muscles'));
+
+  // Cool-down CTA
+  const cdBtn = q('#s07-cooldown');
+  if (cdBtn) {
+    cdBtn.style.display = sess?.cooldown?.length ? '' : 'none';
+    cdBtn.onclick = () => renderCooldown(sess);
+  }
+
   q('#s07-done').onclick = goHome;
   showScreen('s-07');
   updateProgressStrip(); // hide strip on summary
   updateNav('today');
   launchConfetti();
+}
+
+// ─── S-07 Muscles worked ──────────────────────────────────
+function renderMusclesSummary(entry, container) {
+  if (!container) return;
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) { container.innerHTML = ''; return; }
+
+  // Aggregate sets per primary muscle across logged exercises
+  const tally = {};
+  sess.supersets.forEach(ss => {
+    ss.exercises.forEach(ex => {
+      const logged = entry.exercises[ex.id];
+      if (!logged || !logged.sets.length) return;
+      const sets = logged.sets.length;
+      (ex.muscles?.primary || []).forEach(m => {
+        tally[m] = (tally[m] || 0) + sets;
+      });
+      (ex.muscles?.secondary || []).forEach(m => {
+        tally[m] = (tally[m] || 0) + Math.ceil(sets * 0.5);
+      });
+    });
+  });
+
+  const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length) { container.innerHTML = ''; return; }
+
+  const maxSets = sorted[0][1];
+  const LABEL = {
+    'lats':'Lats','biceps':'Biceps','rear-delt':'Rear Delt','lateral-delt':'Lateral Delt',
+    'front-delt':'Front Delt','chest':'Chest','triceps':'Triceps','shoulders':'Shoulders',
+    'core':'Core','lower-back':'Lower Back','glutes':'Glutes','hamstrings':'Hamstrings',
+    'quads':'Quads','calves':'Calves','serratus':'Serratus','brachialis':'Brachialis',
+    'forearms':'Forearms',
+  };
+
+  container.innerHTML = `
+    <div class="muscles-section">
+      <div class="muscles-section__title">Muscles worked</div>
+      ${sorted.map(([m, sets]) => `
+        <div class="muscle-vol-row">
+          <div class="muscle-vol-row__name">${LABEL[m] || m}</div>
+          <div class="muscle-vol-bar-wrap">
+            <div class="muscle-vol-bar" style="width:${Math.round(sets / maxSets * 100)}%"></div>
+          </div>
+          <div class="muscle-vol-row__sets">${sets}×</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ─── S-16 Cool-down ───────────────────────────────────────
+function renderCooldown(sess) {
+  if (!sess?.cooldown?.length) return;
+
+  const list  = q('#s16-list');
+  const typeEl = q('#s16-type');
+  if (typeEl) typeEl.textContent = sess.type === 'push' ? 'Push day' : 'Pull day';
+
+  // Build rows
+  list.innerHTML = '';
+  let doneCnt = 0;
+
+  const updateProgress = () => {
+    const progEl = list.querySelector('.cooldown-progress');
+    if (progEl) progEl.textContent = `${doneCnt} / ${sess.cooldown.length} done`;
+  };
+
+  sess.cooldown.forEach((pose, i) => {
+    const row = document.createElement('div');
+    row.className = 'cooldown-row';
+    row.innerHTML = `
+      <div class="cooldown-row__check"></div>
+      <div class="cooldown-row__body">
+        <div class="cooldown-row__name">${pose.name}</div>
+        <div class="cooldown-row__breaths">${pose.breaths}</div>
+        ${pose.note  ? `<div class="cooldown-row__note">${pose.note}</div>`  : ''}
+        ${pose.cue   ? `<div class="cooldown-row__cue">"${pose.cue}"</div>` : ''}
+      </div>`;
+    row.addEventListener('click', () => {
+      if (!row.classList.contains('is-done')) {
+        row.classList.add('is-done');
+        doneCnt++;
+        updateProgress();
+        if (navigator.vibrate) navigator.vibrate(40);
+      } else {
+        row.classList.remove('is-done');
+        doneCnt--;
+        updateProgress();
+      }
+    });
+    list.appendChild(row);
+  });
+
+  // Progress line at top
+  const prog = document.createElement('div');
+  prog.className = 'cooldown-progress';
+  prog.textContent = `0 / ${sess.cooldown.length} done`;
+  list.insertBefore(prog, list.firstChild);
+
+  q('#s16-done').onclick = goHome;
+
+  showScreen('s-16');
+  updateNav('today');
 }
 
 // ─── Confetti ─────────────────────────────────────────────

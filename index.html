@@ -630,6 +630,143 @@
       padding: 8px 0;
     }
 
+    /* S-16 Cool-down pose rows */
+    .cooldown-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px var(--px);
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .cooldown-row.is-done { opacity: 0.45; }
+    .cooldown-row.is-done .cooldown-row__check { background: var(--accent); border-color: var(--accent); }
+    .cooldown-row.is-done .cooldown-row__check::after { content: '✓'; font-size: 12px; color: #fff; }
+    .cooldown-row__check {
+      width: 24px; height: 24px; flex-shrink: 0;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cooldown-row__body { flex: 1; }
+    .cooldown-row__name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      color: var(--txt-1);
+      margin-bottom: 3px;
+    }
+    .cooldown-row__breaths {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .cooldown-row__note {
+      font-family: 'DM Mono', monospace;
+      font-size: 9.5px;
+      color: var(--txt-3);
+      line-height: 1.5;
+    }
+    .cooldown-row__cue {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(43,168,138,0.7);
+      font-style: italic;
+      margin-top: 3px;
+    }
+    .cooldown-progress {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--txt-3);
+      padding: 8px var(--px) 0;
+    }
+
+    /* S-07 Muscles worked */
+    .muscles-section { }
+    .muscles-section__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--txt-3);
+      margin-bottom: 10px;
+    }
+    .muscle-vol-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .muscle-vol-row:last-child { border-bottom: none; }
+    .muscle-vol-row__name {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--txt-2);
+      min-width: 100px;
+    }
+    .muscle-vol-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .muscle-vol-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+      transition: width 0.4s ease;
+    }
+    .muscle-vol-row__sets {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--txt-3);
+      min-width: 28px;
+      text-align: right;
+    }
+
+    /* Unilateral two-stopwatch layout */
+    .side-label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 4px 12px;
+      border: 1px solid rgba(108,127,216,0.3);
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .dual-sw-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .dual-sw-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .dual-sw-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--txt-3);
+      text-transform: uppercase;
+    }
+    .stopwatch-val--sm { font-size: 40px; }
+    .dual-sw-divider {
+      width: 1px;
+      height: 48px;
+      background: var(--line);
+    }
+
     /* PR badge inline in rest confirmed */
     .pr-badge {
       font-family: 'DM Mono', monospace;
@@ -864,9 +1001,30 @@
       <div class="t-label-xs mb-2" style="color:var(--txt-3);letter-spacing:0.1em">Sets</div>
       <div class="set-tracker" id="s04-pills"></div>
     </div>
+    <!-- Side label for unilateral exercises (hidden for bilateral) -->
+    <div class="px-screen mt-2 text-center" id="s04-side-wrap" style="display:none">
+      <div class="side-label" id="s04-side-label">LEFT SIDE</div>
+    </div>
     <div class="px-screen mt-4 text-center">
-      <div class="stopwatch-val" id="s04-sw">0</div>
-      <div class="stopwatch-unit">seconds</div>
+      <!-- Bilateral: single timer -->
+      <div id="s04-sw-single">
+        <div class="stopwatch-val" id="s04-sw">0</div>
+        <div class="stopwatch-unit">seconds</div>
+      </div>
+      <!-- Unilateral: two timers side by side -->
+      <div id="s04-sw-dual" style="display:none">
+        <div class="dual-sw-row">
+          <div class="dual-sw-cell">
+            <div class="dual-sw-label">LEFT</div>
+            <div class="stopwatch-val stopwatch-val--sm" id="s04-sw-left">0</div>
+          </div>
+          <div class="dual-sw-divider"></div>
+          <div class="dual-sw-cell">
+            <div class="dual-sw-label">RIGHT</div>
+            <div class="stopwatch-val stopwatch-val--sm" id="s04-sw-right">—</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="px-screen mt-5" style="padding-bottom:24px">
       <div class="flex gap-2">
@@ -972,8 +1130,28 @@
         <div class="chart-labels" id="s07-chart-labels"></div>
       </div>
     </div>
+    <div class="px-screen mt-4">
+      <div id="s07-muscles"></div>
+    </div>
     <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
-      <button class="btn-primary" id="s07-done">Done</button>
+      <button class="btn-accent w-full mb-2" id="s07-cooldown">Start cool-down</button>
+      <button class="btn-primary" id="s07-done">Done — go home</button>
+    </div>
+  </section>
+
+  <!-- ── S-16 Cool-down / Stretching ──────────────────────── -->
+  <section id="s-16" class="screen">
+    <div class="status-bar px-screen">
+      <span class="t-label">Cool-down</span>
+      <span id="s16-type" class="t-label" style="color:var(--txt-3)"></span>
+    </div>
+    <div class="px-screen mt-2">
+      <div class="t-display-md">Stretch &amp; recover</div>
+      <div class="t-body mt-1" style="color:var(--txt-3)">Tap each pose when done · breathe fully</div>
+    </div>
+    <div id="s16-list" class="mt-4" style="padding-bottom:100px"></div>
+    <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
+      <button class="btn-primary" id="s16-done">Done</button>
     </div>
   </section>
 
