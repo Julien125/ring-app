@@ -10,7 +10,7 @@ const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
 
 // ─── State ────────────────────────────────────────────────
-let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {} };
+let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [] };
 
 // Default skill levels — front-lever pre-set to 5 (achieved)
 const DEFAULT_SKILL_LEVELS = {
@@ -515,7 +515,16 @@ function levelUpSkill(skillId) {
   if (!prog) return;
   const current = state.skillLevels[skillId] || 1;
   if (current < prog.progressions.length) {
-    state.skillLevels[skillId] = current + 1;
+    const next = current + 1;
+    state.skillLevels[skillId] = next;
+    if (!state.skillHistory) state.skillHistory = [];
+    state.skillHistory.push({
+      skillId,
+      fromLevel: current,
+      toLevel:   next,
+      drill:     prog.progressions[next - 1].drill,
+      date:      new Date().toISOString().slice(0, 10),
+    });
     saveState();
     renderSkills();
   }
@@ -532,18 +541,41 @@ function renderSkillsOverview() {
     const card = buildSkillCard(skillId, {
       showDots: true,
       showDone: false,
-      onLevelUp: id => {
-        const prog    = SKILL_PROGRESSIONS[id];
-        const current = state.skillLevels[id] || 1;
-        if (prog && current < prog.progressions.length) {
-          state.skillLevels[id] = current + 1;
-          saveState();
-          renderSkillsOverview();
-        }
-      },
+      onLevelUp: id => { levelUpSkill(id); renderSkillsOverview(); },
     });
     if (card) list.appendChild(card);
   });
+
+  // ── Level-up history timeline ──────────────────────────
+  const history = (state.skillHistory || []).slice().reverse(); // most recent first
+  if (history.length) {
+    const section = document.createElement('div');
+    section.style.cssText = 'padding: 20px var(--px) 0';
+
+    const title = document.createElement('div');
+    title.className = 'section-label';
+    title.style.marginBottom = '12px';
+    title.textContent = 'Level-up history';
+    section.appendChild(title);
+
+    history.forEach(entry => {
+      const prog = SKILL_PROGRESSIONS[entry.skillId];
+      const row  = document.createElement('div');
+      row.className = 'skill-history-row';
+      row.innerHTML = `
+        <div class="skill-history-row__left">
+          <span class="skill-history-row__name">${prog ? prog.name : entry.skillId}</span>
+          <span class="skill-history-row__drill">${entry.drill || ''}</span>
+        </div>
+        <div class="skill-history-row__right">
+          <span class="skill-history-row__level">L${entry.fromLevel} → L${entry.toLevel}</span>
+          <span class="skill-history-row__date">${entry.date}</span>
+        </div>`;
+      section.appendChild(row);
+    });
+
+    list.appendChild(section);
+  }
 
   showScreen('s-12');
   updateNav('skills');
