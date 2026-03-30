@@ -1288,6 +1288,71 @@ function renderProgress() {
     list.appendChild(card);
   });
 
+  // Wire export buttons every render (innerHTML resets them)
+  q('#s13-export-json').onclick = exportJSON;
+  q('#s13-export-csv').onclick  = exportCSV;
+
   showScreen('s-13');
   updateNav('progress');
+}
+
+// ─── Export ───────────────────────────────────────────────
+function shareOrDownload(filename, content, mime) {
+  const file = new File([content], filename, { type: mime });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: 'Ring App — workout log' }).catch(() => {});
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+}
+
+function exportJSON() {
+  if (!state.log.length) return;
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    week: state.currentWeek,
+    sessionCount: state.sessionCount,
+    skillLevels: state.skillLevels,
+    log: state.log,
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  shareOrDownload(
+    `ring-app-${date}.json`,
+    JSON.stringify(payload, null, 2),
+    'application/json'
+  );
+}
+
+function exportCSV() {
+  if (!state.log.length) return;
+
+  // Collect all exercise IDs seen across all sessions
+  const allExIds = [...new Set(state.log.flatMap(e => Object.keys(e.exercises || {})))];
+
+  const header = ['date', 'session', 'week', 'phase', 'duration_min', 'rpe', ...allExIds];
+  const rows = state.log.map(entry => {
+    const sess = SESSIONS.find(s => s.id === entry.sessionId);
+    const mins = Math.round((entry.durationSecs || 0) / 60);
+    const exCols = allExIds.map(id => {
+      const sets = (entry.exercises[id] || { sets: [] }).sets;
+      return sets.length ? sets.join(';') : '';
+    });
+    return [
+      entry.date,
+      sess ? sess.label : entry.sessionId,
+      entry.week || '',
+      entry.phase || '',
+      mins,
+      entry.rpe || '',
+      ...exCols,
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+  });
+
+  const csv = [header.join(','), ...rows].join('\n');
+  const date = new Date().toISOString().slice(0, 10);
+  shareOrDownload(`ring-app-${date}.csv`, csv, 'text/csv');
 }
