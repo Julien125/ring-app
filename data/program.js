@@ -90,6 +90,7 @@ export const SKILL_PROGRESSIONS = {
   'back-lever': {
     name: 'Back Lever',
     goal: 'Full back lever, straight body, 10 seconds',
+    support: ['german-hang', '360-pull'],
     progressions: [
       { level: 1, drill: 'Skin the Cat',              type: 'reps', targetReps: 5, sets: 3,
         note: 'From hang, pull knees over, pass through inverted hang, return. Slow and fully controlled.',
@@ -287,7 +288,7 @@ const COOLDOWN_PULL = [
 // type: 'reps' | 'hold'
 // targetReps: for reps type  |  targetSecs: for hold type
 
-const EX = {
+export const EX = {
 
   // ── Overhead skill (SS1 push) ──────────────────────────
   'handstand-drills': {

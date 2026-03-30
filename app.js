@@ -2,7 +2,7 @@
 //  Ring App — Main Logic
 // ─────────────────────────────────────────────────────────
 
-import { SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS } from './data/program.js';
+import { SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
 
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY  = 'ring-app-state';
@@ -431,6 +431,10 @@ function renderSkills() {
       ? `${cur.sets} × ${cur.targetSecs}s`
       : `${cur.sets} × ${cur.targetReps} reps`;
 
+    const supportHtml = prog.support && prog.support.length
+      ? `<div class="skill-card__support">Support: ${prog.support.map(id => EX[id] ? EX[id].name : id).join(' · ')}</div>`
+      : '';
+
     const el = document.createElement('div');
     el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
     el.innerHTML = `
@@ -445,6 +449,7 @@ function renderSkills() {
       <div class="skill-card__sets">${setsLabel}</div>
       ${cur.note  ? `<div class="skill-card__note">${cur.note}</div>` : ''}
       ${!achieved ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
+      ${supportHtml}
       <div class="skill-card__actions">
         <button class="skill-btn skill-btn--done" data-id="${skillId}">Mark done</button>
         ${!achieved ? `<button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>` : ''}
@@ -498,6 +503,10 @@ function renderSkillsOverview() {
       `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;background:${i < level ? 'var(--progress)' : 'var(--line-2)'}"></span>`
     ).join('');
 
+    const supportHtmlOv = prog.support && prog.support.length
+      ? `<div class="skill-card__support">Support: ${prog.support.map(id => EX[id] ? EX[id].name : id).join(' · ')}</div>`
+      : '';
+
     const el = document.createElement('div');
     el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
     el.innerHTML = `
@@ -513,6 +522,7 @@ function renderSkillsOverview() {
       <div class="skill-card__sets">${setsLabel}</div>
       ${cur.note   ? `<div class="skill-card__note">${cur.note}</div>` : ''}
       ${!achieved  ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
+      ${supportHtmlOv}
       ${!achieved  ? `<div class="skill-card__actions">
         <button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>
       </div>` : ''}`;
