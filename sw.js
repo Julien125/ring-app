@@ -1,4 +1,4 @@
-const CACHE = 'ring-app-v13';
+const CACHE = 'ring-app-v14';
 
 const FILES = [
   './',

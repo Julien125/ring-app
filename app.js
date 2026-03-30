@@ -214,13 +214,17 @@ function bindNav() {
     stopTimer(); stopStopwatch();
     renderProgress();
   });
+  q('#nav-skills').addEventListener('click', () => {
+    stopTimer(); stopStopwatch();
+    renderSkillsOverview();
+  });
 }
 
-// activeTab: 'today' | 'live' | 'progress'
+// activeTab: 'today' | 'live' | 'progress' | 'skills'
 function updateNav(activeTab) {
   const hasSession = A !== null && !A.complete;
 
-  ['today', 'live', 'progress'].forEach(tab => {
+  ['today', 'live', 'progress', 'skills'].forEach(tab => {
     const el = q(`#nav-${tab}`);
     if (!el) return;
     el.classList.toggle('active', tab === activeTab);
@@ -470,6 +474,64 @@ function levelUpSkill(skillId) {
     saveState();
     renderSkills();
   }
+}
+
+// ─── S-12 Skills Overview ─────────────────────────────────
+function renderSkillsOverview() {
+  q('#s12-week').textContent = `W${state.currentWeek}/10 · ${phase().label}`;
+
+  const list = q('#s12-list');
+  list.innerHTML = '';
+
+  Object.entries(SKILL_PROGRESSIONS).forEach(([skillId, prog]) => {
+    const level    = state.skillLevels[skillId] || 1;
+    const maxLevel = prog.progressions.length;
+    const cur      = prog.progressions[Math.min(level, maxLevel) - 1];
+    const achieved = level >= maxLevel;
+
+    const setsLabel = cur.type === 'hold'
+      ? `${cur.sets} × ${cur.targetSecs}s`
+      : `${cur.sets} × ${cur.targetReps} reps`;
+
+    // Level progress dots
+    const dots = Array.from({ length: maxLevel }, (_, i) =>
+      `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;background:${i < level ? 'var(--progress)' : 'var(--line-2)'}"></span>`
+    ).join('');
+
+    const el = document.createElement('div');
+    el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
+    el.innerHTML = `
+      <div class="skill-card__head">
+        <div class="skill-card__name">${prog.name}</div>
+        ${achieved
+          ? `<span class="skill-lvl-badge skill-lvl-badge--done">✓ Achieved</span>`
+          : `<span class="skill-lvl-badge">L${level} / ${maxLevel}</span>`}
+      </div>
+      <div style="margin-bottom:8px">${dots}</div>
+      <div class="skill-card__goal">${prog.goal}</div>
+      <div class="skill-card__drill">${cur.drill}</div>
+      <div class="skill-card__sets">${setsLabel}</div>
+      ${cur.note   ? `<div class="skill-card__note">${cur.note}</div>` : ''}
+      ${!achieved  ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
+      ${!achieved  ? `<div class="skill-card__actions">
+        <button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>
+      </div>` : ''}`;
+
+    const upBtn = el.querySelector('.skill-btn--up');
+    if (upBtn) upBtn.addEventListener('click', () => {
+      const current = state.skillLevels[skillId] || 1;
+      if (current < prog.progressions.length) {
+        state.skillLevels[skillId] = current + 1;
+        saveState();
+        renderSkillsOverview();
+      }
+    });
+
+    list.appendChild(el);
+  });
+
+  showScreen('s-12');
+  updateNav('skills');
 }
 
 // ─── S-02 Overview ────────────────────────────────────────

@@ -696,6 +696,28 @@ const ssLegsPosterior = {
   ],
 };
 
+// Variant B — Thursday anterior (3s descent + eyes closed for pistol; 3×12 sissy)
+const ssLegsAnteriorB = {
+  id: 'D', label: 'Legs — Anterior Chain', rings: 'none', rounds: 1,
+  restIntra: 60, restRound: 90,
+  exercises: [
+    { ...EX['pistol-squat'],           note: '3s descent · eyes closed — proprioception challenge' },
+    { ...EX['sissy-squat'],            targetReps: 12 },
+    { ...EX['single-leg-calf-raise'],  note: 'Bent knee — soleus focus' },
+  ],
+};
+
+// Variant B — Saturday posterior (3×6 explosive nordic; weighted SL deadlift; foot-elevated bridge)
+const ssLegsPosteriorB = {
+  id: 'D', label: 'Legs — Posterior Chain', rings: 'none', rounds: 1,
+  restIntra: 60, restRound: 90,
+  exercises: [
+    { ...EX['nordic-curl'],             targetReps: 6,  note: 'Explosive descent — use hands to push back up if needed' },
+    { ...EX['single-leg-deadlift'],     note: 'Weighted KB · 3s pause at bottom — eccentric emphasis' },
+    { ...EX['single-leg-glute-bridge'], targetReps: 10, note: 'Foot elevated · weighted KB on hip — full glute stretch' },
+  ],
+};
+
 // ─── Superset builders ────────────────────────────────────
 
 function ssOverheadSkill(coreFinisher) {
@@ -745,7 +767,7 @@ const ssSkillPower = {
   id: 'A', label: 'Skill & Power', rings: 'high', rounds: 3,
   restIntra: 25, restRound: 90,
   exercises: [
-    EX['ring-handstand'],
+    EX['front-lever-hold'],
     EX['chest-to-bar'],
     EX['typewriter'],
     EX['false-grip-dead-hang'],
@@ -831,7 +853,7 @@ export const SESSIONS = [
       ssOverheadSkill(EX['hollow-body-hold']),
       ssHeavyDips(EX['windshield-wipers']),
       ssIsolationPush,
-      ssLegsAnterior,
+      ssLegsAnteriorB,
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -846,7 +868,7 @@ export const SESSIONS = [
       ssSkillPower,
       ssStrengthVolume(EX['windmill']),
       ssIsolationPull,
-      ssLegsPosterior,
+      ssLegsPosteriorB,
     ],
     cooldown: COOLDOWN_PULL,
   },
