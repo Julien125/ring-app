@@ -410,6 +410,15 @@ const EX = {
     muscles: { primary: ['calves'], secondary: [] },
   },
 
+  // ── Ring handstand ────────────────────────────────────
+  'ring-handstand': {
+    id: 'ring-handstand', name: 'Ring Handstand',
+    category: 'shoulder', type: 'hold', targetSecs: 10,
+    desc: 'Kick up to a handstand on rings. The unstable surface demands extreme serratus activation, scapular stability, and full-body tension. Start wall-assisted, progress to freestanding.',
+    note: 'Balance + scapular stability — fresh CNS only',
+    muscles: { primary: ['shoulders', 'serratus', 'core'], secondary: ['triceps', 'front-delt'] },
+  },
+
   // ── Skill support ─────────────────────────────────────
   'false-grip-dead-hang': {
     id: 'false-grip-dead-hang', name: 'False Grip Dead Hang',
@@ -542,7 +551,7 @@ const ssSkillPower = {
   id: 'A', label: 'Skill & Power', rings: 'high', rounds: 3,
   restIntra: 25, restRound: 90,
   exercises: [
-    EX['front-lever-hold'],
+    EX['ring-handstand'],
     EX['chest-to-bar'],
     EX['typewriter'],
     EX['false-grip-dead-hang'],
@@ -611,6 +620,7 @@ export const SESSIONS = [
     type: 'pull', label: 'Pull 1',
     focus: 'Posterior legs · IAP + rotation core',
     skills: [
+      { name: 'Front Lever', drill: 'Full Front Lever Hold', sets: '2 × 5s', note: 'Achieved — maintenance only. Straight body, arms locked, hips level. 2 sets, stop at first sign of shoulder fatigue.' },
       { name: 'Iron Cross', drill: 'Cross Lean + Support Hold', sets: '4 × 10s', note: 'Rings at hip height, arms fully extended out to sides. Engage lats hard, no shrugging.' },
       { name: 'Back Lever', drill: 'Skin the Cat + Tuck Back Lever', sets: '3 × 15s', note: 'Skin the cat, pause in tuck back lever. Push rings down, squeeze glutes.' },
     ],
