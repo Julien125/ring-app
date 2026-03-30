@@ -214,6 +214,106 @@
       border-color: var(--line);
     }
 
+    /* Skill progression cards */
+    .skill-card {
+      padding: 16px var(--px);
+      border-bottom: 1px solid var(--line);
+    }
+    .skill-card--achieved { opacity: 0.8; }
+    .skill-card__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+    .skill-card__name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--txt);
+    }
+    .skill-lvl-badge {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: rgba(108,127,216,0.12);
+      color: var(--cat-pull);
+      border: 1px solid rgba(108,127,216,0.25);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .skill-lvl-badge--done {
+      background: rgba(43,168,138,0.12);
+      color: var(--cat-core);
+      border-color: rgba(43,168,138,0.25);
+    }
+    .skill-card__goal {
+      font-size: 11px;
+      color: var(--txt-3);
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .skill-card__drill {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--txt-2);
+      margin-bottom: 2px;
+    }
+    .skill-card__sets {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(212,160,23,0.9);
+      margin-bottom: 6px;
+    }
+    .skill-card__note {
+      font-family: 'DM Mono', monospace;
+      font-size: 9.5px;
+      color: var(--txt-3);
+      font-style: italic;
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    .skill-card__criteria {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--txt-3);
+      padding: 5px 8px;
+      background: rgba(255,255,255,0.03);
+      border-left: 2px solid var(--line-2);
+      margin-bottom: 12px;
+    }
+    .skill-card__actions { display: flex; gap: 8px; }
+    .skill-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: background 0.15s, color 0.15s;
+    }
+    .skill-btn--done {
+      background: rgba(43,168,138,0.1);
+      color: var(--cat-core);
+      border: 1px solid rgba(43,168,138,0.2);
+    }
+    .skill-btn--done.is-done {
+      background: var(--cat-core);
+      color: #fff;
+    }
+    .skill-btn--up {
+      background: rgba(212,160,23,0.08);
+      color: rgba(212,160,23,0.9);
+      border: 1px solid rgba(212,160,23,0.2);
+    }
+
     /* Home screen */
     .home-hero {
       flex: 1;
@@ -561,17 +661,17 @@
   <!-- ── S-08 Skill block ───────────────────────────────── -->
   <section id="s-08" class="screen">
     <div class="status-bar px-screen">
-      <span class="t-label">Skills</span>
+      <span class="t-label">Skill Block</span>
       <span id="s08-session" class="t-label"></span>
     </div>
-    <div class="px-screen mt-3 mb-4">
-      <div class="t-display-sm">Skill Block</div>
-      <div class="t-body mt-2">Log each skill as done or skip to continue to the strength block.</div>
+    <div class="px-screen mt-3 mb-2">
+      <div class="t-display-sm">Skills</div>
+      <div class="t-body mt-1" style="color:var(--txt-3);font-size:12px">Work each drill. Tap Level Up when you consistently hit the criteria.</div>
     </div>
     <div id="s08-list"></div>
     <div style="flex:1"></div>
     <div class="px-screen" style="padding-bottom:24px">
-      <button id="s08-cta" class="btn-primary mb-nav">Continue to strength</button>
+      <button id="s08-cta" class="btn-primary mb-nav">Continue to strength →</button>
     </div>
   </section>
 

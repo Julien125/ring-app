@@ -2,7 +2,7 @@
 //  Ring App — Main Logic
 // ─────────────────────────────────────────────────────────
 
-import { SESSIONS, PHASES, VOLUME } from './data/program.js';
+import { SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS } from './data/program.js';
 
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY  = 'ring-app-state';
@@ -10,7 +10,21 @@ const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
 
 // ─── State ────────────────────────────────────────────────
-let state = { currentWeek: 1, sessionCount: 0, log: [] };
+let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {} };
+
+// Default skill levels — front-lever pre-set to 5 (achieved)
+const DEFAULT_SKILL_LEVELS = {
+  'planche':             1,
+  'shoulderstand-press': 1,
+  'muscle-up':           1,
+  'iron-cross':          1,
+  'back-lever':          1,
+  'manna':               1,
+  'ring-handstand':      1,
+  'front-lever':         5,
+  'forward-roll':        1,
+  'backward-roll':       1,
+};
 
 // active session (ephemeral, persisted for resume)
 let A = null;
@@ -53,6 +67,8 @@ function loadState() {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) state = { ...state, ...JSON.parse(s) };
+    // Merge skill levels: preserve saved, fill missing with defaults
+    state.skillLevels = { ...DEFAULT_SKILL_LEVELS, ...(state.skillLevels || {}) };
     const a = localStorage.getItem(ACTIVE_KEY);
     if (a) A = JSON.parse(a);
   } catch (_) {}
@@ -397,36 +413,63 @@ function renderSkills() {
 
   const list = q('#s08-list');
   list.innerHTML = '';
-  const doneSet = new Set();
 
-  sess.skills.forEach((skill, i) => {
-    // Support both old string format and new object format
-    const name  = typeof skill === 'string' ? skill : skill.name;
-    const drill = typeof skill === 'string' ? null  : skill.drill;
-    const sets  = typeof skill === 'string' ? null  : skill.sets;
-    const note  = typeof skill === 'string' ? null  : skill.note;
+  sess.skills.forEach(skillId => {
+    const prog = SKILL_PROGRESSIONS[skillId];
+    if (!prog) return;
+
+    const level    = state.skillLevels[skillId] || 1;
+    const maxLevel = prog.progressions.length;
+    const cur      = prog.progressions[Math.min(level, maxLevel) - 1];
+    const achieved = level >= maxLevel;
+
+    const setsLabel = cur.type === 'hold'
+      ? `${cur.sets} × ${cur.targetSecs}s`
+      : `${cur.sets} × ${cur.targetReps} reps`;
 
     const el = document.createElement('div');
-    el.className = 'skill-item skill-item--full';
+    el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
     el.innerHTML = `
-      <div class="skill-item__content">
-        <div class="skill-item__name">${name}</div>
-        ${drill ? `<div class="skill-item__drill">${drill}</div>` : ''}
-        ${sets  ? `<div class="skill-item__sets">${sets}</div>` : ''}
-        ${note  ? `<div class="skill-item__note">${note}</div>` : ''}
+      <div class="skill-card__head">
+        <div class="skill-card__name">${prog.name}</div>
+        ${achieved
+          ? `<span class="skill-lvl-badge skill-lvl-badge--done">✓ Achieved</span>`
+          : `<span class="skill-lvl-badge">L${level} / ${maxLevel}</span>`}
       </div>
-      <div class="skill-badge" data-i="${i}">Mark done</div>`;
-    const badge = el.querySelector('.skill-badge');
-    badge.addEventListener('click', () => {
-      if (doneSet.has(i)) { doneSet.delete(i); badge.textContent = 'Mark done'; badge.classList.remove('done'); }
-      else { doneSet.add(i); badge.textContent = 'Done ✓'; badge.classList.add('done'); }
+      <div class="skill-card__goal">${prog.goal}</div>
+      <div class="skill-card__drill">${cur.drill}</div>
+      <div class="skill-card__sets">${setsLabel}</div>
+      ${cur.note  ? `<div class="skill-card__note">${cur.note}</div>` : ''}
+      ${!achieved ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
+      <div class="skill-card__actions">
+        <button class="skill-btn skill-btn--done" data-id="${skillId}">Mark done</button>
+        ${!achieved ? `<button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>` : ''}
+      </div>`;
+
+    el.querySelector('.skill-btn--done').addEventListener('click', e => {
+      e.currentTarget.classList.toggle('is-done');
+      e.currentTarget.textContent = e.currentTarget.classList.contains('is-done') ? '✓ Done' : 'Mark done';
     });
+    const upBtn = el.querySelector('.skill-btn--up');
+    if (upBtn) upBtn.addEventListener('click', () => levelUpSkill(skillId));
+
     list.appendChild(el);
   });
 
   q('#s08-cta').onclick = () => { A.skillsDone = true; saveActive(); renderOverview(); };
   showScreen('s-08');
   updateNav('live');
+}
+
+function levelUpSkill(skillId) {
+  const prog = SKILL_PROGRESSIONS[skillId];
+  if (!prog) return;
+  const current = state.skillLevels[skillId] || 1;
+  if (current < prog.progressions.length) {
+    state.skillLevels[skillId] = current + 1;
+    saveState();
+    renderSkills();
+  }
 }
 
 // ─── S-02 Overview ────────────────────────────────────────
