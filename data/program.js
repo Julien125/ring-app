@@ -14,11 +14,23 @@ export const VOLUME = {
   ],
 };
 
+// ─── Mesocycle: 10 weeks ─────────────────────────────────
+//  Weeks  1–3  Strength I   : base volume, learn the movements
+//  Weeks  4–6  Strength II  : same volume, harder execution (tempo, pauses)
+//  Weeks  7–9  Hypertrophy  : +25% rounds, +40% reps — volume peak
+//  Week   10   Deload       : 60% of working volume, recover without losing gains
+// ─────────────────────────────────────────────────────────
 export const PHASES = {
-  1: { label: 'Strength I',  roundMult: 1,    repMult: 1    },
-  2: { label: 'Strength II', roundMult: 1,    repMult: 1.1  },
-  3: { label: 'Hypertrophy', roundMult: 1.33, repMult: 1.5  },
-  4: { label: 'Deload',      roundMult: 0.67, repMult: 0.5  },
+  1:  { label: 'Strength I',  phaseWeek: 1, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 1.0 },
+  2:  { label: 'Strength I',  phaseWeek: 2, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 1.0 },
+  3:  { label: 'Strength I',  phaseWeek: 3, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 1.0 },
+  4:  { label: 'Strength II', phaseWeek: 1, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 0.9 },
+  5:  { label: 'Strength II', phaseWeek: 2, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 0.9 },
+  6:  { label: 'Strength II', phaseWeek: 3, phaseTotalWeeks: 3, roundMult: 1.0,  repMult: 0.9 },
+  7:  { label: 'Hypertrophy', phaseWeek: 1, phaseTotalWeeks: 3, roundMult: 1.25, repMult: 1.4 },
+  8:  { label: 'Hypertrophy', phaseWeek: 2, phaseTotalWeeks: 3, roundMult: 1.25, repMult: 1.4 },
+  9:  { label: 'Hypertrophy', phaseWeek: 3, phaseTotalWeeks: 3, roundMult: 1.25, repMult: 1.4 },
+  10: { label: 'Deload',      phaseWeek: 1, phaseTotalWeeks: 1, roundMult: 0.6,  repMult: 0.6 },
 };
 
 // ─── Warmups ─────────────────────────────────────────────

@@ -155,6 +155,29 @@ function q(sel) { return document.querySelector(sel); }
 // ─── Phase helpers ────────────────────────────────────────
 function phase() { return PHASES[state.currentWeek] || PHASES[1]; }
 
+// How many sessions remain until the phase label changes (for countdown badge)
+function sessionsUntilPhaseChange() {
+  const currentLabel = phase().label;
+  let w = state.currentWeek;
+  let weeksLeft = 0;
+  while (w <= 10 && (PHASES[w] || PHASES[1]).label === currentLabel) {
+    weeksLeft++;
+    w++;
+  }
+  const sessInCurrentWeek = 4 - (state.sessionCount % 4);
+  return sessInCurrentWeek + (weeksLeft - 1) * 4;
+}
+
+// Label of the phase that follows the current one
+function nextPhaseName() {
+  const currentLabel = phase().label;
+  for (let w = state.currentWeek + 1; w <= 11; w++) {
+    const p = PHASES[w] || PHASES[1]; // wraps to meso start
+    if (p.label !== currentLabel) return p.label;
+  }
+  return PHASES[1].label;
+}
+
 function getTargetReps(ex) {
   const mult = phase().repMult;
   if (ex.type === 'hold') return ex.targetSecs;
@@ -242,20 +265,21 @@ function renderHome() {
   // Date + week
   const now = new Date();
   q('#s01-date').textContent = now.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' });
-  q('#s01-week').textContent = `Week ${state.currentWeek} · ${ph.label}`;
+  q('#s01-week').textContent = `W${state.currentWeek}/10 · ${ph.label} (${ph.phaseWeek}/${ph.phaseTotalWeeks})`;
 
   // Week progress dots — Mon / Wed / Thu / Sat
   renderWeekDots();
 
   // Streak + phase countdown
   const streak = getStreak();
-  const sessLeft = 4 - (state.sessionCount % 4);
-  const nextWeek = state.currentWeek < 4 ? state.currentWeek + 1 : 1;
-  const nextPhaseLabel = (PHASES[nextWeek] || PHASES[1]).label;
+  const sessUntilPhaseChange = sessionsUntilPhaseChange();
+  const nextPhaseLabel = nextPhaseName();
   const metaEl = q('#s01-meta');
   if (metaEl) {
-    const streakHtml  = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
-    const phaseHtml   = sessLeft <= 4 ? `<span class="meta-badge">${sessLeft} session${sessLeft !== 1 ? 's' : ''} → ${nextPhaseLabel}</span>` : '';
+    const streakHtml = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
+    const phaseHtml  = sessUntilPhaseChange <= 8
+      ? `<span class="meta-badge">${sessUntilPhaseChange} session${sessUntilPhaseChange !== 1 ? 's' : ''} → ${nextPhaseLabel}</span>`
+      : '';
     metaEl.innerHTML  = streakHtml + phaseHtml;
     metaEl.style.display = (streakHtml || phaseHtml) ? '' : 'none';
   }
@@ -866,9 +890,9 @@ function finishSession() {
   state.log.push(entry);
   state.sessionCount++;
 
-  // Advance week every 4 sessions
+  // Advance week every 4 sessions (mesocycle = 10 weeks)
   if (state.sessionCount % 4 === 0) {
-    state.currentWeek = state.currentWeek < 4 ? state.currentWeek + 1 : 1;
+    state.currentWeek = state.currentWeek < 10 ? state.currentWeek + 1 : 1;
   }
 
   saveState();
@@ -1108,7 +1132,7 @@ function renderWeekDots() {
 // ─── S-13 Progress ────────────────────────────────────────
 function renderProgress() {
   const ph = phase();
-  q('#s13-week').textContent = `Week ${state.currentWeek} · ${ph.label}`;
+  q('#s13-week').textContent = `W${state.currentWeek}/10 · ${ph.label} (${ph.phaseWeek}/${ph.phaseTotalWeeks})`;
 
   const list = q('#s13-list');
   list.innerHTML = '';
