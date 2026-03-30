@@ -1,0 +1,412 @@
+// ─── Exercise library ─────────────────────────────────────
+// category: 'pull' | 'core' | 'shoulder' | 'lowback' | 'straight' | 'pelican' | 'legs'
+// type: 'reps' | 'hold'
+// targetReps: for reps type  |  targetSecs: for hold type
+
+export const EX = {
+
+  // ── Overhead skill (SS A push) ────────────────────────
+  'handstand-drills': {
+    id: 'handstand-drills', name: 'Handstand Drills',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Kick up to a wall handstand and hold. Stack shoulders over wrists, hollow body, toes pointed. Exit with control.',
+    note: 'Neural — fully fresh CNS',
+    muscles: { primary: ['shoulders', 'core'], secondary: ['front-delt', 'serratus'] },
+  },
+  'hspu': {
+    id: 'hspu', name: 'HSPU',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Kick up to wall handstand. Lower head to floor with a 3s descent, then press back to full lockout. Full range only.',
+    note: 'Max overhead press',
+    muscles: { primary: ['shoulders', 'front-delt', 'triceps'], secondary: ['serratus', 'core'] },
+  },
+  'straight-bar-dips': {
+    id: 'straight-bar-dips', name: 'Straight Bar Dips',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Grip a straight bar in support position. Lower chest to bar with elbows flaring wide, lean forward slightly, then press to lockout.',
+    note: 'Chest + triceps compound',
+    muscles: { primary: ['chest', 'triceps'], secondary: ['front-delt', 'shoulders'] },
+  },
+  'pseudo-planche-lean': {
+    id: 'pseudo-planche-lean', name: 'Pseudo Planche Lean',
+    category: 'straight', type: 'hold', targetSecs: 20,
+    desc: 'Push-up position, fingers pointing back. Lean shoulders forward past wrists, arms fully straight, scapulas protracted. Hold — do not bend elbows.',
+    note: 'Serratus + scapular protraction',
+    muscles: { primary: ['serratus', 'front-delt'], secondary: ['triceps', 'core'] },
+  },
+  'dragon-flag': {
+    id: 'dragon-flag', name: 'Dragon Flag',
+    category: 'core', type: 'reps', targetReps: 5,
+    desc: 'Lying on a bench, grip behind your head. Keep the whole body rigid and lower legs-first until nearly horizontal, then pull back up. Control the descent entirely.',
+    note: 'Anti-extension',
+    muscles: { primary: ['core'], secondary: ['lower-back', 'shoulders'] },
+  },
+  'copenhagen-plank': {
+    id: 'copenhagen-plank', name: 'Copenhagen Plank',
+    category: 'core', type: 'hold', targetSecs: 20,
+    desc: 'Side plank with the top leg resting on a bench. Bottom leg hangs free. Hold the body in a straight line — engages obliques and inner thigh simultaneously.',
+    note: 'Anti-lateral — adductor + oblique',
+    muscles: { primary: ['core'], secondary: ['glutes', 'hamstrings'] },
+  },
+  'hollow-body-hold': {
+    id: 'hollow-body-hold', name: 'Hollow Body Hold',
+    category: 'core', type: 'hold', targetSecs: 20,
+    desc: 'Lie on back, press lower back firmly into the floor. Raise legs to ~45° and arms overhead. Hold the dish shape — squeeze abs and exhale fully.',
+    note: 'Anti-extension variation',
+    muscles: { primary: ['core'], secondary: ['lower-back'] },
+  },
+
+  // ── Heavy dips (SS B push) ────────────────────────────
+  'bulgarian-dips': {
+    id: 'bulgarian-dips', name: 'Bulgarian Dips',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Rings behind you at mid height, hands gripping behind. Lower into a deep dip — lean forward, let rings flare wide for a deep pec stretch, then press up.',
+    note: 'Deep pec stretch, rings mid',
+    muscles: { primary: ['chest', 'front-delt'], secondary: ['triceps', 'shoulders'] },
+  },
+  'korean-dips': {
+    id: 'korean-dips', name: 'Korean Dips',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Rings or bar behind you at hip height, grip overhand. Lower into a posterior dip — elbows track back, not out. Targets rear delt and long-head triceps.',
+    note: 'Posterior shoulder',
+    muscles: { primary: ['rear-delt', 'triceps'], secondary: ['shoulders', 'chest'] },
+  },
+  'archer-push-up': {
+    id: 'archer-push-up', name: 'Archer Push Up',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Wide push-up position. Lower to one side while the other arm extends fully straight. Each rep is unilateral — a stepping stone toward one-arm push-up.',
+    note: 'Unilateral load',
+    muscles: { primary: ['chest', 'triceps'], secondary: ['shoulders', 'core'] },
+  },
+  'side-plank-thread': {
+    id: 'side-plank-thread', name: 'Side Plank + Thread Needle',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Side plank on one hand. Reach the free arm under your body (threading the needle), then extend it up to the ceiling. Rotate controlled — obliques and serratus.',
+    note: 'Anti-lateral + rotation',
+    muscles: { primary: ['core', 'serratus'], secondary: ['glutes', 'shoulders'] },
+  },
+  'windshield-wipers': {
+    id: 'windshield-wipers', name: 'Windshield Wipers',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Hang from a bar, legs straight and raised to 90°. Rotate legs side to side in a wide arc like windshield wipers. All rotation from the obliques — control the swing.',
+    note: 'Rotational power — bar',
+    muscles: { primary: ['core'], secondary: ['lower-back', 'shoulders'] },
+  },
+  'ring-dip-deep': {
+    id: 'ring-dip-deep', name: 'Ring Dip — Deep Pause',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Ring dip with a deliberate 3-second pause at the bottom. Elbows at 90°, rings allowed to flare. Builds the chest and shoulder strength needed to push out of the muscle up transition.',
+    note: 'MU transition strength — 3s pause at bottom',
+    muscles: { primary: ['chest', 'triceps'], secondary: ['shoulders', 'serratus'] },
+  },
+
+  // ── Isolation (SS C push) — 5 exercises ──────────────
+  'ring-fly': {
+    id: 'ring-fly', name: 'Ring Fly',
+    category: 'shoulder', type: 'reps', targetReps: 10,
+    desc: 'Ring push-up position, arms nearly straight. Open arms out wide to the sides feeling a deep pec stretch, then pull them back together at the top. Slow eccentric.',
+    note: 'Chest isolation',
+    muscles: { primary: ['chest', 'front-delt'], secondary: ['shoulders'] },
+  },
+  'push-up-rto': {
+    id: 'push-up-rto', name: 'Push Up RTO',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Standard ring push-up. At the lockout, actively rotate the rings outward (RTO) to externally rotate and engage serratus. Hold the top position a moment.',
+    note: 'Rings turned out at lockout',
+    muscles: { primary: ['chest', 'triceps', 'serratus'], secondary: ['shoulders'] },
+  },
+  'ring-overhead-ext': {
+    id: 'ring-overhead-ext', name: 'Ring Overhead Extension',
+    category: 'shoulder', type: 'reps', targetReps: 10,
+    desc: 'Plank on rings, hands overhead. Bend elbows back overhead to lower your head between the rings, then extend back. Long-head triceps under full stretch.',
+    note: 'Triceps long head',
+    muscles: { primary: ['triceps'], secondary: ['shoulders', 'serratus'] },
+  },
+  'pike-push-up': {
+    id: 'pike-push-up', name: 'Pike Push Up',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Hips high in a pike / downward-dog position. Bend elbows and lower your head toward the floor between your hands, then press back up. Overhead-press pattern.',
+    note: 'Overhead prep bridge',
+    muscles: { primary: ['shoulders', 'front-delt'], secondary: ['triceps', 'serratus'] },
+  },
+  'russian-push-up': {
+    id: 'russian-push-up', name: 'Russian Push Up + Lateral Raise',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Lower to the floor in a push-up, then extend arms forward into a superman lateral-raise position, then press back up. Combines push strength with rear-delt health.',
+    note: 'Shoulder health',
+    muscles: { primary: ['lateral-delt', 'serratus'], secondary: ['shoulders', 'core'] },
+  },
+  'l-sit': {
+    id: 'l-sit', name: 'L-sit',
+    category: 'core', type: 'hold', targetSecs: 10,
+    desc: 'From support on rings or parallettes, lift straight legs to 90°. Posterior pelvic tilt, quads tight, toes pointed. Arms fully locked out.',
+    note: 'Hip flexor — isometric',
+    muscles: { primary: ['core'], secondary: ['shoulders', 'triceps'] },
+  },
+  'side-bend': {
+    id: 'side-bend', name: 'Loaded Side Bend',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Stand upright, KB or DB in one hand hanging at your side. Allow the weight to slowly pull you into a lateral bend, then drive back to upright through the obliques. Full range — feel the stretch at the bottom. Switch sides.',
+    note: 'Lateral flexion — oblique + QL',
+    muscles: { primary: ['core'], secondary: ['lower-back'] },
+  },
+  'wrist-extension-hold': {
+    id: 'wrist-extension-hold', name: 'Wrist Extension Hold',
+    category: 'shoulder', type: 'hold', targetSecs: 20,
+    desc: 'On hands and knees, rotate wrists so fingers point back toward your knees. Gradually shift bodyweight forward over the wrists. The wrist extension range required for manna is the most overlooked limiting factor.',
+    note: 'Manna prerequisite — wrist mobility + strength',
+    muscles: { primary: ['forearms'], secondary: [] },
+  },
+
+  // ── Skill & power (SS A pull) ─────────────────────────
+  'front-lever-hold': {
+    id: 'front-lever-hold', name: 'Front Lever Hold',
+    category: 'straight', type: 'hold', targetSecs: 5,
+    desc: 'From a bar hang, pull your body horizontal face-up with straight arms. Body completely rigid. Progress: tuck → advanced tuck → straddle → full.',
+    note: 'Static skill — fresh CNS',
+    muscles: { primary: ['lats', 'rear-delt', 'core'], secondary: ['biceps', 'serratus'] },
+  },
+  'chest-to-bar': {
+    id: 'chest-to-bar', name: 'Chest to Bar',
+    category: 'pull', type: 'reps', targetReps: 5,
+    desc: 'Explosive pull-up — pull until the bar contacts your upper chest / sternum. Lean back slightly, drive elbows down hard. Reset fully at the bottom.',
+    note: 'Explosive pull',
+    muscles: { primary: ['lats', 'biceps'], secondary: ['rear-delt', 'core'] },
+  },
+  '360-pull': {
+    id: '360-pull', name: '360 Pull',
+    category: 'pull', type: 'reps', targetReps: 3,
+    desc: 'From a dead hang, generate a kip/swing and pull explosively, using the momentum to rotate your body through a full 360° around the bar while keeping the grip. Land back in a hang. All rotation comes from the pull — not a swing. Control the return.',
+    note: 'Dynamic rotational power — bar',
+    muscles: { primary: ['lats', 'core'], secondary: ['biceps', 'rear-delt', 'shoulders'] },
+  },
+  'typewriter': {
+    id: 'typewriter', name: 'Typewriter',
+    category: 'pull', type: 'reps', targetReps: 5,
+    desc: 'Pull up to the top with bar at chest. While holding, traverse side to side — extend one arm, shift across, then bend the other. Controlled lateral movement at peak.',
+    note: 'Lateral unilateral pull',
+    muscles: { primary: ['lats', 'biceps'], secondary: ['rear-delt', 'core'] },
+  },
+  'false-grip-dead-hang': {
+    id: 'false-grip-dead-hang', name: 'False Grip Dead Hang',
+    category: 'pull', type: 'hold', targetSecs: 20,
+    desc: 'Hang from bar or rings with a false grip — wrist draped over the bar, not fingers wrapped around it. Let shoulders depress fully. Conditions the exact wrist position required for the muscle up.',
+    note: 'MU prerequisite — wrist + grip conditioning',
+    muscles: { primary: ['forearms', 'lats'], secondary: ['biceps', 'shoulders'] },
+  },
+  'tuck-to-l': {
+    id: 'tuck-to-l', name: 'Tuck to L — Dynamic',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'From a dead hang, pull knees to chest (tuck), then extend legs straight out into an L-sit position. Hold briefly, then return. Trains hip flexion dynamically.',
+    note: 'Hip flexor through range',
+    muscles: { primary: ['core'], secondary: ['lats', 'shoulders'] },
+  },
+  'superman-hold': {
+    id: 'superman-hold', name: 'Superman Hold',
+    category: 'lowback', type: 'hold', targetSecs: 10,
+    desc: 'Lie face down, arms extended overhead. Simultaneously lift arms, chest, and legs off the floor. Squeeze glutes and lower back. Chin stays neutral — no neck cranking.',
+    note: 'Posterior — active rest',
+    muscles: { primary: ['lower-back', 'glutes'], secondary: ['hamstrings'] },
+  },
+
+  // ── Strength volume (SS B pull) ───────────────────────
+  'wide-pull-up': {
+    id: 'wide-pull-up', name: 'Wide Pull Up',
+    category: 'pull', type: 'reps', targetReps: 8,
+    desc: 'Pull-up with hands wider than shoulder-width. Full dead hang at the bottom. Drive elbows down and back — lead with the elbows, not the hands.',
+    note: 'Lat width',
+    muscles: { primary: ['lats'], secondary: ['biceps', 'rear-delt'] },
+  },
+  'archer-pull-up': {
+    id: 'archer-pull-up', name: 'Archer Pull Up',
+    category: 'pull', type: 'reps', targetReps: 5,
+    desc: 'Wide-grip pull-up where you pull toward one side — one arm does most of the work while the other extends straight. Alternate sides. A one-arm pull-up progression.',
+    note: 'Unilateral lat strength',
+    muscles: { primary: ['lats', 'biceps'], secondary: ['rear-delt', 'core'] },
+  },
+  'commande': {
+    id: 'commande', name: 'Commande',
+    category: 'pull', type: 'reps', targetReps: 8,
+    desc: 'Neutral (hammer) grip pull-up with hands facing each other. Emphasizes brachialis and mid-back over biceps. Full range, slow descent.',
+    note: 'Neutral grip — brachialis',
+    muscles: { primary: ['brachialis', 'lats'], secondary: ['biceps'] },
+  },
+  'ice-cream-maker': {
+    id: 'ice-cream-maker', name: 'Ice-cream Maker',
+    category: 'pull', type: 'reps', targetReps: 8,
+    desc: 'From a front lever position on rings, curl your body up in a rotating arc (like scooping ice cream) into a pull-up position. A dynamic front-lever to pull-up transition.',
+    note: 'Rotational lat arc',
+    muscles: { primary: ['lats', 'serratus'], secondary: ['biceps', 'rear-delt'] },
+  },
+  'dead-bug': {
+    id: 'dead-bug', name: 'Dead Bug',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Lying on back, arms vertical, knees at 90°. Slowly lower one arm overhead and the opposite leg toward the floor simultaneously. Lower back stays flat the entire time.',
+    note: 'IAP + contralateral — active rest',
+    muscles: { primary: ['core'], secondary: ['lower-back'] },
+  },
+  'windmill': {
+    id: 'windmill', name: 'Windmill',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Stand with a weight held overhead in one hand, arm locked out. Hinge laterally, reaching the free hand down toward your foot on the same side. Keep the top arm vertical.',
+    note: 'Lateral + oblique rotation',
+    muscles: { primary: ['core'], secondary: ['lower-back', 'shoulders'] },
+  },
+  'l-sit-pike-press': {
+    id: 'l-sit-pike-press', name: 'L-sit Pike Press',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Hold an L-sit, then compress further by pressing legs up into a V / pike position. Targets hip flexors at short range. Arms stay locked, chest tall.',
+    note: 'Compression + hip flexors',
+    muscles: { primary: ['core', 'shoulders'], secondary: ['triceps', 'serratus'] },
+  },
+  'back-extension': {
+    id: 'back-extension', name: 'Back Extension',
+    category: 'lowback', type: 'reps', targetReps: 10,
+    desc: 'Face down on a GHD or bench. Lower torso toward the floor, then extend back to parallel. Erector training — chin neutral, squeeze glutes at the top, no hyperextension.',
+    note: 'Erectors — active rest',
+    muscles: { primary: ['lower-back'], secondary: ['glutes', 'hamstrings'] },
+  },
+  'planche-lean': {
+    id: 'planche-lean', name: 'Planche Lean',
+    category: 'straight', type: 'hold', targetSecs: 15,
+    desc: 'Push-up position, fingers pointing back. Lean shoulders forward past your hands, arms straight, scapulas protracted. This locks in the planche motor pattern.',
+    note: 'Serratus — motor pattern',
+    muscles: { primary: ['serratus', 'front-delt'], secondary: ['triceps', 'core'] },
+  },
+
+  // ── Isolation + health (SS C pull) — 7 exercises ─────
+  'row': {
+    id: 'row', name: 'Row',
+    category: 'pull', type: 'reps', targetReps: 10,
+    desc: 'Hang under rings or bar and pull your chest up to the handles. Retract scapulas at the top. Adjust body angle for difficulty — more horizontal means harder.',
+    note: 'Mid back, retraction',
+    muscles: { primary: ['lats', 'rear-delt'], secondary: ['biceps', 'brachialis'] },
+  },
+  'pelican-curl': {
+    id: 'pelican-curl', name: 'Pelican Curl',
+    category: 'pelican', type: 'reps', targetReps: 8,
+    desc: 'On low rings facing away, lean forward with arms extended behind you. Let your body drop forward, deeply stretching the biceps, then curl back up. Long-range bicep work.',
+    note: 'Bicep isolation',
+    muscles: { primary: ['biceps'], secondary: ['brachialis'] },
+  },
+  'ring-hammer-curl': {
+    id: 'ring-hammer-curl', name: 'Ring Hammer Curl',
+    category: 'pull', type: 'reps', targetReps: 10,
+    desc: 'Ring curl with a neutral (palms facing each other) grip throughout. Emphasizes brachialis and brachioradialis more than a supinated curl. Full hang to full flex.',
+    note: 'Neutral — brachialis',
+    muscles: { primary: ['brachialis', 'biceps'], secondary: [] },
+  },
+  'ring-y-raise': {
+    id: 'ring-y-raise', name: 'Ring Y-raise',
+    category: 'pull', type: 'reps', targetReps: 12,
+    desc: 'Face rings at a low angle, arms hanging. Raise both arms out to a wide Y overhead, squeezing lower traps and rear delts. Very slow and controlled — this is not a pull.',
+    note: 'Lower trap — arms wide',
+    muscles: { primary: ['rear-delt', 'lower-back'], secondary: ['serratus'] },
+  },
+  'face-pull': {
+    id: 'face-pull', name: 'Face Pull',
+    category: 'pull', type: 'reps', targetReps: 12,
+    desc: 'Face rings at head height. Pull handles to your forehead or ears with elbows high and wide. External rotation of the shoulder — essential for long-term pressing health.',
+    note: 'Rear delt + external rotation',
+    muscles: { primary: ['rear-delt', 'lateral-delt'], secondary: ['shoulders'] },
+  },
+  'pallof-press': {
+    id: 'pallof-press', name: 'Pallof Press',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Band or cable anchored at mid-chest height. Stand perpendicular to the anchor. Hands at sternum, press straight out to full extension and pause, then return. The band continuously tries to rotate you — resist it completely. Switch sides.',
+    note: 'Anti-rotation — both sides',
+    muscles: { primary: ['core'], secondary: ['lower-back', 'serratus'] },
+  },
+  'cross-body-band-hold': {
+    id: 'cross-body-band-hold', name: 'Cross Body Band Hold',
+    category: 'straight', type: 'hold', targetSecs: 10,
+    desc: 'Band anchored at shoulder height. Hold arm extended straight to the side against the band\'s pull — isometric at the exact iron cross arm angle. Nothing else replicates this specific adduction demand.',
+    note: 'Iron cross specific — isometric at cross angle',
+    muscles: { primary: ['lats', 'chest'], secondary: ['rear-delt', 'serratus'] },
+  },
+  'jefferson-curl': {
+    id: 'jefferson-curl', name: 'Jefferson Curl',
+    category: 'lowback', type: 'reps', targetReps: 8,
+    desc: 'Standing on a box holding light weight. Round your spine one vertebra at a time — chin first, then thoracic, then lumbar — until hanging, then slowly unroll. Loaded flexion for back health.',
+    note: 'Loaded spinal flexion',
+    muscles: { primary: ['lower-back', 'hamstrings'], secondary: ['glutes'] },
+  },
+  'cuban-press': {
+    id: 'cuban-press', name: 'Cuban Press',
+    category: 'shoulder', type: 'reps', targetReps: 10,
+    desc: 'Arms extended, externally rotate to a 90/90 "goalpost" position, then press overhead. Combines shoulder external rotation with a press. Use light weight — it is a health exercise.',
+    note: 'Shoulder health finisher',
+    muscles: { primary: ['shoulders', 'rear-delt'], secondary: ['lateral-delt'] },
+  },
+  'inverted-deadlift': {
+    id: 'inverted-deadlift', name: 'Inverted Deadlift',
+    category: 'pull', type: 'reps', targetReps: 10,
+    desc: 'Lie under a low bar, grip overhand. Pull your chest up to the bar in a reverse row / deadlift hybrid. Horizontal pull for rear delts and upper lats.',
+    note: 'Horizontal pull',
+    muscles: { primary: ['lats', 'rear-delt'], secondary: ['biceps', 'core'] },
+  },
+
+  // ── Legs — Anterior chain (push days) ────────────────
+  'pistol-squat': {
+    id: 'pistol-squat', name: 'Pistol Squat',
+    category: 'legs', type: 'reps', targetReps: 5,
+    desc: 'Single-leg squat to full depth, other leg extended forward. Balance, strength, and ankle mobility combined. Hold a support if needed — prioritise full depth.',
+    note: 'Quad sweep — each leg, full depth',
+    muscles: { primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves', 'core'] },
+  },
+  'sissy-squat': {
+    id: 'sissy-squat', name: 'Sissy Squat',
+    category: 'legs', type: 'reps', targetReps: 10,
+    desc: 'Kneel backward on your heels while rising on tiptoes and leaning the torso back. Extreme VMO and quad stretch under load. Use light support until comfortable.',
+    note: 'VMO definition — max ROM, controlled',
+    muscles: { primary: ['quads'], secondary: ['calves', 'core'] },
+  },
+  'single-leg-calf-raise': {
+    id: 'single-leg-calf-raise', name: 'Single Leg Calf Raise',
+    category: 'legs', type: 'reps', targetReps: 15,
+    desc: 'Stand on one leg on the edge of a step. Drop the heel to a full stretch below the step, then rise to full extension on tiptoe. Slow and full range — no bouncing.',
+    note: 'Calf shape — full stretch to full extension',
+    muscles: { primary: ['calves'], secondary: [] },
+  },
+
+  // ── Legs — Posterior chain (pull days) ───────────────
+  'nordic-curl': {
+    id: 'nordic-curl', name: 'Nordic Curl',
+    category: 'legs', type: 'reps', targetReps: 5,
+    desc: 'Kneel with feet anchored. Lower your torso toward the floor using hamstrings only — as slow as possible. Catch yourself with hands if needed, then use them to push back up.',
+    note: 'Hamstring fullness — eccentric focus',
+    muscles: { primary: ['hamstrings'], secondary: ['glutes', 'lower-back'] },
+  },
+  'single-leg-deadlift': {
+    id: 'single-leg-deadlift', name: 'Single Leg Deadlift',
+    category: 'legs', type: 'reps', targetReps: 8,
+    desc: 'Balance on one leg, hinge forward at the hip while extending the opposite leg back. Keep spine neutral. Full hip extension at the top — glute squeeze. Each side separately.',
+    note: 'Posterior line — hinge, hip extension',
+    muscles: { primary: ['hamstrings', 'glutes'], secondary: ['lower-back', 'core'] },
+  },
+  'single-leg-glute-bridge': {
+    id: 'single-leg-glute-bridge', name: 'Single Leg Glute Bridge',
+    category: 'legs', type: 'reps', targetReps: 12,
+    desc: 'Lie on back, one knee bent with foot flat on the floor, other leg extended straight. Drive hips up with the working leg, squeezing the glute hard at the top. Pause.',
+    note: 'Glute isolation — pause at top',
+    muscles: { primary: ['glutes'], secondary: ['hamstrings', 'core'] },
+  },
+
+  // ── Ring handstand ────────────────────────────────────
+  'ring-handstand': {
+    id: 'ring-handstand', name: 'Ring Handstand',
+    category: 'shoulder', type: 'hold', targetSecs: 10,
+    desc: 'Kick up to a handstand on rings. The unstable surface demands extreme serratus activation, scapular stability, and full-body tension. Start wall-assisted, progress to freestanding.',
+    note: 'Balance + scapular stability — fresh CNS only',
+    muscles: { primary: ['shoulders', 'serratus', 'core'], secondary: ['triceps', 'front-delt'] },
+  },
+
+  // ── Skill support (referenced from SKILL_PROGRESSIONS) ─
+  'german-hang': {
+    id: 'german-hang', name: 'German Hang',
+    category: 'shoulder', type: 'hold', targetSecs: 20,
+    desc: 'From a bar or ring hang, slowly rotate backward until hanging with arms extended behind you. Passive shoulder opener — exit slowly and controlled. Essential prerequisite for back lever.',
+    note: 'Back lever prerequisite — shoulder flexion mobility',
+    muscles: { primary: ['shoulders', 'chest'], secondary: ['biceps'] },
+  },
+};

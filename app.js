@@ -70,7 +70,15 @@ function loadState() {
     // Merge skill levels: preserve saved, fill missing with defaults
     state.skillLevels = { ...DEFAULT_SKILL_LEVELS, ...(state.skillLevels || {}) };
     const a = localStorage.getItem(ACTIVE_KEY);
-    if (a) A = JSON.parse(a);
+    if (a) {
+      A = JSON.parse(a);
+      // Re-hydrate session reference — deserialized object may be stale if
+      // program.js changed since last save. Always use live SESSIONS data.
+      if (A) {
+        A.session = SESSIONS.find(s => s.id === A.sessionId) || null;
+        if (!A.session) A = null; // sessionId no longer exists — discard
+      }
+    }
   } catch (_) {}
 }
 
@@ -297,11 +305,14 @@ function renderHome() {
   const metaEl = q('#s01-meta');
   if (metaEl) {
     const streakHtml = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
-    const phaseHtml  = sessUntilPhaseChange <= 8
+    const deloadHtml = ph.isDeload
+      ? `<span class="meta-badge meta-badge--deload">Deload — back off, recover</span>`
+      : '';
+    const phaseHtml  = !ph.isDeload && sessUntilPhaseChange <= 8
       ? `<span class="meta-badge">${sessUntilPhaseChange} session${sessUntilPhaseChange !== 1 ? 's' : ''} → ${nextPhaseLabel}</span>`
       : '';
-    metaEl.innerHTML  = streakHtml + phaseHtml;
-    metaEl.style.display = (streakHtml || phaseHtml) ? '' : 'none';
+    metaEl.innerHTML  = streakHtml + deloadHtml + phaseHtml;
+    metaEl.style.display = (streakHtml || deloadHtml || phaseHtml) ? '' : 'none';
   }
 
   if (!today) {
@@ -410,6 +421,73 @@ function renderWarmup() {
   updateNav('live');
 }
 
+// ─── Shared skill card builder ────────────────────────────
+// opts.showDots    — show level progress dots (overview)
+// opts.showDone    — show "Mark done" button (session block)
+// opts.onLevelUp   — callback when Level Up is tapped
+function buildSkillCard(skillId, opts = {}) {
+  const prog = SKILL_PROGRESSIONS[skillId];
+  if (!prog) return null;
+
+  const level    = state.skillLevels[skillId] || 1;
+  const maxLevel = prog.progressions.length;
+  const cur      = prog.progressions[Math.min(level, maxLevel) - 1];
+  const achieved = level >= maxLevel;
+
+  const setsLabel = cur.type === 'hold'
+    ? `${cur.sets} × ${cur.targetSecs}s`
+    : `${cur.sets} × ${cur.targetReps} reps`;
+
+  const dotsHtml = opts.showDots
+    ? `<div style="margin-bottom:8px">${
+        Array.from({ length: maxLevel }, (_, i) =>
+          `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;background:${i < level ? 'var(--progress)' : 'var(--line-2)'}"></span>`
+        ).join('')
+      }</div>`
+    : '';
+
+  const supportHtml = prog.support && prog.support.length
+    ? `<div class="skill-card__support">Support: ${prog.support.map(id => EX[id] ? EX[id].name : id).join(' · ')}</div>`
+    : '';
+
+  const isDeload   = phase().isDeload;
+  const actionsHtml = `
+    <div class="skill-card__actions">
+      ${opts.showDone ? `<button class="skill-btn skill-btn--done" data-id="${skillId}">Mark done</button>` : ''}
+      ${!achieved && !isDeload ? `<button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>` : ''}
+      ${!achieved &&  isDeload ? `<span class="skill-card__deload-note">Deload — no level ups this week</span>` : ''}
+    </div>`;
+
+  const el = document.createElement('div');
+  el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
+  el.innerHTML = `
+    <div class="skill-card__head">
+      <div class="skill-card__name">${prog.name}</div>
+      ${achieved
+        ? `<span class="skill-lvl-badge skill-lvl-badge--done">✓ Achieved</span>`
+        : `<span class="skill-lvl-badge">L${level} / ${maxLevel}</span>`}
+    </div>
+    ${dotsHtml}
+    <div class="skill-card__goal">${prog.goal}</div>
+    <div class="skill-card__drill">${cur.drill}</div>
+    <div class="skill-card__sets">${setsLabel}</div>
+    ${cur.note  ? `<div class="skill-card__note">${cur.note}</div>` : ''}
+    ${!achieved ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
+    ${supportHtml}
+    ${actionsHtml}`;
+
+  const doneBtn = el.querySelector('.skill-btn--done');
+  if (doneBtn) doneBtn.addEventListener('click', e => {
+    e.currentTarget.classList.toggle('is-done');
+    e.currentTarget.textContent = e.currentTarget.classList.contains('is-done') ? '✓ Done' : 'Mark done';
+  });
+
+  const upBtn = el.querySelector('.skill-btn--up');
+  if (upBtn && opts.onLevelUp) upBtn.addEventListener('click', () => opts.onLevelUp(skillId));
+
+  return el;
+}
+
 // ─── S-08 Skills ──────────────────────────────────────────
 function renderSkills() {
   const sess = A.session;
@@ -419,50 +497,12 @@ function renderSkills() {
   list.innerHTML = '';
 
   sess.skills.forEach(skillId => {
-    const prog = SKILL_PROGRESSIONS[skillId];
-    if (!prog) return;
-
-    const level    = state.skillLevels[skillId] || 1;
-    const maxLevel = prog.progressions.length;
-    const cur      = prog.progressions[Math.min(level, maxLevel) - 1];
-    const achieved = level >= maxLevel;
-
-    const setsLabel = cur.type === 'hold'
-      ? `${cur.sets} × ${cur.targetSecs}s`
-      : `${cur.sets} × ${cur.targetReps} reps`;
-
-    const supportHtml = prog.support && prog.support.length
-      ? `<div class="skill-card__support">Support: ${prog.support.map(id => EX[id] ? EX[id].name : id).join(' · ')}</div>`
-      : '';
-
-    const el = document.createElement('div');
-    el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
-    el.innerHTML = `
-      <div class="skill-card__head">
-        <div class="skill-card__name">${prog.name}</div>
-        ${achieved
-          ? `<span class="skill-lvl-badge skill-lvl-badge--done">✓ Achieved</span>`
-          : `<span class="skill-lvl-badge">L${level} / ${maxLevel}</span>`}
-      </div>
-      <div class="skill-card__goal">${prog.goal}</div>
-      <div class="skill-card__drill">${cur.drill}</div>
-      <div class="skill-card__sets">${setsLabel}</div>
-      ${cur.note  ? `<div class="skill-card__note">${cur.note}</div>` : ''}
-      ${!achieved ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
-      ${supportHtml}
-      <div class="skill-card__actions">
-        <button class="skill-btn skill-btn--done" data-id="${skillId}">Mark done</button>
-        ${!achieved ? `<button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>` : ''}
-      </div>`;
-
-    el.querySelector('.skill-btn--done').addEventListener('click', e => {
-      e.currentTarget.classList.toggle('is-done');
-      e.currentTarget.textContent = e.currentTarget.classList.contains('is-done') ? '✓ Done' : 'Mark done';
+    const card = buildSkillCard(skillId, {
+      showDots: false,
+      showDone: true,
+      onLevelUp: levelUpSkill,
     });
-    const upBtn = el.querySelector('.skill-btn--up');
-    if (upBtn) upBtn.addEventListener('click', () => levelUpSkill(skillId));
-
-    list.appendChild(el);
+    if (card) list.appendChild(card);
   });
 
   q('#s08-cta').onclick = () => { A.skillsDone = true; saveActive(); renderOverview(); };
@@ -488,56 +528,21 @@ function renderSkillsOverview() {
   const list = q('#s12-list');
   list.innerHTML = '';
 
-  Object.entries(SKILL_PROGRESSIONS).forEach(([skillId, prog]) => {
-    const level    = state.skillLevels[skillId] || 1;
-    const maxLevel = prog.progressions.length;
-    const cur      = prog.progressions[Math.min(level, maxLevel) - 1];
-    const achieved = level >= maxLevel;
-
-    const setsLabel = cur.type === 'hold'
-      ? `${cur.sets} × ${cur.targetSecs}s`
-      : `${cur.sets} × ${cur.targetReps} reps`;
-
-    // Level progress dots
-    const dots = Array.from({ length: maxLevel }, (_, i) =>
-      `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px;background:${i < level ? 'var(--progress)' : 'var(--line-2)'}"></span>`
-    ).join('');
-
-    const supportHtmlOv = prog.support && prog.support.length
-      ? `<div class="skill-card__support">Support: ${prog.support.map(id => EX[id] ? EX[id].name : id).join(' · ')}</div>`
-      : '';
-
-    const el = document.createElement('div');
-    el.className = `skill-card${achieved ? ' skill-card--achieved' : ''}`;
-    el.innerHTML = `
-      <div class="skill-card__head">
-        <div class="skill-card__name">${prog.name}</div>
-        ${achieved
-          ? `<span class="skill-lvl-badge skill-lvl-badge--done">✓ Achieved</span>`
-          : `<span class="skill-lvl-badge">L${level} / ${maxLevel}</span>`}
-      </div>
-      <div style="margin-bottom:8px">${dots}</div>
-      <div class="skill-card__goal">${prog.goal}</div>
-      <div class="skill-card__drill">${cur.drill}</div>
-      <div class="skill-card__sets">${setsLabel}</div>
-      ${cur.note   ? `<div class="skill-card__note">${cur.note}</div>` : ''}
-      ${!achieved  ? `<div class="skill-card__criteria">→ ${cur.criteria}</div>` : ''}
-      ${supportHtmlOv}
-      ${!achieved  ? `<div class="skill-card__actions">
-        <button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>
-      </div>` : ''}`;
-
-    const upBtn = el.querySelector('.skill-btn--up');
-    if (upBtn) upBtn.addEventListener('click', () => {
-      const current = state.skillLevels[skillId] || 1;
-      if (current < prog.progressions.length) {
-        state.skillLevels[skillId] = current + 1;
-        saveState();
-        renderSkillsOverview();
-      }
+  Object.keys(SKILL_PROGRESSIONS).forEach(skillId => {
+    const card = buildSkillCard(skillId, {
+      showDots: true,
+      showDone: false,
+      onLevelUp: id => {
+        const prog    = SKILL_PROGRESSIONS[id];
+        const current = state.skillLevels[id] || 1;
+        if (prog && current < prog.progressions.length) {
+          state.skillLevels[id] = current + 1;
+          saveState();
+          renderSkillsOverview();
+        }
+      },
     });
-
-    list.appendChild(el);
+    if (card) list.appendChild(card);
   });
 
   showScreen('s-12');
