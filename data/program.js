@@ -650,6 +650,29 @@ const EX = {
     muscles: { primary: ['forearms'], secondary: [] },
   },
 
+  // ── Core — gap fillers ────────────────────────────────
+  'pallof-press': {
+    id: 'pallof-press', name: 'Pallof Press',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Band or cable anchored at mid-chest height. Stand perpendicular to the anchor. Hands at sternum, press straight out to full extension and pause, then return. The band continuously tries to rotate you — resist it completely. Switch sides.',
+    note: 'Anti-rotation — both sides',
+    muscles: { primary: ['core'], secondary: ['lower-back', 'serratus'] },
+  },
+  'side-bend': {
+    id: 'side-bend', name: 'Loaded Side Bend',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Stand upright, KB or DB in one hand hanging at your side. Allow the weight to slowly pull you into a lateral bend, then drive back to upright through the obliques. Full range — feel the stretch at the bottom. Switch sides.',
+    note: 'Lateral flexion — oblique + QL',
+    muscles: { primary: ['core'], secondary: ['lower-back'] },
+  },
+  '360-pull': {
+    id: '360-pull', name: '360 Pull',
+    category: 'pull', type: 'reps', targetReps: 3,
+    desc: 'From a dead hang, generate a kip/swing and pull explosively, using the momentum to rotate your body through a full 360° around the bar while keeping the grip. Land back in a hang. All rotation comes from the pull — not a swing. Control the return.',
+    note: 'Dynamic rotational power — bar',
+    muscles: { primary: ['lats', 'core'], secondary: ['biceps', 'rear-delt', 'shoulders'] },
+  },
+
   // ── Legs — Posterior chain (pull days) ───────────────
   'nordic-curl': {
     id: 'nordic-curl', name: 'Nordic Curl',
@@ -759,6 +782,7 @@ const ssIsolationPush = {
     EX['pike-push-up'],
     EX['russian-push-up'],
     EX['l-sit'],
+    EX['side-bend'],
     EX['wrist-extension-hold'],
   ],
 };
@@ -769,6 +793,7 @@ const ssSkillPower = {
   exercises: [
     EX['front-lever-hold'],
     EX['chest-to-bar'],
+    EX['360-pull'],
     EX['typewriter'],
     EX['false-grip-dead-hang'],
     EX['tuck-to-l'],
@@ -803,6 +828,7 @@ const ssIsolationPull = {
     EX['ring-hammer-curl'],
     EX['ring-y-raise'],
     EX['face-pull'],
+    EX['pallof-press'],
     EX['cross-body-band-hold'],
     EX['jefferson-curl'],
     EX['cuban-press'],
