@@ -959,9 +959,15 @@
       <div class="t-display-sm">Your log</div>
     </div>
     <div class="px-screen" id="s13-list" style="padding-bottom:20px"></div>
-    <div class="px-screen mt-2" style="padding-bottom:88px;display:flex;gap:10px">
+    <div class="px-screen mt-2" style="padding-bottom:8px;display:flex;gap:10px">
       <button id="s13-export-json" class="btn-ghost flex-1" style="font-size:10px">Export JSON</button>
       <button id="s13-export-csv"  class="btn-ghost flex-1" style="font-size:10px">Export CSV</button>
+    </div>
+    <div class="px-screen mt-1" style="padding-bottom:88px">
+      <label id="s13-import-label" class="btn-ghost" style="font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;cursor:pointer;box-sizing:border-box">
+        Restore from backup JSON
+        <input id="s13-import-input" type="file" accept=".json,application/json" style="display:none">
+      </label>
     </div>
   </section>
 

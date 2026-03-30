@@ -1017,6 +1017,7 @@ function finishSession() {
 
   saveState();
   clearActive();
+  autoBackup();
   renderSummary(entry);
 }
 
@@ -1288,12 +1289,103 @@ function renderProgress() {
     list.appendChild(card);
   });
 
-  // Wire export buttons every render (innerHTML resets them)
+  // Wire export / import buttons every render
   q('#s13-export-json').onclick = exportJSON;
   q('#s13-export-csv').onclick  = exportCSV;
+  q('#s13-import-input').onchange = e => {
+    const file = e.target.files[0];
+    if (file) importJSON(file);
+    e.target.value = ''; // reset so same file can be picked again
+  };
 
   showScreen('s-13');
   updateNav('progress');
+}
+
+// ─── Auto-backup ─────────────────────────────────────────
+// Called silently after every session. Saves full state JSON to
+// Downloads (Android) or triggers share sheet (iOS / Web Share API).
+function autoBackup() {
+  try {
+    const payload = buildBackupPayload();
+    const date    = new Date().toISOString().slice(0, 10);
+    const filename = `ring-app-${date}.json`;
+    const content  = JSON.stringify(payload, null, 2);
+
+    // Web Share API — use when available (Android Chrome/Brave share sheet)
+    const file = new File([content], filename, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Ring App backup — ' + date }).catch(() => {
+        // User dismissed share sheet — fall back to silent download
+        silentDownload(filename, content, 'application/json');
+      });
+    } else {
+      // Fallback: silent download to Downloads folder
+      silentDownload(filename, content, 'application/json');
+    }
+  } catch (_) {}
+}
+
+function silentDownload(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function buildBackupPayload() {
+  return {
+    exportedAt:   new Date().toISOString(),
+    week:         state.currentWeek,
+    sessionCount: state.sessionCount,
+    skillLevels:  state.skillLevels,
+    log:          state.log,
+  };
+}
+
+// ─── Import ───────────────────────────────────────────────
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.log || !Array.isArray(data.log)) {
+        alert('Invalid backup file — no log found.');
+        return;
+      }
+
+      // Merge: existing IDs win, incoming fills the gaps
+      const existingIds = new Set(state.log.map(e => e.id));
+      const newEntries  = data.log.filter(e => !existingIds.has(e.id));
+      state.log = [...state.log, ...newEntries]
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      // Restore week + count if backup is further ahead
+      if ((data.sessionCount || 0) > state.sessionCount) {
+        state.sessionCount = data.sessionCount;
+        state.currentWeek  = data.week || state.currentWeek;
+      }
+
+      // Merge skill levels — keep the higher level for each skill
+      if (data.skillLevels) {
+        Object.entries(data.skillLevels).forEach(([id, lvl]) => {
+          if ((lvl || 0) > (state.skillLevels[id] || 0)) {
+            state.skillLevels[id] = lvl;
+          }
+        });
+      }
+
+      saveState();
+      renderProgress(); // re-render to show restored log
+      alert(`Restored ${newEntries.length} session${newEntries.length !== 1 ? 's' : ''} from backup.`);
+    } catch (_) {
+      alert('Could not read backup file.');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ─── Export ───────────────────────────────────────────────
@@ -1311,18 +1403,10 @@ function shareOrDownload(filename, content, mime) {
 }
 
 function exportJSON() {
-  if (!state.log.length) return;
-  const payload = {
-    exportedAt: new Date().toISOString(),
-    week: state.currentWeek,
-    sessionCount: state.sessionCount,
-    skillLevels: state.skillLevels,
-    log: state.log,
-  };
   const date = new Date().toISOString().slice(0, 10);
   shareOrDownload(
     `ring-app-${date}.json`,
-    JSON.stringify(payload, null, 2),
+    JSON.stringify(buildBackupPayload(), null, 2),
     'application/json'
   );
 }
