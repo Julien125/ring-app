@@ -1353,7 +1353,8 @@ function renderMusclesSummary(entry) {
 }
 
 // ─── S-17 Muscles detail ──────────────────────────────────
-function renderMusclesDetail(entry) {
+function renderMusclesDetail(entry, backScreen) {
+  const _back = backScreen || currentScreen() || 's-07';
   const sess = SESSIONS.find(s => s.id === entry.sessionId);
   const { primary, secondary } = buildMuscleTally(entry);
 
@@ -1458,8 +1459,8 @@ function renderMusclesDetail(entry) {
   const secWrap = q('#s17-secondary-wrap');
   if (secWrap) secWrap.style.display = Object.keys(secondary).length ? '' : 'none';
 
-  q('#s17-back').onclick = () => showScreen('s-07');
-  q('#s17-done').onclick = () => showScreen('s-07');
+  q('#s17-back').onclick = () => showScreen(_back);
+  q('#s17-done').onclick = () => showScreen(_back);
 
   showScreen('s-17');
   updateNav('today');
@@ -1656,6 +1657,18 @@ function renderProgress() {
     const totalSets = allSets.length;
     const totalReps = allSets.reduce((a, b) => a + b, 0);
 
+    // Top-5 muscle chips for this entry
+    const { primary } = buildMuscleTally(entry);
+    const topMuscles = Object.entries(primary).sort((a,b) => b[1]-a[1]).slice(0,4);
+    const chipsHtml = topMuscles.map(([m]) => {
+      const cat   = MUSCLE_CAT[m] || 'push';
+      const color = CAT_META[cat]?.color || '#6C7FD8';
+      return `<span class="muscles-teaser__chip">
+        <span class="muscles-teaser__chip-dot" style="background:${color}"></span>
+        ${MUSCLE_LABEL[m] || m}
+      </span>`;
+    }).join('');
+
     const card = document.createElement('div');
     card.className = 'prog-session-card';
     card.innerHTML = `
@@ -1665,7 +1678,19 @@ function renderProgress() {
       </div>
       <div class="prog-session-card__meta">
         ${mins}min · ${totalSets} sets · ${totalReps} reps/secs · ${entry.phase || ''}
-      </div>`;
+      </div>
+      ${topMuscles.length ? `
+      <div class="prog-muscles-row">
+        <div class="muscles-teaser__chips">${chipsHtml}</div>
+        <button class="prog-muscles-btn">muscles →</button>
+      </div>` : ''}`;
+
+    if (topMuscles.length) {
+      card.querySelector('.prog-muscles-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        renderMusclesDetail(entry);
+      });
+    }
     list.appendChild(card);
   });
 
