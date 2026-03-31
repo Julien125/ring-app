@@ -774,6 +774,99 @@
       font-style: italic; padding: 12px 0;
     }
 
+    /* Zone badges */
+    .md-zone-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid; border-radius: 20px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      position: relative; z-index: 1;
+    }
+    .md-cat-header-main {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      position: relative; z-index: 1;
+      margin-bottom: 4px;
+    }
+    .md-cat-header-sub {
+      display: flex; align-items: center;
+      gap: 10px;
+      position: relative; z-index: 1;
+    }
+    .md-cat-effsets {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--txt-2);
+      letter-spacing: 0.04em;
+    }
+    .md-cat-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; color: var(--txt-3);
+      font-style: italic;
+    }
+
+    /* Multi-week region chart */
+    .region-chart {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 12px 10px;
+    }
+    .region-chart__legend {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .region-chart__legend-item {
+      display: flex; align-items: center; gap: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 8px; letter-spacing: 0.06em;
+      color: var(--txt-3);
+    }
+    .region-chart__legend-dot {
+      width: 7px; height: 7px; border-radius: 2px;
+    }
+    .region-chart__plot {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      height: 110px;
+    }
+    .region-chart__group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+    }
+    .region-chart__bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      flex: 1;
+      width: 100%;
+      justify-content: center;
+    }
+    .region-chart__bar {
+      flex: 1;
+      max-width: 14px;
+      border-radius: 3px 3px 0 0;
+      height: 0;
+      transition: height 0.55s cubic-bezier(0.22,1,0.36,1);
+      min-height: 2px;
+    }
+    .region-chart__group-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 7.5px; letter-spacing: 0.05em;
+      color: var(--txt-3);
+      text-transform: uppercase;
+      text-align: center;
+      padding-top: 4px;
+      border-top: 1px solid var(--line);
+      width: 100%;
+    }
+
     /* Category group cards */
     .md-cat-group {
       border-radius: 14px;
@@ -783,8 +876,8 @@
     }
     .md-cat-header {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 0;
       padding: 12px 16px 10px;
       position: relative;
     }
@@ -799,18 +892,6 @@
       font-family: 'Unbounded', sans-serif;
       font-size: 10px; letter-spacing: 0.16em;
       text-transform: uppercase;
-      position: relative; z-index: 1;
-      flex: 1;
-    }
-    .md-cat-sets {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px; letter-spacing: 0.04em;
-      position: relative; z-index: 1;
-    }
-    .md-cat-pct {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px; color: var(--txt-3);
-      letter-spacing: 0.04em;
       position: relative; z-index: 1;
     }
     .md-cat-body {
@@ -1403,12 +1484,18 @@
           </svg>
           <div class="md-ring-center">
             <div class="md-ring-sets" id="s17-total-sets">—</div>
-            <div class="md-ring-label">sets</div>
+            <div class="md-ring-label">eff. sets</div>
           </div>
         </div>
         <!-- Legend pills row (injected by JS) -->
         <div class="md-legend" id="s17-legend"></div>
       </div>
+    </div>
+
+    <!-- Multi-week region chart (weekly nav view only) -->
+    <div class="px-screen mt-5" id="s17-chart-wrap" style="display:none">
+      <div class="md-section-label">Region summary — by week</div>
+      <div id="s17-chart" class="mt-3"></div>
     </div>
 
     <!-- Grouped by Push / Pull / Core / Legs -->

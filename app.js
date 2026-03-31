@@ -1314,7 +1314,10 @@ const CAT_META = {
   legs: { color: '#D4A017', label: 'Legs' },
 };
 
-// Build tally: { primary: {muscle: sets}, secondary: {muscle: sets} }
+// Build tally: { primary: {muscle: pts}, secondary: {muscle: pts} }
+// Points = reps logged (reps exercises) or secs × 0.2 (holds — isometric factor)
+// Effective sets = pts / 10  →  thresholds: <4 Maintenance, 4-9 Strength, 10-19 Hypertrophy, 20+ High Volume
+const ISOMETRIC_FACTOR = 0.2;
 function buildMuscleTally(entry) {
   const sess = SESSIONS.find(s => s.id === entry.sessionId);
   if (!sess) return { primary: {}, secondary: {} };
@@ -1323,14 +1326,31 @@ function buildMuscleTally(entry) {
     ss.exercises.forEach(ex => {
       const logged = entry.exercises[ex.id];
       if (!logged || !logged.sets.length) return;
-      const sets = logged.sets.length;
-      (ex.muscles?.primary   || []).forEach(m => { primary[m]   = (primary[m]   || 0) + sets; });
-      (ex.muscles?.secondary || []).forEach(m => { secondary[m] = (secondary[m] || 0) + sets; });
+      const isHold = ex.type === 'hold';
+      const pts = logged.sets.reduce((sum, v) => {
+        const n = typeof v === 'number' ? v : 0;
+        return sum + (isHold ? n * ISOMETRIC_FACTOR : n);
+      }, 0);
+      (ex.muscles?.primary   || []).forEach(m => { primary[m]   = (primary[m]   || 0) + pts; });
+      (ex.muscles?.secondary || []).forEach(m => { secondary[m] = (secondary[m] || 0) + pts * 0.5; });
     });
   });
-  // Remove secondary entries that are already primary
   Object.keys(primary).forEach(m => { delete secondary[m]; });
   return { primary, secondary };
+}
+
+// Zone classification based on effective sets (pts / 10)
+function muscleZone(pts) {
+  const eff = pts / 10;
+  if (eff >= 20) return { label: 'High Volume',  color: '#E05050', msg: 'Risk of overreach',       icon: '⚠' };
+  if (eff >= 10) return { label: 'Hypertrophy',  color: '#2BA88A', msg: 'Optimal muscle growth',   icon: '✓' };
+  if (eff >=  4) return { label: 'Strength',     color: '#6C7FD8', msg: 'Neural adaptation',       icon: '↑' };
+  return               { label: 'Maintenance',  color: '#888888', msg: 'Below growth threshold',  icon: '—' };
+}
+
+function fmtEff(pts) {
+  const e = pts / 10;
+  return e % 1 === 0 ? `${e}` : e.toFixed(1);
 }
 
 // ─── S-07 Muscles teaser ──────────────────────────────────
@@ -1407,7 +1427,86 @@ function renderMusclesWeek() {
       : SESSIONS.find(s => s.id === weekEntries[0].sessionId)?.label || '',
     goHome
   );
+
+  // Show multi-week region summary chart
+  const chartWrap = q('#s17-chart-wrap');
+  if (chartWrap) {
+    renderWeeklyChart(q('#s17-chart'));
+    chartWrap.style.display = '';
+  }
+
   updateNav('muscles');
+}
+
+// ─── Multi-week Region Summary chart ─────────────────────
+function renderWeeklyChart(container) {
+  if (!container) return;
+
+  const catOrder   = ['push', 'pull', 'core', 'legs'];
+  const catLabels  = { push: 'Push', pull: 'Pull', core: 'Core', legs: 'Legs' };
+
+  // Aggregate pts per week per category
+  const weekData = {}; // { weekNum: { push, pull, core, legs } }
+  state.log.forEach(entry => {
+    const wk = entry.week;
+    if (!wk) return;
+    if (!weekData[wk]) weekData[wk] = { push: 0, pull: 0, core: 0, legs: 0 };
+    const { primary } = buildMuscleTally(entry);
+    Object.entries(primary).forEach(([m, pts]) => {
+      const cat = MUSCLE_CAT[m] || 'push';
+      if (weekData[wk][cat] !== undefined) weekData[wk][cat] += pts;
+    });
+  });
+
+  const weeks = Object.keys(weekData).map(Number).sort((a, b) => a - b);
+  if (!weeks.length) { container.innerHTML = ''; return; }
+
+  // Global max for bar scaling
+  const allVals = weeks.flatMap(wk => catOrder.map(c => weekData[wk][c] || 0));
+  const globalMax = Math.max(...allVals, 1);
+
+  // Week colours — cycle through 10 shades
+  const WEEK_COLORS = [
+    '#6C7FD8','#2BA88A','#D4A017','#E05470',
+    '#9B6FD8','#3FC4A0','#E8C44A','#FF7A7A',
+    '#7FB3FF','#A0D88A',
+  ];
+
+  // Legend
+  const legendHtml = weeks.map(wk => `
+    <div class="region-chart__legend-item">
+      <span class="region-chart__legend-dot" style="background:${WEEK_COLORS[(wk-1) % 10]}"></span>
+      W${wk}
+    </div>`).join('');
+
+  // Build group columns
+  const groupsHtml = catOrder.map(cat => {
+    const bars = weeks.map(wk => {
+      const pts    = weekData[wk][cat] || 0;
+      const pct    = Math.round(pts / globalMax * 100);
+      const color  = WEEK_COLORS[(wk - 1) % 10];
+      return `<div class="region-chart__bar" data-pct="${pct}" style="background:${color}; height:0%"
+               title="W${wk} · ${catLabels[cat]} · ${fmtEff(pts)} eff. sets"></div>`;
+    }).join('');
+    return `
+      <div class="region-chart__group">
+        <div class="region-chart__bars">${bars}</div>
+        <div class="region-chart__group-label" style="color:${CAT_META[cat].color}">${catLabels[cat]}</div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="region-chart">
+      <div class="region-chart__legend">${legendHtml}</div>
+      <div class="region-chart__plot">${groupsHtml}</div>
+    </div>`;
+
+  // Animate bars
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    container.querySelectorAll('.region-chart__bar').forEach(bar => {
+      bar.style.height = `${bar.dataset.pct}%`;
+    });
+  }));
 }
 
 // ─── S-17 Muscles detail (per session) ───────────────────
@@ -1417,6 +1516,10 @@ function renderMusclesDetail(entry, backScreen) {
   const { primary, secondary } = buildMuscleTally(entry);
   const label = sess ? `${sess.label}` : '';
   const sub   = entry.date;
+
+  // Hide the weekly chart — this is a per-session view
+  const cw = q('#s17-chart-wrap');
+  if (cw) cw.style.display = 'none';
 
   _renderMusclesFull({ primary, secondary }, sub, label, () => showScreen(_back));
   updateNav('today');
@@ -1434,8 +1537,8 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
     allMuscles[m] = (allMuscles[m] || 0) + v;
   });
 
-  const totalSets = Object.values(primary).reduce((a, b) => a + b, 0);
-  q('#s17-total-sets').textContent = totalSets;
+  const totalPts  = Object.values(primary).reduce((a, b) => a + b, 0);
+  q('#s17-total-sets').textContent = fmtEff(totalPts);
 
   // ── Category totals (primary only for donut & group header) ─
   const catOrder = ['push', 'pull', 'core', 'legs'];
@@ -1480,7 +1583,7 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
     .map(cat => `
       <div class="md-legend-pill">
         <span class="md-legend-dot" style="background:${CAT_META[cat].color}"></span>
-        ${CAT_META[cat].label} · ${catSets[cat]}
+        ${CAT_META[cat].label} · ${fmtEff(catSets[cat])}
       </div>`).join('');
 
   // ── Category group cards ─────────────────────────────────
@@ -1488,12 +1591,14 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
   groupsEl.innerHTML = '';
 
   catOrder.forEach((cat, ci) => {
-    const catLoad = catSets[cat] || 0;
-    if (!catLoad) return;
+    const catPts = catSets[cat] || 0;
+    if (!catPts) return;
 
-    const color = CAT_META[cat].color;
-    const pctOfMax = Math.round(catLoad / maxCat * 100);
-    const pctOfTotal = Math.round(catLoad / catTotal * 100);
+    const color      = CAT_META[cat].color;
+    const pctOfMax   = Math.round(catPts / maxCat * 100);
+    const pctOfTotal = Math.round(catPts / catTotal * 100);
+    const zone       = muscleZone(catPts);
+    const effSets    = fmtEff(catPts);
 
     // All muscles in this category (from merged tally)
     const muscles = Object.entries(allMuscles)
@@ -1505,27 +1610,30 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
 
     const group = document.createElement('div');
     group.className = 'md-cat-group';
-    // Stagger animation delay per group
-    group.style.animationDelay = `${ci * 80}ms`;
 
-    const bodyRows = muscles.map(([m, sets]) => {
-      const barPct = Math.round(sets / maxMuscle * 100);
+    const bodyRows = muscles.map(([m, pts]) => {
+      const barPct = Math.round(pts / maxMuscle * 100);
       return `
         <div class="md-muscle-row">
           <span class="md-muscle-name">${MUSCLE_LABEL[m] || m}</span>
           <div class="md-muscle-bar-wrap">
             <div class="md-muscle-bar" data-pct="${barPct}" data-color="${color}" style="background:${color}20"></div>
           </div>
-          <span class="md-muscle-sets">${sets}×</span>
+          <span class="md-muscle-sets">${fmtEff(pts)}</span>
         </div>`;
     }).join('');
 
     group.innerHTML = `
       <div class="md-cat-header">
         <div class="md-cat-bar-bg" data-pct="${pctOfMax}" style="background:${color}; width:0%"></div>
-        <span class="md-cat-label" style="color:${color}">${CAT_META[cat].label}</span>
-        <span class="md-cat-sets" style="color:${color}">${catLoad} sets</span>
-        <span class="md-cat-pct">${pctOfTotal}%</span>
+        <div class="md-cat-header-main">
+          <span class="md-cat-label" style="color:${color}">${CAT_META[cat].label}</span>
+          <span class="md-zone-badge" style="color:${zone.color};border-color:${zone.color}40">${zone.icon} ${zone.label}</span>
+        </div>
+        <div class="md-cat-header-sub">
+          <span class="md-cat-effsets">${effSets} eff. sets</span>
+          <span class="md-cat-msg">${zone.msg}</span>
+        </div>
       </div>
       <div class="md-cat-body">${bodyRows}</div>`;
 
