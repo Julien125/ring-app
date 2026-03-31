@@ -766,7 +766,12 @@
     .md-muscle-bar {
       height: 100%; border-radius: 3px;
       width: 0; /* starts at 0 — animated via JS */
-      transition: width 0.55s cubic-bezier(0.22,1,0.36,1);
+      transition: width 0.55s cubic-bezier(0.22,1,0.36,1), background 0.55s ease;
+    }
+    .md-empty {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--txt-3);
+      font-style: italic; padding: 12px 0;
     }
     .md-muscle-sets {
       font-family: 'DM Mono', monospace;
@@ -1445,7 +1450,7 @@
   <nav id="bottom-nav" class="bottom-bar">
     <div class="nav-item active" id="nav-today">
       <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
           <rect x="3" y="4" width="14" height="13" rx="2.5"/>
           <path d="M7 2v3M13 2v3M3 8h14"/>
         </svg>
@@ -1454,24 +1459,37 @@
     </div>
     <div class="nav-item is-disabled" id="nav-live">
       <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="10" cy="10" r="3" fill="currentColor" stroke="none"/>
           <path d="M5.5 5.5a6.5 6.5 0 0 0 0 9M14.5 5.5a6.5 6.5 0 0 1 0 9"/>
         </svg>
       </span>
       <span class="nav-label">Live</span>
     </div>
+    <div class="nav-item" id="nav-muscles">
+      <span class="nav-icon">
+        <!-- Dumbbell icon — represents muscle volume -->
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="10" x2="14" y2="10"/>
+          <rect x="1" y="7.5" width="3" height="5" rx="1.2"/>
+          <rect x="4" y="8.5" width="2" height="3" rx="0.8"/>
+          <rect x="16" y="7.5" width="3" height="5" rx="1.2"/>
+          <rect x="14" y="8.5" width="2" height="3" rx="0.8"/>
+        </svg>
+      </span>
+      <span class="nav-label">Muscles</span>
+    </div>
     <div class="nav-item" id="nav-progress">
       <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 14l4-4 3 3 4-5 3 2"/>
         </svg>
       </span>
-      <span class="nav-label">Progress</span>
+      <span class="nav-label">Log</span>
     </div>
     <div class="nav-item" id="nav-skills">
       <span class="nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="10,2 12.4,7.6 18.5,8.3 14,12.7 15.3,18.5 10,15.5 4.7,18.5 6,12.7 1.5,8.3 7.6,7.6"/>
         </svg>
       </span>

@@ -228,6 +228,10 @@ function bindNav() {
     if (!A || A.complete) return;
     resumeSession();
   });
+  q('#nav-muscles').addEventListener('click', () => {
+    stopTimer(); stopStopwatch();
+    renderMusclesWeek();
+  });
   q('#nav-progress').addEventListener('click', () => {
     stopTimer(); stopStopwatch();
     renderProgress();
@@ -238,11 +242,11 @@ function bindNav() {
   });
 }
 
-// activeTab: 'today' | 'live' | 'progress' | 'skills'
+// activeTab: 'today' | 'live' | 'muscles' | 'progress' | 'skills'
 function updateNav(activeTab) {
   const hasSession = A !== null && !A.complete;
 
-  ['today', 'live', 'progress', 'skills'].forEach(tab => {
+  ['today', 'live', 'muscles', 'progress', 'skills'].forEach(tab => {
     const el = q(`#nav-${tab}`);
     if (!el) return;
     el.classList.toggle('active', tab === activeTab);
@@ -1352,67 +1356,124 @@ function renderMusclesSummary(entry) {
   teaserEl.onclick = () => renderMusclesDetail(entry);
 }
 
-// ─── S-17 Muscles detail ──────────────────────────────────
+// ─── S-17 Muscles — weekly view (from nav) ────────────────
+function renderMusclesWeek() {
+  // Current Mon–Sun window
+  const now     = new Date();
+  const dow     = (now.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const monday  = new Date(now); monday.setDate(now.getDate() - dow); monday.setHours(0,0,0,0);
+  const sunday  = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
+  const fmtDate = d => d.toISOString().slice(0,10);
+  const monStr  = fmtDate(monday);
+  const sunStr  = fmtDate(sunday);
+
+  const weekEntries = state.log.filter(e => e.date >= monStr && e.date <= sunStr);
+
+  // Update S-17 header for weekly context
+  const sessEl = q('#s17-session');
+  if (sessEl) sessEl.textContent = `W${state.currentWeek} · ${monStr} → ${sunStr}`;
+
+  if (!weekEntries.length) {
+    // Empty state
+    q('#s17-total-sets').textContent = '0';
+    q('#s17-legend').innerHTML = '';
+    // Clear donut to track only
+    const donutEl = q('#s17-donut');
+    while (donutEl.children.length > 1) donutEl.removeChild(donutEl.lastChild);
+    q('#s17-primary').innerHTML   = `<div class="md-empty">No sessions logged this week yet.</div>`;
+    q('#s17-secondary').innerHTML = '';
+    if (q('#s17-secondary-wrap')) q('#s17-secondary-wrap').style.display = 'none';
+    q('#s17-back').onclick = goHome;
+    q('#s17-done').onclick = goHome;
+    showScreen('s-17');
+    updateNav('muscles');
+    return;
+  }
+
+  // Merge tallies across all week sessions
+  const primary = {}, secondary = {};
+  weekEntries.forEach(entry => {
+    const { primary: p, secondary: s } = buildMuscleTally(entry);
+    Object.entries(p).forEach(([m, v]) => { primary[m]   = (primary[m]   || 0) + v; });
+    Object.entries(s).forEach(([m, v]) => { secondary[m] = (secondary[m] || 0) + v; });
+  });
+  // Re-strip secondary overlap after merging
+  Object.keys(primary).forEach(m => { delete secondary[m]; });
+
+  // Build a synthetic "entry-like" object the detail renderer can use
+  // by passing pre-built tallies directly to the donut + bar builders
+  _renderMusclesFull({ primary, secondary },
+    `W${state.currentWeek} · ${monStr} → ${sunStr}`,
+    weekEntries.length > 1
+      ? `${weekEntries.length} sessions`
+      : SESSIONS.find(s => s.id === weekEntries[0].sessionId)?.label || '',
+    goHome
+  );
+  updateNav('muscles');
+}
+
+// ─── S-17 Muscles detail (per session) ───────────────────
 function renderMusclesDetail(entry, backScreen) {
   const _back = backScreen || currentScreen() || 's-07';
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess  = SESSIONS.find(s => s.id === entry.sessionId);
   const { primary, secondary } = buildMuscleTally(entry);
+  const label = sess ? `${sess.label}` : '';
+  const sub   = entry.date;
 
-  // Session label
+  _renderMusclesFull({ primary, secondary }, sub, label, () => showScreen(_back));
+  updateNav('today');
+}
+
+// ─── S-17 shared renderer ────────────────────────────────
+// tallies: { primary, secondary }
+// subtitle: shown in md-session slot (date / week range)
+// title: shown as small caption below subtitle
+// onBack: callback for ← and Done buttons
+function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
   const sessEl = q('#s17-session');
-  if (sessEl) sessEl.textContent = sess ? `${sess.label} · ${entry.date}` : entry.date;
+  if (sessEl) sessEl.textContent = subtitle + (title ? ` · ${title}` : '');
 
-  // Total primary sets
   const totalSets = Object.values(primary).reduce((a,b) => a+b, 0);
   q('#s17-total-sets').textContent = totalSets;
 
   // ── Donut ring ───────────────────────────────────────────
-  const CIRC = 2 * Math.PI * 60; // r=60 → 376.99
+  const CIRC    = 2 * Math.PI * 60;
   const donutEl = q('#s17-donut');
+  const catOrder = ['push','pull','core','legs'];
 
-  // Sum sets by category (primary only for donut)
   const catSets = {};
   Object.entries(primary).forEach(([m, sets]) => {
     const cat = MUSCLE_CAT[m] || 'push';
     catSets[cat] = (catSets[cat] || 0) + sets;
   });
-  const catOrder = ['push','pull','core','legs'];
   const total = Object.values(catSets).reduce((a,b) => a+b, 0) || 1;
 
-  // Remove old segments (keep track circle = first child)
   while (donutEl.children.length > 1) donutEl.removeChild(donutEl.lastChild);
 
-  let offset = 0; // cumulative arc start offset (fraction of CIRC)
-  const GAP = CIRC * 0.012; // small gap between segments
+  let offset = 0;
+  const GAP   = CIRC * 0.012;
   catOrder.forEach(cat => {
-    const sets  = catSets[cat] || 0;
+    const sets = catSets[cat] || 0;
     if (!sets) return;
     const arcLen = (sets / total) * CIRC - GAP;
     const seg    = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    seg.setAttribute('cx', '80');
-    seg.setAttribute('cy', '80');
-    seg.setAttribute('r', '60');
-    seg.setAttribute('fill', 'none');
+    seg.setAttribute('cx','80'); seg.setAttribute('cy','80'); seg.setAttribute('r','60');
+    seg.setAttribute('fill','none');
     seg.setAttribute('stroke', CAT_META[cat].color);
-    seg.setAttribute('stroke-width', '16');
-    seg.setAttribute('stroke-linecap', 'round');
-    // Animate: start at full offset (invisible), transition to real arc
+    seg.setAttribute('stroke-width','16');
+    seg.setAttribute('stroke-linecap','round');
     seg.setAttribute('stroke-dasharray', `0 ${CIRC}`);
     seg.setAttribute('stroke-dashoffset', `${-offset}`);
     donutEl.appendChild(seg);
-    // Trigger animation on next frame
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        seg.style.transition = 'stroke-dasharray 0.6s cubic-bezier(0.22,1,0.36,1)';
-        seg.setAttribute('stroke-dasharray', `${arcLen} ${CIRC - arcLen}`);
-      });
-    });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      seg.style.transition = 'stroke-dasharray 0.6s cubic-bezier(0.22,1,0.36,1)';
+      seg.setAttribute('stroke-dasharray', `${arcLen} ${CIRC - arcLen}`);
+    }));
     offset += arcLen + GAP;
   });
 
-  // ── Legend pills ─────────────────────────────────────────
-  const legendEl = q('#s17-legend');
-  legendEl.innerHTML = catOrder
+  // ── Legend ───────────────────────────────────────────────
+  q('#s17-legend').innerHTML = catOrder
     .filter(cat => catSets[cat])
     .map(cat => `
       <div class="md-legend-pill">
@@ -1420,12 +1481,12 @@ function renderMusclesDetail(entry, backScreen) {
         ${CAT_META[cat].label} · ${catSets[cat]}
       </div>`).join('');
 
-  // ── Muscle rows helper ───────────────────────────────────
+  // ── Muscle rows ──────────────────────────────────────────
   function buildMuscleRows(tally, containerId) {
     const el = q(`#${containerId}`);
     if (!el) return;
     const sorted = Object.entries(tally).sort((a,b) => b[1]-a[1]);
-    if (!sorted.length) { el.closest('[id$="-wrap"]')?.style && (el.closest('[id$="-wrap"]').style.display = 'none'); return; }
+    if (!sorted.length) return;
     const maxV = sorted[0][1];
     el.innerHTML = '';
     sorted.forEach(([m, sets]) => {
@@ -1438,19 +1499,17 @@ function renderMusclesDetail(entry, backScreen) {
         <span class="md-muscle-dot" style="background:${color}"></span>
         <span class="md-muscle-name">${MUSCLE_LABEL[m] || m}</span>
         <div class="md-muscle-bar-wrap">
-          <div class="md-muscle-bar" data-pct="${pct}" style="background:${color}"></div>
+          <div class="md-muscle-bar" data-pct="${pct}" data-color="${color}" style="background:${color}30"></div>
         </div>
         <span class="md-muscle-sets">${sets}×</span>`;
       el.appendChild(row);
     });
-    // Animate bars after paint
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        el.querySelectorAll('.md-muscle-bar').forEach(bar => {
-          bar.style.width = `${bar.dataset.pct}%`;
-        });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.querySelectorAll('.md-muscle-bar').forEach(bar => {
+        bar.style.width      = `${bar.dataset.pct}%`;
+        bar.style.background = bar.dataset.color;
       });
-    });
+    }));
   }
 
   buildMuscleRows(primary,   's17-primary');
@@ -1459,11 +1518,10 @@ function renderMusclesDetail(entry, backScreen) {
   const secWrap = q('#s17-secondary-wrap');
   if (secWrap) secWrap.style.display = Object.keys(secondary).length ? '' : 'none';
 
-  q('#s17-back').onclick = () => showScreen(_back);
-  q('#s17-done').onclick = () => showScreen(_back);
+  q('#s17-back').onclick = onBack;
+  q('#s17-done').onclick = onBack;
 
   showScreen('s-17');
-  updateNav('today');
 }
 
 // ─── S-16 Cool-down ───────────────────────────────────────
