@@ -1380,9 +1380,7 @@ function renderMusclesWeek() {
     // Clear donut to track only
     const donutEl = q('#s17-donut');
     while (donutEl.children.length > 1) donutEl.removeChild(donutEl.lastChild);
-    q('#s17-primary').innerHTML   = `<div class="md-empty">No sessions logged this week yet.</div>`;
-    q('#s17-secondary').innerHTML = '';
-    if (q('#s17-secondary-wrap')) q('#s17-secondary-wrap').style.display = 'none';
+    q('#s17-groups').innerHTML = `<div class="md-empty">No sessions logged this week yet.</div>`;
     q('#s17-back').onclick = goHome;
     q('#s17-done').onclick = goHome;
     showScreen('s-17');
@@ -1425,43 +1423,47 @@ function renderMusclesDetail(entry, backScreen) {
 }
 
 // ─── S-17 shared renderer ────────────────────────────────
-// tallies: { primary, secondary }
-// subtitle: shown in md-session slot (date / week range)
-// title: shown as small caption below subtitle
-// onBack: callback for ← and Done buttons
 function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
   const sessEl = q('#s17-session');
   if (sessEl) sessEl.textContent = subtitle + (title ? ` · ${title}` : '');
 
-  const totalSets = Object.values(primary).reduce((a,b) => a+b, 0);
+  // Merge primary + secondary into one tally for grouping
+  // Primary counts full, secondary counts half (already done in buildMuscleTally secondary)
+  const allMuscles = { ...primary };
+  Object.entries(secondary).forEach(([m, v]) => {
+    allMuscles[m] = (allMuscles[m] || 0) + v;
+  });
+
+  const totalSets = Object.values(primary).reduce((a, b) => a + b, 0);
   q('#s17-total-sets').textContent = totalSets;
 
-  // ── Donut ring ───────────────────────────────────────────
-  const CIRC    = 2 * Math.PI * 60;
-  const donutEl = q('#s17-donut');
-  const catOrder = ['push','pull','core','legs'];
-
-  const catSets = {};
+  // ── Category totals (primary only for donut & group header) ─
+  const catOrder = ['push', 'pull', 'core', 'legs'];
+  const catSets  = {};
   Object.entries(primary).forEach(([m, sets]) => {
     const cat = MUSCLE_CAT[m] || 'push';
     catSets[cat] = (catSets[cat] || 0) + sets;
   });
-  const total = Object.values(catSets).reduce((a,b) => a+b, 0) || 1;
+  const catTotal = Object.values(catSets).reduce((a, b) => a + b, 0) || 1;
+  const maxCat   = Math.max(...Object.values(catSets), 1);
 
+  // ── Donut ring ───────────────────────────────────────────
+  const CIRC    = 2 * Math.PI * 60;
+  const donutEl = q('#s17-donut');
   while (donutEl.children.length > 1) donutEl.removeChild(donutEl.lastChild);
 
   let offset = 0;
-  const GAP   = CIRC * 0.012;
+  const GAP = CIRC * 0.012;
   catOrder.forEach(cat => {
     const sets = catSets[cat] || 0;
     if (!sets) return;
-    const arcLen = (sets / total) * CIRC - GAP;
-    const seg    = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    seg.setAttribute('cx','80'); seg.setAttribute('cy','80'); seg.setAttribute('r','60');
-    seg.setAttribute('fill','none');
+    const arcLen = (sets / catTotal) * CIRC - GAP;
+    const seg    = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    seg.setAttribute('cx', '80'); seg.setAttribute('cy', '80'); seg.setAttribute('r', '60');
+    seg.setAttribute('fill', 'none');
     seg.setAttribute('stroke', CAT_META[cat].color);
-    seg.setAttribute('stroke-width','16');
-    seg.setAttribute('stroke-linecap','round');
+    seg.setAttribute('stroke-width', '16');
+    seg.setAttribute('stroke-linecap', 'round');
     seg.setAttribute('stroke-dasharray', `0 ${CIRC}`);
     seg.setAttribute('stroke-dashoffset', `${-offset}`);
     donutEl.appendChild(seg);
@@ -1472,7 +1474,7 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
     offset += arcLen + GAP;
   });
 
-  // ── Legend ───────────────────────────────────────────────
+  // ── Legend pills ─────────────────────────────────────────
   q('#s17-legend').innerHTML = catOrder
     .filter(cat => catSets[cat])
     .map(cat => `
@@ -1481,42 +1483,67 @@ function _renderMusclesFull({ primary, secondary }, subtitle, title, onBack) {
         ${CAT_META[cat].label} · ${catSets[cat]}
       </div>`).join('');
 
-  // ── Muscle rows ──────────────────────────────────────────
-  function buildMuscleRows(tally, containerId) {
-    const el = q(`#${containerId}`);
-    if (!el) return;
-    const sorted = Object.entries(tally).sort((a,b) => b[1]-a[1]);
-    if (!sorted.length) return;
-    const maxV = sorted[0][1];
-    el.innerHTML = '';
-    sorted.forEach(([m, sets]) => {
-      const cat   = MUSCLE_CAT[m] || 'push';
-      const color = CAT_META[cat]?.color || '#6C7FD8';
-      const pct   = Math.round(sets / maxV * 100);
-      const row   = document.createElement('div');
-      row.className = 'md-muscle-row';
-      row.innerHTML = `
-        <span class="md-muscle-dot" style="background:${color}"></span>
-        <span class="md-muscle-name">${MUSCLE_LABEL[m] || m}</span>
-        <div class="md-muscle-bar-wrap">
-          <div class="md-muscle-bar" data-pct="${pct}" data-color="${color}" style="background:${color}30"></div>
-        </div>
-        <span class="md-muscle-sets">${sets}×</span>`;
-      el.appendChild(row);
+  // ── Category group cards ─────────────────────────────────
+  const groupsEl = q('#s17-groups');
+  groupsEl.innerHTML = '';
+
+  catOrder.forEach((cat, ci) => {
+    const catLoad = catSets[cat] || 0;
+    if (!catLoad) return;
+
+    const color = CAT_META[cat].color;
+    const pctOfMax = Math.round(catLoad / maxCat * 100);
+    const pctOfTotal = Math.round(catLoad / catTotal * 100);
+
+    // All muscles in this category (from merged tally)
+    const muscles = Object.entries(allMuscles)
+      .filter(([m]) => (MUSCLE_CAT[m] || 'push') === cat)
+      .sort((a, b) => b[1] - a[1]);
+    if (!muscles.length) return;
+
+    const maxMuscle = muscles[0][1];
+
+    const group = document.createElement('div');
+    group.className = 'md-cat-group';
+    // Stagger animation delay per group
+    group.style.animationDelay = `${ci * 80}ms`;
+
+    const bodyRows = muscles.map(([m, sets]) => {
+      const barPct = Math.round(sets / maxMuscle * 100);
+      return `
+        <div class="md-muscle-row">
+          <span class="md-muscle-name">${MUSCLE_LABEL[m] || m}</span>
+          <div class="md-muscle-bar-wrap">
+            <div class="md-muscle-bar" data-pct="${barPct}" data-color="${color}" style="background:${color}20"></div>
+          </div>
+          <span class="md-muscle-sets">${sets}×</span>
+        </div>`;
+    }).join('');
+
+    group.innerHTML = `
+      <div class="md-cat-header">
+        <div class="md-cat-bar-bg" data-pct="${pctOfMax}" style="background:${color}; width:0%"></div>
+        <span class="md-cat-label" style="color:${color}">${CAT_META[cat].label}</span>
+        <span class="md-cat-sets" style="color:${color}">${catLoad} sets</span>
+        <span class="md-cat-pct">${pctOfTotal}%</span>
+      </div>
+      <div class="md-cat-body">${bodyRows}</div>`;
+
+    groupsEl.appendChild(group);
+  });
+
+  // Animate all bars in one rAF pass
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    groupsEl.querySelectorAll('.md-cat-bar-bg').forEach(bg => {
+      bg.style.transition = 'width 0.65s cubic-bezier(0.22,1,0.36,1)';
+      bg.style.width = `${bg.dataset.pct}%`;
     });
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.querySelectorAll('.md-muscle-bar').forEach(bar => {
-        bar.style.width      = `${bar.dataset.pct}%`;
-        bar.style.background = bar.dataset.color;
-      });
-    }));
-  }
-
-  buildMuscleRows(primary,   's17-primary');
-  buildMuscleRows(secondary, 's17-secondary');
-
-  const secWrap = q('#s17-secondary-wrap');
-  if (secWrap) secWrap.style.display = Object.keys(secondary).length ? '' : 'none';
+    groupsEl.querySelectorAll('.md-muscle-bar').forEach(bar => {
+      bar.style.transition = 'width 0.55s cubic-bezier(0.22,1,0.36,1), background 0.55s ease';
+      bar.style.width      = `${bar.dataset.pct}%`;
+      bar.style.background = bar.dataset.color;
+    });
+  }));
 
   q('#s17-back').onclick = onBack;
   q('#s17-done').onclick = onBack;

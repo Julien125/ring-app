@@ -773,6 +773,57 @@
       font-size: 11px; color: var(--txt-3);
       font-style: italic; padding: 12px 0;
     }
+
+    /* Category group cards */
+    .md-cat-group {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .md-cat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px 10px;
+      position: relative;
+    }
+    .md-cat-bar-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.07;
+      transition: width 0.65s cubic-bezier(0.22,1,0.36,1);
+      border-radius: 14px 14px 0 0;
+    }
+    .md-cat-label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase;
+      position: relative; z-index: 1;
+      flex: 1;
+    }
+    .md-cat-sets {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; letter-spacing: 0.04em;
+      position: relative; z-index: 1;
+    }
+    .md-cat-pct {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; color: var(--txt-3);
+      letter-spacing: 0.04em;
+      position: relative; z-index: 1;
+    }
+    .md-cat-body {
+      padding: 0 16px 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .md-cat-body .md-muscle-row {
+      padding: 9px 0;
+    }
+    .md-cat-body .md-muscle-name {
+      font-size: 11px;
+      min-width: 80px;
+    }
     .md-muscle-sets {
       font-family: 'DM Mono', monospace;
       font-size: 11px; color: var(--txt-3);
@@ -1360,15 +1411,8 @@
       </div>
     </div>
 
-    <!-- Ranked muscles list -->
-    <div class="px-screen mt-5">
-      <div class="md-section-label">Primary load</div>
-      <div id="s17-primary" class="mt-2"></div>
-    </div>
-    <div class="px-screen mt-4" id="s17-secondary-wrap">
-      <div class="md-section-label">Supporting</div>
-      <div id="s17-secondary" class="mt-2"></div>
-    </div>
+    <!-- Grouped by Push / Pull / Core / Legs -->
+    <div class="px-screen mt-5" id="s17-groups"></div>
 
     <div class="px-screen mt-5 mb-nav" style="padding-bottom:40px">
       <button class="btn-primary" id="s17-done">Back to summary</button>
