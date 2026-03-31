@@ -9,8 +9,20 @@ const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
 
+// ─── Date helper (local timezone, avoids UTC offset bugs) ─
+const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
 // ─── State ────────────────────────────────────────────────
 let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [] };
+
+// ─── Adaptations (separate store — never mutates log) ─────
+const ADAPT_KEY = 'ring-app-adaptations';
+let adaptations = {
+  targets:  {},  // { exerciseId: { value, reason, since } }
+  rests:    {},  // { 'sessionId:ssId:type': { value, reason, since } }
+  flags:    [],  // [{ exerciseId, type, date, acknowledged, ... }]
+  patterns: [],  // [{ type, exerciseId?, detectedDate, dismissed }]
+};
 
 // Default skill levels — front-lever pre-set to 5 (achieved)
 const DEFAULT_SKILL_LEVELS = {
@@ -58,6 +70,7 @@ let swLeft  = 0;   // left side secs (stored after first stop)
 // ─── Boot ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadState();
+  loadAdaptations();
   initWorker();
   registerSW();
   bindGlobalUI();
@@ -87,6 +100,37 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadAdaptations() {
+  try {
+    const a = localStorage.getItem(ADAPT_KEY);
+    if (a) adaptations = { ...adaptations, ...JSON.parse(a) };
+  } catch (_) {}
+}
+
+function saveAdaptations() {
+  localStorage.setItem(ADAPT_KEY, JSON.stringify(adaptations));
+}
+
+// ─── Effective target / rest (program default + adaptation) ─
+function getEffectiveTarget(ex) {
+  // ex is an exercise object from SESSIONS
+  const adapted = adaptations.targets[ex.id];
+  if (adapted) return adapted.value;
+  return ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+}
+
+function getEffectiveRest(sessionId, ssId, type) {
+  // type: 'intra' | 'round'
+  const key = `${sessionId}:${ssId}:${type}`;
+  const adapted = adaptations.rests[key];
+  if (adapted) return { value: adapted.value, adjusted: true, reason: adapted.reason };
+  const sess = SESSIONS.find(s => s.id === sessionId);
+  const ss   = sess?.supersets.find(s => s.id === ssId);
+  if (!ss) return { value: 25, adjusted: false };
+  const base = type === 'intra' ? ss.restIntra : ss.restRound;
+  return { value: base, adjusted: false };
 }
 
 function saveActive() {
@@ -273,12 +317,36 @@ function bindGlobalUI() {
     goHome();
   });
 
-  // Skip dialog
-  q('#ds-cancel').addEventListener('click', () => hideDialog('dialog-skip'));
-  q('#ds-skip').addEventListener('click', () => {
-    hideDialog('dialog-skip');
-    doSkipExercise();
+  // Skip dialog — reason picker
+  let _skipReason = null;
+  q('#ds-reasons').addEventListener('click', e => {
+    const btn = e.target.closest('.skip-reason-btn');
+    if (!btn) return;
+    _skipReason = btn.dataset.reason;
+    q('#ds-reasons').querySelectorAll('.skip-reason-btn').forEach(b => b.classList.toggle('is-selected', b === btn));
+    q('#ds-skip').disabled = false;
   });
+  q('#ds-cancel').addEventListener('click', () => {
+    _skipReason = null;
+    q('#ds-reasons').querySelectorAll('.skip-reason-btn').forEach(b => b.classList.remove('is-selected'));
+    q('#ds-skip').disabled = true;
+    hideDialog('dialog-skip');
+  });
+  q('#ds-skip').addEventListener('click', () => {
+    const reason = _skipReason || 'other';
+    _skipReason = null;
+    q('#ds-reasons').querySelectorAll('.skip-reason-btn').forEach(b => b.classList.remove('is-selected'));
+    q('#ds-skip').disabled = true;
+    hideDialog('dialog-skip');
+    doSkipExercise(reason);
+  });
+
+  // Adaptation badge popover on exercise screens
+  bindAdaptBadgePopover('s-03');
+  bindAdaptBadgePopover('s-04');
+
+  // Adaptation popover dismiss
+  q('#dp-cancel')?.addEventListener('click', () => hideDialog('dialog-adapt'));
 
   // Swipe-left on exercise screens → skip
   bindSwipeToSkip();
@@ -317,13 +385,175 @@ function hideDialog(id) {
   if (el) el.classList.remove('is-active');
 }
 
+// ═══════════════════════════════════════════════════════════
+//  ADAPTATION ENGINE — Signal Detection (Phase 2)
+// ═══════════════════════════════════════════════════════════
+//
+//  Open questions resolved:
+//  Q1 — Sensitivity: hardcoded "middle path" — silent target bumps visible
+//       via ↑/↓ badges. Athlete always one tap away from reset.
+//  Q3 — Exercise swap: when suggested (repeated-skip pattern), athlete picks
+//       manually. No automated alternatives until exercise library is built.
+//  Q4 — Week advancement: adapted targets + rests reset on phase label change.
+//       Within the same phase, adaptations carry across weeks.
+
+// Guard: never adapt during deload, always exclude skill exercises
+function canAdapt() { return !phase().isDeload; }
+const SKILL_IDS = new Set(
+  Object.values(SESSIONS).flatMap ? [] : []  // populated lazily below
+);
+function isSkillExercise(exId) {
+  // Skills are tracked in SKILL_PROGRESSIONS, not supersets
+  return exId in (typeof SKILL_PROGRESSIONS !== 'undefined' ? SKILL_PROGRESSIONS : {});
+}
+
+// detectFading(sets) — true if every set is strictly less than the previous
+// Requires at least 3 sets to be meaningful
+function detectFading(sets) {
+  if (!sets || sets.length < 3) return false;
+  const nums = sets.map(v => typeof v === 'number' ? v : 0);
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] >= nums[i - 1]) return false;
+  }
+  return true;
+}
+
+// detectPerformanceSignal(sets, target)
+// Returns 'above' | 'below' | 'fading' | 'on-target' | null
+function detectPerformanceSignal(sets, target) {
+  if (!sets || sets.length === 0 || !target) return null;
+  const nums = sets.map(v => typeof v === 'number' ? v : 0).filter(v => v > 0);
+  if (nums.length === 0) return null;
+
+  if (detectFading(nums)) return 'fading';
+
+  const aboveCount = nums.filter(v => v >= target + 2).length;
+  const belowCount = nums.filter(v => v <= target - 2).length;
+
+  if (aboveCount >= 2) return 'above';
+  if (belowCount >= 2) return 'below';
+  return 'on-target';
+}
+
+// detectAsymmetry(leftSecs, rightSecs)
+// Returns { pct, weak: 'left'|'right', flagged } or null
+function detectAsymmetry(leftSecs, rightSecs) {
+  if (!leftSecs || !rightSecs || leftSecs <= 0 || rightSecs <= 0) return null;
+  const diff = Math.abs(leftSecs - rightSecs);
+  const stronger = Math.max(leftSecs, rightSecs);
+  const pct = Math.round((diff / stronger) * 100);
+  return {
+    pct,
+    weak: leftSecs < rightSecs ? 'left' : 'right',
+    flagged: pct >= 20,
+  };
+}
+
+// classifySession(entry)
+// entry: { exercises: {id: {sets}}, skips: [], durationSecs }
+// Returns 'light' | 'normal' | 'heavy' | 'long'
+function classifySession(entry) {
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) return 'normal';
+
+  const skips = entry.skips || [];
+  const fatigueSkips = skips.filter(s => s.reason === 'fatigue').length;
+  const timeSkips    = skips.filter(s => s.reason === 'time').length;
+
+  if (timeSkips >= 2) return 'long';
+  if (fatigueSkips >= 2) return 'heavy';
+
+  // Check overall reps vs targets
+  let totalBelow = 0, totalExercises = 0;
+  sess.supersets.forEach(ss => {
+    ss.exercises.forEach(ex => {
+      const logged = entry.exercises?.[ex.id];
+      if (!logged || !logged.sets) return;
+      totalExercises++;
+      const target = ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+      const signal = detectPerformanceSignal(logged.sets, target);
+      if (signal === 'below') totalBelow++;
+    });
+  });
+
+  if (totalExercises === 0) return 'normal';
+  const belowRatio = totalBelow / totalExercises;
+  if (belowRatio >= 0.3) return 'heavy';
+
+  // Check for light — all on target or above, no skips
+  if (skips.length === 0 && belowRatio === 0) return 'light';
+  return 'normal';
+}
+
 // ─── S-01 Home ────────────────────────────────────────────
 function goHome() {
   stopTimer();
   stopStopwatch();
   renderHome();
+  renderPatternCard();
   showScreen('s-01');
   updateNav('today');
+}
+
+function renderPatternCard() {
+  const card    = q('#s01-pattern-card');
+  const msgEl   = q('#s01-pattern-msg');
+  const actBtn  = q('#s01-pattern-act');
+  const disBtn  = q('#s01-pattern-dismiss');
+  if (!card || !msgEl) return;
+
+  // Find first undismissed pattern
+  const pattern = adaptations.patterns.find(p => !p.dismissed);
+  if (!pattern) { card.style.display = 'none'; return; }
+
+  msgEl.textContent = pattern.msg;
+
+  // Wire action button based on pattern type
+  actBtn.style.display = 'none';
+  if (pattern.type === 'plateau') {
+    actBtn.textContent = 'Go to Skills →';
+    actBtn.style.display = '';
+    actBtn.onclick = () => {
+      pattern.dismissed = true;
+      saveAdaptations();
+      card.style.display = 'none';
+      renderSkillsOverview();
+    };
+  } else if (pattern.type === 'long-session') {
+    actBtn.textContent = 'Trim SS D to 2 rounds';
+    actBtn.style.display = '';
+    actBtn.onclick = () => {
+      // Soft cap: store in adaptations as a session override
+      if (!adaptations.sessionOverrides) adaptations.sessionOverrides = {};
+      const sid = pattern.sessionId;
+      if (sid) {
+        if (!adaptations.sessionOverrides[sid]) adaptations.sessionOverrides[sid] = {};
+        adaptations.sessionOverrides[sid].trimLastSS = true;
+      }
+      pattern.dismissed = true;
+      saveAdaptations();
+      card.style.display = 'none';
+    };
+  } else if (pattern.type === 'phase-readiness') {
+    actBtn.textContent = `Move to Phase ${state.currentWeek + 1}`;
+    actBtn.style.display = '';
+    actBtn.onclick = () => {
+      state.currentWeek = Math.min(state.currentWeek + 1, 10);
+      saveState();
+      pattern.dismissed = true;
+      saveAdaptations();
+      renderHome();
+      card.style.display = 'none';
+    };
+  }
+
+  disBtn.onclick = () => {
+    pattern.dismissed = true;
+    saveAdaptations();
+    card.style.display = 'none';
+  };
+
+  card.style.display = '';
 }
 
 function renderHome() {
@@ -407,13 +637,93 @@ function startSession(session) {
     exIdx:       0,
     round:       1,
     log:         {},
+    skips:       [],
     skillsDone:  false,
     warmupDone:  false,
     startTime:   Date.now(),
     complete:    false,
+    softRemoved: [],   // exerciseIds soft-removed for this session
   };
   saveActive();
-  renderWarmup();
+
+  // Check for unacknowledged pain flags in today's exercises
+  const painFlags = getPainFlagsForSession(session);
+  if (painFlags.length > 0) {
+    renderPainCheckin(painFlags, () => renderWarmup());
+  } else {
+    renderWarmup();
+  }
+}
+
+// getPainFlagsForSession — find unresolved pain flags for exercises in session
+function getPainFlagsForSession(session) {
+  const exerciseIds = new Set(
+    session.supersets.flatMap(ss => ss.exercises.map(e => e.id))
+  );
+  return adaptations.flags.filter(f =>
+    f.type === 'pain-skip' &&
+    !f.acknowledged &&
+    exerciseIds.has(f.exerciseId)
+  );
+}
+
+// renderPainCheckin — pre-session check-in for flagged exercises
+function renderPainCheckin(flags, onContinue) {
+  const dialog = q('#dialog-checkin');
+  const list   = q('#dc-list');
+  if (!dialog || !list) { onContinue(); return; }
+
+  list.innerHTML = flags.map((f, i) => {
+    const sess = SESSIONS.find(s => s.id === f.sessionId);
+    const ex   = sess?.supersets.flatMap(ss => ss.exercises).find(e => e.id === f.exerciseId);
+    const name = ex?.name || f.exerciseId;
+    return `
+      <div class="checkin-item" data-i="${i}" data-exid="${f.exerciseId}">
+        <div class="checkin-item__name">${name}</div>
+        <div class="checkin-item__flag">flagged ${f.date} — discomfort</div>
+        <div class="checkin-item__actions">
+          <button class="checkin-btn checkin-btn--fine"    data-action="fine"   data-i="${i}">Feels fine — keep it</button>
+          <button class="checkin-btn checkin-btn--skip"    data-action="skip"   data-i="${i}">Still sore — skip today</button>
+          <button class="checkin-btn checkin-btn--remove"  data-action="remove" data-i="${i}">Remove from this block</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  let resolved = 0;
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const idx    = +btn.dataset.i;
+    const flag   = flags[idx];
+
+    // Mark flag acknowledged
+    const stored = adaptations.flags.find(f =>
+      f.exerciseId === flag.exerciseId && f.type === 'pain-skip' && !f.acknowledged);
+    if (stored) stored.acknowledged = true;
+
+    if (action === 'skip') {
+      if (!A.skips) A.skips = [];
+      A.skips.push({ exerciseId: flag.exerciseId, reason: 'pain', ssIdx: null, round: 0, date: fmtLocal(new Date()) });
+      A.softRemoved = [...(A.softRemoved || []), flag.exerciseId];
+    } else if (action === 'remove') {
+      A.softRemoved = [...(A.softRemoved || []), flag.exerciseId];
+    }
+
+    // Dim the item
+    btn.closest('.checkin-item').style.opacity = '0.4';
+    btn.closest('.checkin-item').querySelectorAll('button').forEach(b => b.disabled = true);
+
+    resolved++;
+    if (resolved >= flags.length) {
+      saveAdaptations();
+      saveActive();
+      hideDialog('dialog-checkin');
+      onContinue();
+    }
+  });
+
+  showDialog('dialog-checkin');
 }
 
 function resumeSession() {
@@ -563,7 +873,7 @@ function levelUpSkill(skillId) {
       fromLevel: current,
       toLevel:   next,
       drill:     prog.progressions[next - 1].drill,
-      date:      new Date().toISOString().slice(0, 10),
+      date:      fmtLocal(new Date()),
     });
     saveState();
     renderSkills();
@@ -604,12 +914,12 @@ function renderSkillsOverview() {
       row.className = 'skill-history-row';
       row.innerHTML = `
         <div class="skill-history-row__left">
-          <span class="skill-history-row__name">${prog ? prog.name : entry.skillId}</span>
-          <span class="skill-history-row__drill">${entry.drill || ''}</span>
-        </div>
-        <div class="skill-history-row__right">
           <span class="skill-history-row__level">L${entry.fromLevel} → L${entry.toLevel}</span>
           <span class="skill-history-row__date">${entry.date}</span>
+        </div>
+        <div class="skill-history-row__right">
+          <span class="skill-history-row__name">${prog ? prog.name : entry.skillId}</span>
+          <span class="skill-history-row__drill">${entry.drill || ''}</span>
         </div>`;
       section.appendChild(row);
     });
@@ -715,6 +1025,12 @@ function renderExercise() {
   const ex  = ss.exercises[A.exIdx];
   const totalRounds = Math.round(ss.rounds * phase().roundMult);
 
+  // Skip soft-removed exercises silently
+  if (A.softRemoved?.includes(ex.id)) {
+    advance(ss, totalRounds);
+    return;
+  }
+
   if (ex.type === 'hold') renderHold(ex, ss, totalRounds);
   else                    renderReps(ex, ss, totalRounds);
 }
@@ -757,9 +1073,46 @@ function buildMuscleChips(ex) {
   ).join('');
 }
 
+// buildAdaptBadge — inline badge ↑/↓ next to target, tap-to-explain
+function buildAdaptBadge(ex, adapted, progTarget) {
+  const dir    = adapted.value > progTarget ? '↑' : '↓';
+  const label  = adapted.reason === 'above-target'
+    ? `Above target 2 sessions running — bumped from ${progTarget}`
+    : `Below target 2 sessions running — pulled back from ${progTarget}`;
+  return ` <span class="adapt-badge adapt-badge--${dir === '↑' ? 'up' : 'down'}"
+    data-exid="${ex.id}" data-label="${label}" data-prog="${progTarget}">${dir}</span>`;
+}
+
+function bindAdaptBadgePopover(screenId) {
+  const screen = q(`#${screenId}`);
+  if (!screen) return;
+  screen.addEventListener('click', e => {
+    const badge = e.target.closest('.adapt-badge');
+    if (!badge) return;
+    const exId = badge.dataset.exid;
+    const label = badge.dataset.label;
+    const prog  = badge.dataset.prog;
+    showAdaptPopover(exId, label, prog);
+  });
+}
+
+function showAdaptPopover(exId, label, progTarget) {
+  // Simple inline popover — reuse dialog mechanism
+  q('#dp-body').textContent  = label;
+  q('#dp-reset').onclick = () => {
+    delete adaptations.targets[exId];
+    saveAdaptations();
+    hideDialog('dialog-adapt');
+    renderExercise(); // re-render current exercise
+  };
+  showDialog('dialog-adapt');
+}
+
 function renderReps(ex, ss, totalRounds) {
-  const target = getTargetReps(ex);
-  const logged = (A.log[ex.id] || { sets: [] }).sets;
+  const progTarget = getTargetReps(ex);
+  const adapted    = adaptations.targets[ex.id];
+  const target     = adapted ? adapted.value : progTarget;
+  const logged     = (A.log[ex.id] || { sets: [] }).sets;
   const lastLogged = logged.length > 0 ? logged[logged.length - 1] : null;
   // Auto-progression: if last round beat the target, default to lastRound − 1
   let currentReps = (lastLogged !== null && lastLogged > target) ? lastLogged - 1 : target;
@@ -770,10 +1123,10 @@ function renderReps(ex, ss, totalRounds) {
   q('#s03-cat').textContent        = ex.category;
   q('#s03-name').textContent       = ex.name;
   q('#s03-desc').textContent       = ex.desc || '';
-  // Show auto-adjusted target if progression kicked in
+  // Show target with optional adaptation badge
   const isAutoAdjusted = lastLogged !== null && lastLogged > target;
-  q('#s03-target').textContent     = isAutoAdjusted ? `${currentReps}` : `${target}`;
-  q('#s03-target').title           = isAutoAdjusted ? `Program: ${target} · Auto-adjusted from ${lastLogged}` : '';
+  const badge = adapted ? buildAdaptBadge(ex, adapted, progTarget) : '';
+  q('#s03-target').innerHTML       = `${isAutoAdjusted ? currentReps : target}${badge}`;
   q('#s03-setnum').textContent     = `${A.round}/${totalRounds}`;
   q('#s03-pills').innerHTML        = buildSetPills(ex, ss);
   q('#s03-muscles').innerHTML      = buildMuscleChips(ex);
@@ -825,7 +1178,9 @@ function renderReps(ex, ss, totalRounds) {
 }
 
 function renderHold(ex, ss, totalRounds) {
-  const target      = ex.targetSecs;
+  const progTarget   = ex.targetSecs;
+  const adapted      = adaptations.targets[ex.id];
+  const target       = adapted ? adapted.value : progTarget;
   const isUnilateral = !!ex.unilateral;
 
   q('#s04-breadcrumb').textContent = buildBreadcrumb(ss, totalRounds);
@@ -834,7 +1189,8 @@ function renderHold(ex, ss, totalRounds) {
   q('#s04-cat').textContent        = ex.category;
   q('#s04-name').textContent       = ex.name;
   q('#s04-desc').textContent       = ex.desc || '';
-  q('#s04-target').textContent     = isUnilateral ? `${target}s / side` : `${target}s`;
+  const badge = adapted ? buildAdaptBadge(ex, adapted, progTarget) : '';
+  q('#s04-target').innerHTML       = isUnilateral ? `${target}s / side${badge}` : `${target}s${badge}`;
   q('#s04-setnum').textContent     = `${A.round}/${totalRounds}`;
   q('#s04-pills').innerHTML        = buildSetPills(ex, ss);
   q('#s04-muscles').innerHTML      = buildMuscleChips(ex);
@@ -1005,7 +1361,7 @@ function getStreak() {
   const getMonday = d => {
     const date = new Date(d);
     date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
-    return date.toISOString().slice(0, 10);
+    return fmtLocal(date);
   };
   const weeksWithSessions = new Set(state.log.map(e => getMonday(e.date)));
   let streak = 0;
@@ -1036,8 +1392,20 @@ function logSet(value) {
   advance(ss, totalRounds);
 }
 
-function doSkipExercise() {
+function doSkipExercise(reason = 'other') {
   const ss  = A.session.supersets[A.ssIdx];
+  const ex  = ss.exercises[A.exIdx];
+  // Log the skip with reason for adaptation engine
+  if (!A.skips) A.skips = [];
+  A.skips.push({
+    exerciseId: ex.id,
+    reason,
+    ssIdx:  A.ssIdx,
+    exIdx:  A.exIdx,
+    round:  A.round,
+    date:   fmtLocal(new Date()),
+  });
+  saveActive();
   const totalRounds = Math.round(ss.rounds * phase().roundMult);
   advance(ss, totalRounds);
 }
@@ -1077,8 +1445,27 @@ function showRest(type, ss, nextEx) {
   const isIntra   = type === 'intra';
   const pfx       = isIntra ? 's05' : 's06';
   const screenId  = isIntra ? 's-05' : 's-06';
-  const secs      = isIntra ? ss.restIntra : ss.restRound;
   const totalRounds = Math.round(ss.rounds * phase().roundMult);
+
+  // Use adapted rest if available, otherwise program default
+  const restInfo  = getEffectiveRest(A.sessionId, ss.id, isIntra ? 'intra' : 'round');
+  let secs        = restInfo.value;
+  let restAdjusted = restInfo.adjusted;
+  let restAdjReason = restInfo.reason || '';
+
+  // Intra-session fading check: if the just-completed hold exercise is fading
+  // across this round's sets, add +15s automatically
+  if (canAdapt() && isIntra) {
+    const prevEx = ss.exercises[A.exIdx - 1];
+    if (prevEx && prevEx.type === 'hold') {
+      const prevSets = (A.log[prevEx.id] || { sets: [] }).sets;
+      if (detectFading(prevSets)) {
+        secs += 15;
+        restAdjusted = true;
+        restAdjReason = 'hold time dropping';
+      }
+    }
+  }
 
   // Confirmed line
   const confirmed = q(`#${pfx}-confirmed`);
@@ -1115,6 +1502,13 @@ function showRest(type, ss, nextEx) {
     valEl.classList.remove('overtime');
   }
 
+  // Adjusted rest label
+  const adjEl = q(`#${pfx}-adj`);
+  if (adjEl) {
+    adjEl.textContent  = restAdjusted ? `+15s adjusted — ${restAdjReason}` : '';
+    adjEl.style.display = restAdjusted ? 'block' : 'none';
+  }
+
   // Buttons
   q(`#${pfx}-add`).onclick = () => addTime(isIntra ? 15 : 30);
   q(`#${pfx}-next`).onclick = () => {
@@ -1137,7 +1531,7 @@ function finishSession() {
   // Save to permanent log
   const entry = {
     id:         crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36),
-    date:       new Date().toISOString().slice(0, 10),
+    date:       fmtLocal(new Date()),
     sessionId:  A.sessionId,
     week:       state.currentWeek,
     phase:      phase().label,
@@ -1145,6 +1539,7 @@ function finishSession() {
     complete:   true,
     skillsDone: A.skillsDone,
     exercises:  A.log,
+    skips:      A.skips || [],
     prs:        A.prs || {},
     rpe:        null,   // filled in on summary screen
   };
@@ -1153,12 +1548,23 @@ function finishSession() {
 
   // Advance week every 4 sessions (mesocycle = 10 weeks)
   if (state.sessionCount % 4 === 0) {
+    const prevPhaseLabel = (PHASES[state.currentWeek] || PHASES[1]).label;
     state.currentWeek = state.currentWeek < 10 ? state.currentWeek + 1 : 1;
+    const newPhaseLabel  = (PHASES[state.currentWeek] || PHASES[1]).label;
+    // Safeguard: reset target adaptations on phase change so new phase starts fresh
+    if (prevPhaseLabel !== newPhaseLabel) {
+      adaptations.targets  = {};
+      adaptations.rests    = {};
+      adaptations.patterns = adaptations.patterns.filter(p => p.dismissed);
+      saveAdaptations();
+    }
   }
 
   saveState();
   clearActive();
   autoBackup();
+  applyInterSessionAdaptations(entry);
+  runPatternDetectors(entry);
   renderSummary(entry);
 }
 
@@ -1277,6 +1683,9 @@ function renderSummary(entry) {
   // Muscles teaser (taps to S-17)
   renderMusclesSummary(entry);
 
+  // Signals card (autoregulation feedback)
+  renderSignalsCard(entry);
+
   // Cool-down CTA
   const cdBtn = q('#s07-cooldown');
   if (cdBtn) {
@@ -1353,6 +1762,353 @@ function fmtEff(pts) {
   return e % 1 === 0 ? `${e}` : e.toFixed(1);
 }
 
+// ═══════════════════════════════════════════════════════════
+//  ADAPTATION ENGINE — Inter-session Target Bumps (Phase 5)
+// ═══════════════════════════════════════════════════════════
+
+// evaluateTargetBump(ex) → +1 / -1 / 0
+// Requires 2 consecutive sessions with the same signal.
+// Excluded: pain-flagged exercises, deload phase.
+function evaluateTargetBump(ex) {
+  if (!canAdapt() || isSkillExercise(ex.id)) return 0;
+
+  // Don't bump if exercise has a pain flag
+  const hasPainFlag = adaptations.flags.some(f =>
+    f.exerciseId === ex.id && f.type === 'pain-skip' && !f.acknowledged);
+  if (hasPainFlag) return 0;
+
+  // Last 2 sessions that contain this exercise
+  const relevant = state.log
+    .filter(e => e.exercises?.[ex.id]?.sets?.length > 0)
+    .slice(-2);
+  if (relevant.length < 2) return 0;
+
+  const target = ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+  const signals = relevant.map(e => detectPerformanceSignal(e.exercises[ex.id].sets, target));
+
+  if (signals.every(s => s === 'above'))   return +1;
+  if (signals.every(s => s === 'below'))   return -1;
+  return 0;
+}
+
+// evaluateRestAdjustment(sessionId, ssId, type) → +15 | 0
+// Requires fading signal on hold exercise in same position for 2+ sessions.
+function evaluateRestAdjustment(sessionId, ss, type) {
+  if (!canAdapt()) return 0;
+  if (type !== 'intra') return 0; // only intra-rest adjusted for fading holds
+
+  // Find the exercise just before this rest (last in the superset for intra)
+  // — we look at the hold exercises in this ss
+  const holdExercises = ss.exercises.filter(e => e.type === 'hold');
+  if (!holdExercises.length) return 0;
+
+  // Check last 2 sessions for this sessionId
+  const relevant = state.log.filter(e => e.sessionId === sessionId).slice(-2);
+  if (relevant.length < 2) return 0;
+
+  let fadingCount = 0;
+  holdExercises.forEach(ex => {
+    const fadingInBoth = relevant.every(e => {
+      const sets = e.exercises?.[ex.id]?.sets || [];
+      return detectFading(sets);
+    });
+    if (fadingInBoth) fadingCount++;
+  });
+
+  return fadingCount > 0 ? 15 : 0;
+}
+
+// applyInterSessionAdaptations(entry) — called after finishSession
+// Computes bumps for all exercises in the just-completed session,
+// stores results in adaptations.targets and adaptations.rests.
+function applyInterSessionAdaptations(entry) {
+  if (!canAdapt()) return;
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) return;
+
+  const today = fmtLocal(new Date());
+
+  sess.supersets.forEach(ss => {
+    // Per-exercise target bumps
+    ss.exercises.forEach(ex => {
+      const bump = evaluateTargetBump(ex);
+      if (bump !== 0) {
+        const current = getEffectiveTarget(ex);
+        const newVal  = current + (ex.type === 'hold' ? bump * 5 : bump);
+        adaptations.targets[ex.id] = {
+          value:  newVal,
+          reason: bump > 0 ? 'above-target' : 'below-target',
+          since:  today,
+          base:   ex.type === 'hold' ? ex.targetSecs : ex.targetReps,
+        };
+      }
+    });
+
+    // Rest adjustments per superset
+    ['intra', 'round'].forEach(type => {
+      const adj = evaluateRestAdjustment(entry.sessionId, ss, type);
+      if (adj > 0) {
+        const key = `${entry.sessionId}:${ss.id}:${type}`;
+        const base = type === 'intra' ? ss.restIntra : ss.restRound;
+        adaptations.rests[key] = {
+          value:  base + adj,
+          reason: 'fading hold time',
+          since:  today,
+          base,
+        };
+      }
+    });
+  });
+
+  saveAdaptations();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADAPTATION ENGINE — Session Signals (Phase 4)
+// ═══════════════════════════════════════════════════════════
+
+// buildSessionSignals(entry) → array of signal objects (max 3)
+// Each signal: { weight: 'quiet'|'flag'|'alert', msg, exerciseId?, type }
+function buildSessionSignals(entry) {
+  if (!canAdapt()) return [];
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) return [];
+
+  const signals = [];
+
+  // ── Per-exercise performance signals ──
+  sess.supersets.forEach(ss => {
+    ss.exercises.forEach(ex => {
+      if (isSkillExercise(ex.id)) return;
+      const logged = entry.exercises?.[ex.id];
+      if (!logged?.sets?.length) return;
+
+      const target = ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+      const sig = detectPerformanceSignal(logged.sets, target);
+      const unit = ex.type === 'hold' ? 's' : ' reps';
+      const vals = logged.sets.map(v => `${v}${unit}`).join('→');
+
+      if (sig === 'above') {
+        signals.push({ weight: 'quiet', type: 'above', exerciseId: ex.id,
+          msg: `${ex.name} consistently above target (${vals}) — target moves up next session.` });
+      } else if (sig === 'fading') {
+        signals.push({ weight: 'flag', type: 'fading', exerciseId: ex.id,
+          msg: `${ex.name} dropped ${vals} across sets — adding rest time next session.` });
+      } else if (sig === 'below') {
+        signals.push({ weight: 'flag', type: 'below', exerciseId: ex.id,
+          msg: `${ex.name} below target ${vals} — keeping load, watching next session.` });
+      }
+
+      // Unilateral asymmetry
+      if (ex.unilateral && logged.leftSecs != null && logged.rightSecs != null) {
+        const asym = detectAsymmetry(logged.leftSecs, logged.rightSecs);
+        if (asym?.flagged) {
+          signals.push({ weight: 'flag', type: 'asymmetry', exerciseId: ex.id,
+            msg: `${ex.name} — ${asym.weak} side ${asym.pct}% weaker. Worth addressing.` });
+        }
+      }
+    });
+  });
+
+  // ── Skip signals ──
+  (entry.skips || []).forEach(skip => {
+    const ex = sess.supersets.flatMap(ss => ss.exercises).find(e => e.id === skip.exerciseId);
+    const name = ex?.name || skip.exerciseId;
+    if (skip.reason === 'pain') {
+      signals.push({ weight: 'alert', type: 'pain-skip', exerciseId: skip.exerciseId,
+        msg: `${name} skipped — discomfort. Check in before next session.` });
+    } else if (skip.reason === 'fatigue') {
+      signals.push({ weight: 'flag', type: 'fatigue-skip', exerciseId: skip.exerciseId,
+        msg: `${name} skipped — too tired. Watching inter-superset fatigue.` });
+    } else if (skip.reason === 'time') {
+      signals.push({ weight: 'quiet', type: 'time-skip', exerciseId: skip.exerciseId,
+        msg: `${name} skipped — no time. Session may be running long.` });
+    }
+  });
+
+  // Max 3 items: alerts first, then flags, then quiet
+  const order = { alert: 0, flag: 1, quiet: 2 };
+  return signals.sort((a, b) => order[a.weight] - order[b.weight]).slice(0, 3);
+}
+
+function renderSignalsCard(entry) {
+  const wrap = q('#s07-signals-wrap');
+  const card = q('#s07-signals');
+  if (!wrap || !card) return;
+
+  const signals = buildSessionSignals(entry);
+  if (!signals.length) { wrap.style.display = 'none'; return; }
+
+  card.innerHTML = `
+    <div class="signals-card__header">Today's signals</div>
+    ${signals.map((sig, i) => `
+      <div class="signal-item" data-i="${i}">
+        <div class="signal-dot signal-dot--${sig.weight}"></div>
+        <div class="signal-body">
+          <div class="signal-msg">${sig.msg}</div>
+          ${sig.weight !== 'quiet'
+            ? `<button class="signal-ack" data-i="${i}">Got it</button>`
+            : ''}
+        </div>
+      </div>
+    `).join('')}`;
+
+  wrap.style.display = '';
+
+  // Store flags + alerts into adaptations
+  signals.forEach(sig => {
+    if (sig.weight === 'alert' || sig.weight === 'flag') {
+      // Avoid duplicates for same exercise + type on same date
+      const exists = adaptations.flags.some(f =>
+        f.exerciseId === sig.exerciseId && f.type === sig.type && f.date === entry.date);
+      if (!exists) {
+        adaptations.flags.push({
+          exerciseId:   sig.exerciseId,
+          type:         sig.type,
+          weight:       sig.weight,
+          date:         entry.date,
+          sessionId:    entry.sessionId,
+          acknowledged: false,
+        });
+      }
+    }
+  });
+  saveAdaptations();
+
+  // Ack buttons
+  card.addEventListener('click', e => {
+    const btn = e.target.closest('.signal-ack');
+    if (!btn) return;
+    const idx = +btn.dataset.i;
+    const sig = signals[idx];
+    // Mark acknowledged in flags store
+    const flag = adaptations.flags.find(f =>
+      f.exerciseId === sig.exerciseId && f.type === sig.type && f.date === entry.date);
+    if (flag) { flag.acknowledged = true; saveAdaptations(); }
+    btn.closest('.signal-item').style.opacity = '0.4';
+    btn.disabled = true;
+    btn.textContent = '✓';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADAPTATION ENGINE — Pattern Detectors (Phase 7)
+// ═══════════════════════════════════════════════════════════
+
+function detectPlateau(exId) {
+  // No target change for 3+ consecutive sessions containing this exercise
+  if (isSkillExercise(exId)) return false;
+  const relevant = state.log.filter(e => e.exercises?.[exId]?.sets?.length > 0).slice(-3);
+  if (relevant.length < 3) return false;
+  // Check that adaptations.targets[exId] hasn't changed across those 3 sessions
+  // Proxy: last 3 sessions all show 'on-target' (not progressing)
+  const ex = SESSIONS.flatMap(s => s.supersets.flatMap(ss => ss.exercises)).find(e => e.id === exId);
+  if (!ex) return false;
+  const target = getEffectiveTarget(ex);
+  const signals = relevant.map(e => detectPerformanceSignal(e.exercises[exId].sets, target));
+  // Plateau = not above, not improving — on-target or below for 3 sessions
+  return signals.every(s => s === 'on-target' || s === 'below' || s === 'fading');
+}
+
+function detectRepeatedSkip(exId) {
+  // Same exercise skipped in last 3 sessions that contained it (any reason)
+  const relevant = state.log
+    .filter(e => e.skips?.some(s => s.exerciseId === exId))
+    .slice(-3);
+  return relevant.length >= 3;
+}
+
+function detectLongSession(sessionId) {
+  // 2+ time-skips in last 3 instances of this session type
+  const relevant = state.log.filter(e => e.sessionId === sessionId).slice(-3);
+  const withTimeSkips = relevant.filter(e =>
+    (e.skips || []).filter(s => s.reason === 'time').length >= 2
+  );
+  return withTimeSkips.length >= 2;
+}
+
+function detectPersistentAsymmetry(exId) {
+  // Weaker side >20% for 3+ sessions
+  const relevant = state.log
+    .filter(e => e.exercises?.[exId]?.leftSecs != null)
+    .slice(-3);
+  if (relevant.length < 3) return null;
+  const allFlagged = relevant.every(e => {
+    const asym = detectAsymmetry(e.exercises[exId].leftSecs, e.exercises[exId].rightSecs);
+    return asym?.flagged;
+  });
+  if (!allFlagged) return null;
+  // Return consistent weak side
+  const last = relevant[relevant.length - 1];
+  return detectAsymmetry(last.exercises[exId].leftSecs, last.exercises[exId].rightSecs);
+}
+
+function detectPhaseReadiness() {
+  // Light session signal 3 sessions running
+  const relevant = state.log.slice(-3);
+  if (relevant.length < 3) return false;
+  return relevant.every(e => classifySession(e) === 'light');
+}
+
+// runPatternDetectors — called after each session save
+// Adds at most one new pattern per type to adaptations.patterns
+function runPatternDetectors(entry) {
+  if (!canAdapt()) return;
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) return;
+
+  const today = fmtLocal(new Date());
+
+  const addPattern = (p) => {
+    // Skip if same type + exerciseId already pending (not dismissed)
+    const dup = adaptations.patterns.find(x =>
+      x.type === p.type &&
+      x.exerciseId === (p.exerciseId || null) &&
+      !x.dismissed
+    );
+    if (!dup) adaptations.patterns.push({ ...p, detectedDate: today, dismissed: false });
+  };
+
+  // Per-exercise plateau + repeated skip + asymmetry
+  sess.supersets.forEach(ss => {
+    ss.exercises.forEach(ex => {
+      if (isSkillExercise(ex.id)) return;
+
+      if (detectPlateau(ex.id)) {
+        addPattern({ type: 'plateau', exerciseId: ex.id,
+          msg: `${ex.name} hasn't progressed in 3 sessions. Consider the next variation in Skills.` });
+      }
+
+      if (detectRepeatedSkip(ex.id)) {
+        addPattern({ type: 'repeated-skip', exerciseId: ex.id,
+          msg: `${ex.name} has been skipped 3 sessions running. Want to swap or remove it for now?` });
+      }
+
+      if (ex.unilateral) {
+        const asym = detectPersistentAsymmetry(ex.id);
+        if (asym) {
+          addPattern({ type: 'persistent-asymmetry', exerciseId: ex.id,
+            msg: `${ex.name} — ${asym.weak} side consistently weaker. Worth addressing as accessory work.` });
+        }
+      }
+    });
+  });
+
+  // Session-level patterns
+  if (detectLongSession(entry.sessionId)) {
+    const sessLabel = sess.label;
+    addPattern({ type: 'long-session', sessionId: entry.sessionId,
+      msg: `${sessLabel} keeps running long. Trim SS D to 2 rounds to fit your schedule?` });
+  }
+
+  if (detectPhaseReadiness()) {
+    addPattern({ type: 'phase-readiness',
+      msg: `You've been above target all week, every session. Ready to move to Phase ${state.currentWeek + 1}?` });
+  }
+
+  saveAdaptations();
+}
+
 // ─── S-07 Muscles teaser ──────────────────────────────────
 function renderMusclesSummary(entry) {
   const teaserEl = q('#s07-muscles-teaser');
@@ -1383,9 +2139,8 @@ function renderMusclesWeek() {
   const dow     = (now.getDay() + 6) % 7; // Mon=0 … Sun=6
   const monday  = new Date(now); monday.setDate(now.getDate() - dow); monday.setHours(0,0,0,0);
   const sunday  = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
-  const fmtDate = d => d.toISOString().slice(0,10);
-  const monStr  = fmtDate(monday);
-  const sunStr  = fmtDate(sunday);
+  const monStr  = fmtLocal(monday);
+  const sunStr  = fmtLocal(sunday);
 
   const weekEntries = state.log.filter(e => e.date >= monStr && e.date <= sunStr);
 

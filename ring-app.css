@@ -625,6 +625,15 @@ body {
 .rest-next-meta  { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); text-align: center; letter-spacing: 0.06em; }
 
 .rest-actions { display: flex; gap: var(--sp-2); }
+.rest-adj-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #F5A623;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 6px 0 10px;
+  text-transform: uppercase;
+}
 
 
 /* ─────────────────────────────────────────────────────────

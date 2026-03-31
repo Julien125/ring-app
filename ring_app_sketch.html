@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ring workout — UI sketch</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f0f10;
+    --bg2:      #181819;
+    --bg3:      #222224;
+    --line:     rgba(255,255,255,0.07);
+    --line2:    rgba(255,255,255,0.12);
+    --txt:      #f0ede8;
+    --txt2:     rgba(240,237,232,0.45);
+    --txt3:     rgba(240,237,232,0.2);
+    --pull:     #6C7FD8;
+    --core:     #2BA88A;
+    --shoulder: #D4A017;
+    --lowback:  #C96040;
+    --straight: #4A9FD4;
+    --pelican:  #B85885;
+    --accent:   #f0ede8;
+    --danger:   #E05050;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Mono', monospace;
+    color: var(--txt);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    gap: 0;
+  }
+
+  .page-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--txt3);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* ── SCREEN NAV ── */
+  .screen-nav {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    background: var(--bg2);
+    border: 1px solid var(--line2);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .nav-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--txt3);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .nav-btn:hover { color: var(--txt2); }
+  .nav-btn.active {
+    background: var(--bg3);
+    color: var(--txt);
+    border: 1px solid var(--line2);
+  }
+
+  /* ── PHONE SHELL ── */
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone {
+    width: 320px;
+    min-height: 620px;
+    background: var(--bg2);
+    border-radius: 44px;
+    border: 1.5px solid rgba(255,255,255,0.09);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(255,255,255,0.04) inset;
+  }
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 90px; height: 28px;
+    background: var(--bg2);
+    border-radius: 0 0 20px 20px;
+    z-index: 20;
+    border: 1.5px solid rgba(255,255,255,0.06);
+    border-top: none;
+  }
+  .screen-inner {
+    width: 100%;
+    min-height: 620px;
+    border-radius: 43px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* status bar */
+  .status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 24px 8px;
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.05em;
+  }
+
+  /* bottom bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 54px;
+    background: rgba(15,15,16,0.96);
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 12px 10px;
+    border-radius: 0 0 43px 43px;
+    backdrop-filter: blur(8px);
+  }
+  .bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    opacity: 0.3;
+    cursor: pointer;
+  }
+  .bar-item.on { opacity: 1; }
+  .bar-icon { font-size: 16px; line-height: 1; }
+  .bar-lbl { font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--txt2); }
+
+  /* ════════════════════════════
+     SCREEN 1 — OVERVIEW
+  ════════════════════════════ */
+  .s-overview { background: var(--bg); }
+
+  .ov-header {
+    padding: 8px 22px 16px;
+  }
+  .ov-phase {
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .ov-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--txt);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .ov-sub {
+    font-size: 9px;
+    color: var(--txt3);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Superset columns */
+  .ss-cols {
+    display: flex;
+    gap: 6px;
+    padding: 0 14px;
+    flex: 1;
+  }
+  .ss-col {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .ss-col:hover { border-color: var(--line2); }
+  .ss-col.current { border-color: rgba(240,237,232,0.25); }
+  .ss-col-head {
+    padding: 8px 10px 7px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ss-letter {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--txt);
+    line-height: 1;
+  }
+  .ss-col.done .ss-letter { color: var(--txt3); }
+  .ss-col-name {
+    font-size: 7px;
+    color: var(--txt3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .ss-rounds-done {
+    display: flex;
+    gap: 3px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rnd-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--line2);
+  }
+  .rnd-dot.done { background: var(--txt2); }
+  .rnd-dot.current { background: var(--txt); }
+
+  .ss-ex-list {
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ss-ex-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+  }
+  .ex-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ex-done-check {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.3;
+    background: var(--txt);
+  }
+  .ss-ex-name {
+    font-size: 7.5px;
+    color: var(--txt2);
+    line-height: 1.3;
+    flex: 1;
+  }
+  .ss-ex-item.current .ss-ex-name { color: var(--txt); font-weight: 500; }
+  .ss-ex-item.done .ss-ex-name { color: var(--txt3); }
+  .ss-ex-reps {
+    font-size: 7px;
+    color: var(--txt3);
+    white-space: nowrap;
+  }
+  .ss-ex-item.done .ss-ex-reps { color: var(--txt3); text-decoration: line-through; }
+
+  .ov-start-btn {
+    margin: 14px 22px 70px;
+    background: var(--txt);
+    color: var(--bg);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .ov-start-btn:hover { opacity: 0.88; }
+
+  /* ════════════════════════════
+     SCREEN 2 — ACTIVE EXERCISE
+  ════════════════════════════ */
+  .s-active { background: var(--bg); }
+
+  .act-context {
+    padding: 8px 22px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .act-breadcrumb {
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .act-progress-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .act-prog-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--line2);
+  }
+  .act-prog-dot.done { background: var(--txt3); }
+  .act-prog-dot.now  { background: var(--txt); }
+
+  /* big exercise name */
+  .act-name-block {
+    padding: 14px 22px 0;
+  }
+  .act-cat-tag {
+    display: inline-block;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border: 1px solid;
+  }
+  .act-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--txt);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  /* metrics chips */
+  .act-metrics {
+    display: flex;
+    gap: 8px;
+    padding: 16px 22px 0;
+  }
+  .act-chip {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .chip-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--txt);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .chip-val small {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--txt3);
+  }
+  .chip-lbl {
+    font-size: 7px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  /* set tracker */
+  .act-sets {
+    display: flex;
+    gap: 6px;
+    padding: 14px 22px 0;
+    align-items: center;
+  }
+  .set-pill {
+    height: 32px;
+    flex: 1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+    color: var(--txt3);
+  }
+  .set-pill.done {
+    background: var(--bg3);
+    border-color: var(--line2);
+    color: var(--txt2);
+  }
+  .set-pill.current {
+    background: var(--txt);
+    color: var(--bg);
+    border-color: var(--txt);
+    font-weight: 700;
+  }
+  .sets-label {
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* rep logger */
+  .act-log {
+    margin: 14px 22px 0;
+    background: var(--bg3);
+    border: 1px solid var(--line2);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .log-label {
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .log-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .step-btn {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--line2);
+    color: var(--txt2);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.1s;
+    line-height: 1;
+    padding-bottom: 2px;
+  }
+  .step-btn:hover { background: rgba(255,255,255,0.08); }
+  .step-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--txt);
+    width: 52px;
+    text-align: center;
+    letter-spacing: -0.03em;
+  }
+
+  /* coaching note */
+  .act-note {
+    margin: 10px 22px 0;
+    padding: 9px 12px;
+    background: transparent;
+    border-left: 2px solid var(--line2);
+    font-size: 8.5px;
+    color: var(--txt3);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* done button */
+  .act-done {
+    margin: 14px 22px 0;
+    background: var(--txt);
+    color: var(--bg);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+  .act-done:hover { opacity: 0.88; }
+
+  .act-skip {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding-bottom: 70px;
+  }
+
+  /* ════════════════════════════
+     SCREEN 3 — REST TIMER
+  ════════════════════════════ */
+  .s-rest { background: #080a0d; }
+
+  .rest-top {
+    padding: 8px 22px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .rest-just-done {
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+  .rest-just-done strong {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(240,237,232,0.6);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .rest-round-pill {
+    font-size: 8px;
+    color: rgba(108,127,216,0.8);
+    border: 1px solid rgba(108,127,216,0.25);
+    border-radius: 5px;
+    padding: 4px 9px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ring timer */
+  .rest-ring-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative;
+  }
+  .rest-ring-wrap svg { display: block; }
+  .rest-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .rest-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 44px;
+    font-weight: 900;
+    color: var(--txt);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .rest-val.overtime {
+    color: var(--danger);
+  }
+  .rest-unit {
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* next up */
+  .rest-next-lbl {
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 18px;
+  }
+  .rest-next-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: rgba(240,237,232,0.8);
+    text-align: center;
+    padding: 4px 24px 0;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .rest-next-meta {
+    font-size: 9px;
+    color: var(--txt3);
+    text-align: center;
+    margin-top: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  /* actions */
+  .rest-actions {
+    display: flex;
+    gap: 8px;
+    margin: 20px 22px 0;
+  }
+  .rest-btn {
+    flex: 1;
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.12s;
+    border: 1px solid;
+  }
+  .rest-btn:hover { opacity: 0.75; }
+  .rest-btn-skip {
+    background: transparent;
+    border-color: var(--line2);
+    color: var(--txt3);
+  }
+  .rest-btn-add {
+    background: rgba(108,127,216,0.1);
+    border-color: rgba(108,127,216,0.3);
+    color: #8A9BE0;
+  }
+
+  /* strip */
+  .rest-strip {
+    display: flex;
+    gap: 4px;
+    padding: 16px 22px 0;
+  }
+  .strip-seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .strip-seg.done { background: rgba(108,127,216,0.5); }
+  .strip-seg.next { background: rgba(108,127,216,0.2); }
+
+  /* ════════════════════════════
+     SCREEN 4 — POST-SESSION
+  ════════════════════════════ */
+  .s-post { background: var(--bg); }
+
+  .post-header {
+    padding: 8px 22px 0;
+  }
+  .post-eyebrow {
+    font-size: 9px;
+    color: var(--txt3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .post-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--txt);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .post-date {
+    font-size: 8px;
+    color: var(--txt3);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .post-stats {
+    display: flex;
+    gap: 6px;
+    padding: 14px 22px 0;
+  }
+  .post-stat {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .pstat-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--txt);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .pstat-val small {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--txt3);
+  }
+  .pstat-lbl {
+    font-size: 7px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  /* exercise log rows */
+  .post-sec-lbl {
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 14px 22px 6px;
+  }
+
+  .post-ex-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .post-ex-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .post-ex-name {
+    flex: 1;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--txt2);
+    line-height: 1.3;
+  }
+  .post-ex-logged {
+    font-size: 8px;
+    color: var(--txt3);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+  .post-badge {
+    font-size: 7px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .badge-pr   { background: rgba(212,160,23,0.15);  color: #D4A017; border: 1px solid rgba(212,160,23,0.3); }
+  .badge-ok   { background: rgba(43,168,138,0.1);   color: #2BA88A; border: 1px solid rgba(43,168,138,0.25);}
+  .badge-miss { background: rgba(201,96,64,0.1);    color: #C96040; border: 1px solid rgba(201,96,64,0.25); }
+
+  /* mini chart */
+  .post-chart-wrap {
+    margin: 10px 22px 70px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .chart-title {
+    font-size: 8px;
+    color: var(--txt3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .chart-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .chart-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-row-lbl {
+    font-size: 7px;
+    color: var(--txt3);
+    width: 14px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .chart-bar-track {
+    flex: 1;
+    height: 16px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .chart-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-right: 6px;
+    justify-content: flex-end;
+  }
+  .chart-bar-num {
+    font-size: 7px;
+    font-weight: 500;
+  }
+
+  /* ── CATEGORY COLOR UTILS ── */
+  .c-pull     { background: var(--pull); }
+  .c-core     { background: var(--core); }
+  .c-shoulder { background: var(--shoulder); }
+  .c-lowback  { background: var(--lowback); }
+  .c-straight { background: var(--straight); }
+  .c-pelican  { background: var(--pelican); }
+
+  .tag-pull     { color: var(--pull);     border-color: rgba(108,127,216,0.3);  background: rgba(108,127,216,0.08); }
+  .tag-core     { color: var(--core);     border-color: rgba(43,168,138,0.3);   background: rgba(43,168,138,0.08);  }
+  .tag-shoulder { color: var(--shoulder); border-color: rgba(212,160,23,0.3);   background: rgba(212,160,23,0.08);  }
+  .tag-lowback  { color: var(--lowback);  border-color: rgba(201,96,64,0.3);    background: rgba(201,96,64,0.08);   }
+  .tag-straight { color: var(--straight); border-color: rgba(74,159,212,0.3);   background: rgba(74,159,212,0.08);  }
+  .tag-pelican  { color: var(--pelican);  border-color: rgba(184,88,133,0.3);   background: rgba(184,88,133,0.08);  }
+
+  /* ── HIDDEN / VISIBLE ── */
+  .s-screen { display: none; flex-direction: column; }
+  .s-screen.visible { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Ring workout — UI sketch</div>
+
+<div class="screen-nav">
+  <button class="nav-btn active" onclick="showScreen('overview', this)">Overview</button>
+  <button class="nav-btn" onclick="showScreen('active', this)">Active</button>
+  <button class="nav-btn" onclick="showScreen('rest', this)">Rest</button>
+  <button class="nav-btn" onclick="showScreen('post', this)">Summary</button>
+</div>
+
+<div class="phone-wrap">
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- ═══════════ SCREEN 1 — OVERVIEW ═══════════ -->
+  <div class="screen-inner s-screen visible" id="sc-overview">
+    <div class="s-overview" style="flex:1;display:flex;flex-direction:column;">
+      <div class="status"><span>9:41</span><span>●●●</span></div>
+
+      <div class="ov-header">
+        <div class="ov-phase">Week 1 · Strength I · Wednesday pull</div>
+        <div class="ov-title">Pull<br>session</div>
+        <div class="ov-sub">3 supersets · 3 rounds each</div>
+      </div>
+
+      <div class="ss-cols" style="margin-top:14px;">
+
+        <!-- SS A — done -->
+        <div class="ss-col done">
+          <div class="ss-col-head">
+            <div class="ss-letter">A</div>
+            <div class="ss-col-name">Strict</div>
+          </div>
+          <div class="ss-rounds-done">
+            <div class="rnd-dot done"></div>
+            <div class="rnd-dot done"></div>
+            <div class="rnd-dot done"></div>
+          </div>
+          <div class="ss-ex-list">
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Strict pull-up</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Row elevated</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Planche lean</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Hollow body</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Face pull</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Back ext.</div></div>
+          </div>
+        </div>
+
+        <!-- SS B — current -->
+        <div class="ss-col current">
+          <div class="ss-col-head">
+            <div class="ss-letter">B</div>
+            <div class="ss-col-name">Unilateral</div>
+          </div>
+          <div class="ss-rounds-done">
+            <div class="rnd-dot done"></div>
+            <div class="rnd-dot current"></div>
+            <div class="rnd-dot"></div>
+          </div>
+          <div class="ss-ex-list">
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Archer pull</div></div>
+            <div class="ss-ex-item done"><div class="ex-done-check"></div><div class="ss-ex-name">Commando row</div></div>
+            <div class="ss-ex-item current"><div class="ex-dot c-pelican"></div><div class="ss-ex-name">Pelican curl</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-core"></div><div class="ss-ex-name">L-sit hold</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-shoulder"></div><div class="ss-ex-name">Pike press</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-lowback"></div><div class="ss-ex-name">Jefferson curl</div></div>
+          </div>
+        </div>
+
+        <!-- SS C — upcoming -->
+        <div class="ss-col">
+          <div class="ss-col-head">
+            <div class="ss-letter" style="color:var(--txt3)">C</div>
+            <div class="ss-col-name">Power</div>
+          </div>
+          <div class="ss-rounds-done">
+            <div class="rnd-dot"></div>
+            <div class="rnd-dot"></div>
+            <div class="rnd-dot"></div>
+          </div>
+          <div class="ss-ex-list">
+            <div class="ss-ex-item"><div class="ex-dot c-pull"></div><div class="ss-ex-name">Chest-to-bar</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-pull"></div><div class="ss-ex-name">Typewriter</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-straight"></div><div class="ss-ex-name">Front lever</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-core"></div><div class="ss-ex-name">Toes-to-rings</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-shoulder"></div><div class="ss-ex-name">Cuban press</div></div>
+            <div class="ss-ex-item"><div class="ex-dot c-lowback"></div><div class="ss-ex-name">Superman hold</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ov-start-btn" onclick="showScreen('active', document.querySelector('.nav-btn:nth-child(2)'))">
+        Resume — Superset B
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCREEN 2 — ACTIVE ═══════════ -->
+  <div class="screen-inner s-screen" id="sc-active">
+    <div class="s-active" style="flex:1;display:flex;flex-direction:column;">
+      <div class="status"><span>9:58</span><span>●●●</span></div>
+
+      <div class="act-context">
+        <div class="act-breadcrumb">Superset B · Round 2/3 · Ex 3/6</div>
+        <div class="act-progress-dots">
+          <div class="act-prog-dot done"></div>
+          <div class="act-prog-dot done"></div>
+          <div class="act-prog-dot now"></div>
+          <div class="act-prog-dot"></div>
+          <div class="act-prog-dot"></div>
+          <div class="act-prog-dot"></div>
+        </div>
+      </div>
+
+      <div class="act-name-block">
+        <div class="act-cat-tag tag-pelican">Pelican</div>
+        <div class="act-name">Pelican<br>curl</div>
+      </div>
+
+      <div class="act-metrics">
+        <div class="act-chip">
+          <div class="chip-val">4<small>–6</small></div>
+          <div class="chip-lbl">Reps</div>
+        </div>
+        <div class="act-chip">
+          <div class="chip-val">3<small>s</small></div>
+          <div class="chip-lbl">Descent</div>
+        </div>
+        <div class="act-chip">
+          <div class="chip-val">30<small>s</small></div>
+          <div class="chip-lbl">Rest</div>
+        </div>
+      </div>
+
+      <div class="act-sets">
+        <div class="sets-label">Sets</div>
+        <div class="set-pill done">5</div>
+        <div class="set-pill current">—</div>
+        <div class="set-pill">—</div>
+      </div>
+
+      <div class="act-note">
+        Rings behind body — full elongation at bottom. Never rush descent.
+      </div>
+
+      <div class="act-log">
+        <div class="log-label">Reps done</div>
+        <div class="log-stepper">
+          <div class="step-btn" onclick="stepReps(-1)">−</div>
+          <div class="step-val" id="rep-count">5</div>
+          <div class="step-btn" onclick="stepReps(1)">+</div>
+        </div>
+      </div>
+
+      <div class="act-done" onclick="showScreen('rest', document.querySelector('.nav-btn:nth-child(3)'))">
+        Done — start rest
+      </div>
+      <div class="act-skip">skip exercise</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCREEN 3 — REST ═══════════ -->
+  <div class="screen-inner s-screen" id="sc-rest">
+    <div class="s-rest" style="flex:1;display:flex;flex-direction:column;">
+      <div class="status" style="color:rgba(240,237,232,0.2)"><span>9:59</span><span>●●●</span></div>
+
+      <div class="rest-top">
+        <div class="rest-just-done">
+          Pelican curl
+          <strong>5 reps logged</strong>
+        </div>
+        <div class="rest-round-pill">Round 2 / 3</div>
+      </div>
+
+      <div class="rest-ring-wrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+          <circle cx="80" cy="80" r="66" fill="none" stroke="#6C7FD8" stroke-width="8"
+            stroke-dasharray="414.7" stroke-dashoffset="145"
+            stroke-linecap="round"
+            transform="rotate(-90 80 80)"/>
+        </svg>
+        <div class="rest-center">
+          <div class="rest-val" id="rest-timer">0:19</div>
+          <div class="rest-unit">rest</div>
+        </div>
+      </div>
+
+      <div class="rest-next-lbl">Up next</div>
+      <div class="rest-next-name">L-sit hold</div>
+      <div class="rest-next-meta">Core · aim 30s</div>
+
+      <div class="rest-actions">
+        <div class="rest-btn rest-btn-skip" onclick="showScreen('active', document.querySelector('.nav-btn:nth-child(2)'))">Skip rest</div>
+        <div class="rest-btn rest-btn-add">+ 15 s</div>
+      </div>
+
+      <div class="rest-strip">
+        <div class="strip-seg done"></div>
+        <div class="strip-seg done"></div>
+        <div class="strip-seg done"></div>
+        <div class="strip-seg next"></div>
+        <div class="strip-seg"></div>
+        <div class="strip-seg"></div>
+      </div>
+      <div style="font-size:7px;color:var(--txt3);padding:4px 22px;letter-spacing:0.08em;">Ex 3 → 4 of 6 · Superset B</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SCREEN 4 — POST-SESSION ═══════════ -->
+  <div class="screen-inner s-screen" id="sc-post">
+    <div class="s-post" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;">
+      <div class="status"><span>10:34</span><span>●●●</span></div>
+
+      <div class="post-header">
+        <div class="post-eyebrow">Session complete</div>
+        <div class="post-title">Wed 19 Mar<br>Week 1</div>
+        <div class="post-date">Strength I · Pull · 52 min</div>
+      </div>
+
+      <div class="post-stats">
+        <div class="post-stat">
+          <div class="pstat-val">52<small>m</small></div>
+          <div class="pstat-lbl">Duration</div>
+        </div>
+        <div class="post-stat">
+          <div class="pstat-val">18</div>
+          <div class="pstat-lbl">Sets</div>
+        </div>
+        <div class="post-stat">
+          <div class="pstat-val">2</div>
+          <div class="pstat-lbl">PRs</div>
+        </div>
+      </div>
+
+      <div class="post-sec-lbl">Superset B — logged</div>
+
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-pull"></div>
+        <div class="post-ex-name">Archer ring pull-up</div>
+        <div class="post-ex-logged">5 · 5 · 4</div>
+        <span class="post-badge badge-pr">PR</span>
+      </div>
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-pull"></div>
+        <div class="post-ex-name">Ring commando row</div>
+        <div class="post-ex-logged">8 · 8 · 8</div>
+        <span class="post-badge badge-ok">✓</span>
+      </div>
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-pelican"></div>
+        <div class="post-ex-name">Pelican curl</div>
+        <div class="post-ex-logged">5 · 5 · 4</div>
+        <span class="post-badge badge-ok">✓</span>
+      </div>
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-core"></div>
+        <div class="post-ex-name">L-sit hold</div>
+        <div class="post-ex-logged">28s · 22s · 19s</div>
+        <span class="post-badge badge-miss">↓</span>
+      </div>
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-shoulder"></div>
+        <div class="post-ex-name">Ring pike press</div>
+        <div class="post-ex-logged">7 · 7 · 6</div>
+        <span class="post-badge badge-pr">PR</span>
+      </div>
+      <div class="post-ex-row">
+        <div class="post-ex-dot c-lowback"></div>
+        <div class="post-ex-name">Jefferson curl</div>
+        <div class="post-ex-logged">8 · 8 · 8</div>
+        <span class="post-badge badge-ok">✓</span>
+      </div>
+
+      <div class="post-chart-wrap">
+        <div class="chart-title">Strict ring pull-up — reps/set avg</div>
+        <div class="chart-bars">
+          <div class="chart-row">
+            <div class="chart-row-lbl">S1</div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" style="width:65%;background:rgba(108,127,216,0.35);">
+                <span class="chart-bar-num" style="color:rgba(108,127,216,0.8)">6.3</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-row-lbl">S2</div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" style="width:75%;background:rgba(108,127,216,0.55);">
+                <span class="chart-bar-num" style="color:rgba(108,127,216,0.9)">7.0</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-row" style="opacity:0.35;">
+            <div class="chart-row-lbl">S3</div>
+            <div class="chart-bar-track"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- bottom nav -->
+  <div class="bottom-bar">
+    <div class="bar-item" onclick="showScreen('overview', document.querySelector('.nav-btn:nth-child(1)'))">
+      <div class="bar-icon">⊟</div>
+      <div class="bar-lbl">Plan</div>
+    </div>
+    <div class="bar-item on" id="nav-active-item">
+      <div class="bar-icon" style="color:#6C7FD8">◈</div>
+      <div class="bar-lbl" style="color:#6C7FD8">Live</div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-icon">◻</div>
+      <div class="bar-lbl">Log</div>
+    </div>
+  </div>
+
+</div><!-- .phone -->
+</div><!-- .phone-wrap -->
+
+<script>
+let repCount = 5;
+
+function stepReps(delta) {
+  repCount = Math.max(0, repCount + delta);
+  document.getElementById('rep-count').textContent = repCount;
+}
+
+function showScreen(id, btn) {
+  document.querySelectorAll('.s-screen').forEach(s => s.classList.remove('visible'));
+  document.getElementById('sc-' + id).classList.add('visible');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// live rest timer simulation
+let restSec = 19;
+let restInterval = null;
+function startRestTimer() {
+  if (restInterval) clearInterval(restInterval);
+  restInterval = setInterval(() => {
+    restSec--;
+    const el = document.getElementById('rest-timer');
+    if (!el) return;
+    if (restSec < 0) {
+      el.classList.add('overtime');
+      el.textContent = '-0:' + String(Math.abs(restSec)).padStart(2,'0');
+    } else {
+      el.classList.remove('overtime');
+      el.textContent = '0:' + String(restSec).padStart(2,'0');
+    }
+  }, 1000);
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.textContent.trim().toLowerCase()
+      .replace('overview','overview').replace('active','active')
+      .replace('rest','rest').replace('summary','post');
+    if (id === 'rest') { restSec = 19; startRestTimer(); }
+    else if (restInterval) { clearInterval(restInterval); restInterval = null; }
+  });
+});
+</script>
+
+</body>
+</html>

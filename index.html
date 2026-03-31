@@ -96,6 +96,134 @@
       flex-direction: column;
       gap: 10px;
     }
+
+    /* Skip reason picker */
+    .skip-reasons { margin-bottom: 18px; }
+    .skip-reason-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .skip-reason-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .skip-reason-btn {
+      background: var(--bg-3, rgba(255,255,255,0.06));
+      border: 1.5px solid var(--line-2);
+      border-radius: 10px;
+      color: var(--txt-2);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 12px 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      text-align: center;
+    }
+    .skip-reason-btn.is-selected {
+      border-color: var(--accent);
+      background: rgba(43,168,138,0.12);
+      color: var(--txt);
+    }
+    #ds-skip:disabled { opacity: 0.35; cursor: default; }
+
+    /* Home screen pattern card */
+    .pattern-card {
+      background: rgba(245,166,35,0.08);
+      border: 1px solid rgba(245,166,35,0.3);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .pattern-card__msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--txt-2);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .pattern-card__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pattern-card__act {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      background: rgba(245,166,35,0.15);
+      border: 1px solid rgba(245,166,35,0.4);
+      color: #F5A623;
+      border-radius: 7px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .pattern-card__dismiss {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      background: none;
+      border: 1px solid var(--line);
+      color: var(--txt-3);
+      border-radius: 7px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    /* Pre-session pain check-in */
+    .checkin-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      transition: opacity 0.2s;
+    }
+    .checkin-item:last-child { border-bottom: none; }
+    .checkin-item__name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--txt);
+      margin-bottom: 2px;
+    }
+    .checkin-item__flag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: #E05050;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .checkin-item__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .checkin-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--txt-2);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .checkin-btn:active { background: rgba(255,255,255,0.08); }
+    .checkin-btn--fine   { border-color: rgba(43,168,138,0.4); }
+    .checkin-btn--remove { color: #E05050; border-color: rgba(224,80,80,0.3); }
+
+    /* Adaptation badge (↑/↓ next to target) */
+    .adapt-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      margin-left: 6px;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .adapt-badge--up   { background: rgba(43,168,138,0.18); color: #2BA88A; }
+    .adapt-badge--down { background: rgba(224,80,80,0.15);  color: #E05050; }
     .btn-danger {
       display: flex;
       align-items: center;
@@ -947,6 +1075,58 @@
       font-size: 18px; color: var(--txt-3);
     }
 
+    /* ── Signals card (S-07 autoregulation feedback) ─── */
+    .signals-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .signals-card__header {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--txt-3);
+      padding: 12px 16px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .signal-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .signal-item:last-child { border-bottom: none; }
+    .signal-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 4px;
+    }
+    .signal-dot--quiet  { background: var(--txt-3); }
+    .signal-dot--flag   { background: #F5A623; }
+    .signal-dot--alert  { background: #E05050; }
+    .signal-body { flex: 1; }
+    .signal-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--txt-2);
+      line-height: 1.55;
+    }
+    .signal-ack {
+      display: inline-block;
+      margin-top: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--txt-3);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      background: none;
+    }
+    .signal-ack:active { background: rgba(255,255,255,0.05); }
+
     /* S-16 Cool-down pose rows */
     .cooldown-row {
       display: flex;
@@ -1170,6 +1350,14 @@
       <button id="s01-cta" class="btn-primary"></button>
       <button id="s01-secondary" class="btn-text mt-3" style="display:none"></button>
       <button id="s01-pick" class="btn-text mt-2" style="display:none"></button>
+      <!-- Pattern card — one at a time, dismissible -->
+      <div id="s01-pattern-card" class="pattern-card mt-5" style="display:none">
+        <div class="pattern-card__msg" id="s01-pattern-msg"></div>
+        <div class="pattern-card__actions">
+          <button class="pattern-card__act" id="s01-pattern-act" style="display:none"></button>
+          <button class="pattern-card__dismiss" id="s01-pattern-dismiss">Dismiss</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1382,6 +1570,7 @@
     </div>
     <div style="flex:1"></div>
     <div class="px-screen mt-3 mb-nav" style="padding-bottom:24px">
+      <div class="rest-adj-note" id="s05-adj" style="display:none"></div>
       <button class="btn-primary" id="s05-next" style="margin-bottom:10px">Next →</button>
       <button class="btn-ghost" id="s05-add" style="width:100%">+15s</button>
     </div>
@@ -1417,6 +1606,7 @@
     </div>
     <div style="flex:1"></div>
     <div class="px-screen mt-3 mb-nav" style="padding-bottom:24px">
+      <div class="rest-adj-note" id="s06-adj" style="display:none"></div>
       <button class="btn-primary" id="s06-next" style="margin-bottom:10px">Next round →</button>
       <button class="btn-ghost" id="s06-add" style="width:100%">+30s</button>
     </div>
@@ -1447,6 +1637,11 @@
         <div class="chart-labels" id="s07-chart-labels"></div>
       </div>
     </div>
+    <!-- Signals card — autoregulation feedback -->
+    <div class="px-screen mt-4" id="s07-signals-wrap" style="display:none">
+      <div class="signals-card" id="s07-signals"></div>
+    </div>
+
     <!-- Muscles teaser — taps to S-17 full view -->
     <div class="px-screen mt-4">
       <div class="muscles-teaser" id="s07-muscles-teaser" role="button">
@@ -1628,13 +1823,43 @@
     </div>
   </nav>
 
+  <!-- Pre-session pain check-in -->
+  <div class="dialog-overlay" id="dialog-checkin">
+    <div class="dialog-sheet">
+      <div class="dialog-title">Quick check-in</div>
+      <div class="dialog-body">A few exercises were flagged last session. How do they feel today?</div>
+      <div id="dc-list"></div>
+    </div>
+  </div>
+
+  <!-- Adaptation badge popover -->
+  <div class="dialog-overlay" id="dialog-adapt">
+    <div class="dialog-sheet">
+      <div class="dialog-title">Target adjusted</div>
+      <div class="dialog-body" id="dp-body"></div>
+      <div class="dialog-actions">
+        <button class="btn-primary" id="dp-cancel">Got it</button>
+        <button class="btn-ghost" id="dp-reset">Reset to program default</button>
+      </div>
+    </div>
+  </div>
+
   <div class="dialog-overlay" id="dialog-skip">
     <div class="dialog-sheet">
       <div class="dialog-title">Skip exercise?</div>
       <div class="dialog-body" id="ds-body"></div>
+      <div class="skip-reasons" id="ds-reasons">
+        <div class="skip-reason-label">Why are you skipping?</div>
+        <div class="skip-reason-grid">
+          <button class="skip-reason-btn" data-reason="pain">😬 Discomfort</button>
+          <button class="skip-reason-btn" data-reason="fatigue">🥱 Too tired</button>
+          <button class="skip-reason-btn" data-reason="time">⏱ No time</button>
+          <button class="skip-reason-btn" data-reason="other">🤷 Other</button>
+        </div>
+      </div>
       <div class="dialog-actions">
         <button class="btn-primary" id="ds-cancel">Cancel — keep going</button>
-        <button class="btn-ghost" id="ds-skip">Yes, skip</button>
+        <button class="btn-ghost" id="ds-skip" disabled>Skip</button>
       </div>
     </div>
   </div>
