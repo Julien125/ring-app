@@ -630,6 +630,163 @@
       padding: 8px 0;
     }
 
+    /* ── S-17 Muscles Detail ─────────────────────────────── */
+
+    /* Header */
+    .md-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: max(env(safe-area-inset-top), 20px);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .md-back {
+      background: none; border: none; color: var(--txt-1);
+      font-size: 20px; cursor: pointer; padding: 0 6px 0 0;
+      line-height: 1;
+    }
+    .md-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 14px; font-weight: 700;
+      color: var(--txt-1);
+      flex: 1;
+    }
+    .md-session {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; color: var(--txt-3);
+      letter-spacing: 0.06em;
+    }
+
+    /* Donut ring card */
+    .md-ring-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px 20px 20px;
+    }
+    .md-donut { display: block; transform: rotate(-90deg); }
+    .md-ring-center {
+      position: absolute;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    /* Wrap donut + center text in relative container */
+    .md-ring-wrap {
+      position: relative;
+      width: 160px; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .md-ring-sets {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 30px; font-weight: 900;
+      color: var(--txt-1); line-height: 1;
+    }
+    .md-ring-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; color: var(--txt-3);
+      letter-spacing: 0.1em; margin-top: 2px;
+    }
+    /* Legend pills */
+    .md-legend {
+      display: flex; flex-wrap: wrap;
+      gap: 8px; justify-content: center;
+    }
+    .md-legend-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 0.06em;
+      color: var(--txt-2);
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 4px 10px;
+    }
+    .md-legend-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Section label */
+    .md-section-label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 9px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--txt-3);
+    }
+
+    /* Muscle volume rows */
+    .md-muscle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .md-muscle-row:last-child { border-bottom: none; }
+    .md-muscle-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .md-muscle-name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px; color: var(--txt-1);
+      min-width: 90px;
+    }
+    .md-muscle-bar-wrap {
+      flex: 1; height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 3px; overflow: hidden;
+    }
+    .md-muscle-bar {
+      height: 100%; border-radius: 3px;
+      width: 0; /* starts at 0 — animated via JS */
+      transition: width 0.55s cubic-bezier(0.22,1,0.36,1);
+    }
+    .md-muscle-sets {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--txt-3);
+      min-width: 28px; text-align: right;
+    }
+
+    /* S-07 teaser card */
+    .muscles-teaser {
+      display: flex; align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .muscles-teaser:active { background: rgba(255,255,255,0.06); }
+    .muscles-teaser__left { flex: 1; }
+    .muscles-teaser__label {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--txt-3);
+      margin-bottom: 8px;
+    }
+    .muscles-teaser__chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .muscles-teaser__chip {
+      display: flex; align-items: center; gap: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; color: var(--txt-2);
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px; padding: 3px 8px;
+    }
+    .muscles-teaser__chip-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .muscles-teaser__arrow {
+      font-size: 18px; color: var(--txt-3);
+    }
+
     /* S-16 Cool-down pose rows */
     .cooldown-row {
       display: flex;
@@ -1130,12 +1287,63 @@
         <div class="chart-labels" id="s07-chart-labels"></div>
       </div>
     </div>
+    <!-- Muscles teaser — taps to S-17 full view -->
     <div class="px-screen mt-4">
-      <div id="s07-muscles"></div>
+      <div class="muscles-teaser" id="s07-muscles-teaser" role="button">
+        <div class="muscles-teaser__left">
+          <div class="muscles-teaser__label">Muscles worked</div>
+          <div class="muscles-teaser__chips" id="s07-muscles-chips"></div>
+        </div>
+        <div class="muscles-teaser__arrow">→</div>
+      </div>
     </div>
     <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
-      <button class="btn-accent w-full mb-2" id="s07-cooldown">Start cool-down</button>
+      <button class="btn-accent" id="s07-cooldown" style="width:100%;margin-bottom:10px">Start cool-down</button>
       <button class="btn-primary" id="s07-done">Done — go home</button>
+    </div>
+  </section>
+
+  <!-- ── S-17 Muscles Detail ──────────────────────────────── -->
+  <section id="s-17" class="screen">
+    <!-- Header -->
+    <div class="md-header px-screen">
+      <button class="md-back" id="s17-back">←</button>
+      <span class="md-title">Muscles</span>
+      <span class="md-session" id="s17-session"></span>
+    </div>
+
+    <!-- Hero ring card -->
+    <div class="px-screen mt-4">
+      <div class="md-ring-card">
+        <div class="md-ring-wrap">
+          <svg id="s17-donut" width="160" height="160" viewBox="0 0 160 160" class="md-donut">
+            <!-- track -->
+            <circle cx="80" cy="80" r="60" fill="none"
+                    stroke="rgba(255,255,255,0.06)" stroke-width="16"/>
+            <!-- segments injected by JS -->
+          </svg>
+          <div class="md-ring-center">
+            <div class="md-ring-sets" id="s17-total-sets">—</div>
+            <div class="md-ring-label">sets</div>
+          </div>
+        </div>
+        <!-- Legend pills row (injected by JS) -->
+        <div class="md-legend" id="s17-legend"></div>
+      </div>
+    </div>
+
+    <!-- Ranked muscles list -->
+    <div class="px-screen mt-5">
+      <div class="md-section-label">Primary load</div>
+      <div id="s17-primary" class="mt-2"></div>
+    </div>
+    <div class="px-screen mt-4" id="s17-secondary-wrap">
+      <div class="md-section-label">Supporting</div>
+      <div id="s17-secondary" class="mt-2"></div>
+    </div>
+
+    <div class="px-screen mt-5 mb-nav" style="padding-bottom:40px">
+      <button class="btn-primary" id="s17-done">Back to summary</button>
     </div>
   </section>
 

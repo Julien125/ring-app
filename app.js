@@ -1270,8 +1270,8 @@ function renderSummary(entry) {
     });
   }
 
-  // Muscles worked section
-  renderMusclesSummary(entry, q('#s07-muscles'));
+  // Muscles teaser (taps to S-17)
+  renderMusclesSummary(entry);
 
   // Cool-down CTA
   const cdBtn = q('#s07-cooldown');
@@ -1287,52 +1287,182 @@ function renderSummary(entry) {
   launchConfetti();
 }
 
-// ─── S-07 Muscles worked ──────────────────────────────────
-function renderMusclesSummary(entry, container) {
-  if (!container) return;
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
-  if (!sess) { container.innerHTML = ''; return; }
+// ─── Muscle helpers ───────────────────────────────────────
+const MUSCLE_LABEL = {
+  'lats':'Lats','biceps':'Biceps','rear-delt':'Rear Delt','lateral-delt':'Lateral Delt',
+  'front-delt':'Front Delt','chest':'Chest','triceps':'Triceps','shoulders':'Shoulders',
+  'core':'Core','lower-back':'Lower Back','glutes':'Glutes','hamstrings':'Hamstrings',
+  'quads':'Quads','calves':'Calves','serratus':'Serratus','brachialis':'Brachialis',
+  'forearms':'Forearms',
+};
+// Map each muscle to its training category for colour coding
+const MUSCLE_CAT = {
+  'chest':'push','triceps':'push','front-delt':'push','serratus':'push',
+  'shoulders':'push','lateral-delt':'push',
+  'lats':'pull','biceps':'pull','brachialis':'pull','rear-delt':'pull','forearms':'pull',
+  'core':'core','lower-back':'core',
+  'glutes':'legs','hamstrings':'legs','quads':'legs','calves':'legs',
+};
+const CAT_META = {
+  push: { color: '#6C7FD8', label: 'Push' },
+  pull: { color: '#2BA88A', label: 'Pull' },
+  core: { color: '#E05470', label: 'Core' },
+  legs: { color: '#D4A017', label: 'Legs' },
+};
 
-  // Aggregate sets per primary muscle across logged exercises
-  const tally = {};
+// Build tally: { primary: {muscle: sets}, secondary: {muscle: sets} }
+function buildMuscleTally(entry) {
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  if (!sess) return { primary: {}, secondary: {} };
+  const primary = {}, secondary = {};
   sess.supersets.forEach(ss => {
     ss.exercises.forEach(ex => {
       const logged = entry.exercises[ex.id];
       if (!logged || !logged.sets.length) return;
       const sets = logged.sets.length;
-      (ex.muscles?.primary || []).forEach(m => {
-        tally[m] = (tally[m] || 0) + sets;
-      });
-      (ex.muscles?.secondary || []).forEach(m => {
-        tally[m] = (tally[m] || 0) + Math.ceil(sets * 0.5);
-      });
+      (ex.muscles?.primary   || []).forEach(m => { primary[m]   = (primary[m]   || 0) + sets; });
+      (ex.muscles?.secondary || []).forEach(m => { secondary[m] = (secondary[m] || 0) + sets; });
     });
   });
+  // Remove secondary entries that are already primary
+  Object.keys(primary).forEach(m => { delete secondary[m]; });
+  return { primary, secondary };
+}
 
-  const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1]);
-  if (!sorted.length) { container.innerHTML = ''; return; }
+// ─── S-07 Muscles teaser ──────────────────────────────────
+function renderMusclesSummary(entry) {
+  const teaserEl = q('#s07-muscles-teaser');
+  const chipsEl  = q('#s07-muscles-chips');
+  if (!teaserEl || !chipsEl) return;
 
-  const maxSets = sorted[0][1];
-  const LABEL = {
-    'lats':'Lats','biceps':'Biceps','rear-delt':'Rear Delt','lateral-delt':'Lateral Delt',
-    'front-delt':'Front Delt','chest':'Chest','triceps':'Triceps','shoulders':'Shoulders',
-    'core':'Core','lower-back':'Lower Back','glutes':'Glutes','hamstrings':'Hamstrings',
-    'quads':'Quads','calves':'Calves','serratus':'Serratus','brachialis':'Brachialis',
-    'forearms':'Forearms',
-  };
+  const { primary } = buildMuscleTally(entry);
+  const top = Object.entries(primary).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  if (!top.length) { teaserEl.style.display = 'none'; return; }
 
-  container.innerHTML = `
-    <div class="muscles-section">
-      <div class="muscles-section__title">Muscles worked</div>
-      ${sorted.map(([m, sets]) => `
-        <div class="muscle-vol-row">
-          <div class="muscle-vol-row__name">${LABEL[m] || m}</div>
-          <div class="muscle-vol-bar-wrap">
-            <div class="muscle-vol-bar" style="width:${Math.round(sets / maxSets * 100)}%"></div>
-          </div>
-          <div class="muscle-vol-row__sets">${sets}×</div>
-        </div>`).join('')}
-    </div>`;
+  teaserEl.style.display = '';
+  chipsEl.innerHTML = top.map(([m]) => {
+    const cat   = MUSCLE_CAT[m] || 'push';
+    const color = CAT_META[cat]?.color || '#6C7FD8';
+    return `<span class="muscles-teaser__chip">
+      <span class="muscles-teaser__chip-dot" style="background:${color}"></span>
+      ${MUSCLE_LABEL[m] || m}
+    </span>`;
+  }).join('');
+
+  teaserEl.onclick = () => renderMusclesDetail(entry);
+}
+
+// ─── S-17 Muscles detail ──────────────────────────────────
+function renderMusclesDetail(entry) {
+  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const { primary, secondary } = buildMuscleTally(entry);
+
+  // Session label
+  const sessEl = q('#s17-session');
+  if (sessEl) sessEl.textContent = sess ? `${sess.label} · ${entry.date}` : entry.date;
+
+  // Total primary sets
+  const totalSets = Object.values(primary).reduce((a,b) => a+b, 0);
+  q('#s17-total-sets').textContent = totalSets;
+
+  // ── Donut ring ───────────────────────────────────────────
+  const CIRC = 2 * Math.PI * 60; // r=60 → 376.99
+  const donutEl = q('#s17-donut');
+
+  // Sum sets by category (primary only for donut)
+  const catSets = {};
+  Object.entries(primary).forEach(([m, sets]) => {
+    const cat = MUSCLE_CAT[m] || 'push';
+    catSets[cat] = (catSets[cat] || 0) + sets;
+  });
+  const catOrder = ['push','pull','core','legs'];
+  const total = Object.values(catSets).reduce((a,b) => a+b, 0) || 1;
+
+  // Remove old segments (keep track circle = first child)
+  while (donutEl.children.length > 1) donutEl.removeChild(donutEl.lastChild);
+
+  let offset = 0; // cumulative arc start offset (fraction of CIRC)
+  const GAP = CIRC * 0.012; // small gap between segments
+  catOrder.forEach(cat => {
+    const sets  = catSets[cat] || 0;
+    if (!sets) return;
+    const arcLen = (sets / total) * CIRC - GAP;
+    const seg    = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    seg.setAttribute('cx', '80');
+    seg.setAttribute('cy', '80');
+    seg.setAttribute('r', '60');
+    seg.setAttribute('fill', 'none');
+    seg.setAttribute('stroke', CAT_META[cat].color);
+    seg.setAttribute('stroke-width', '16');
+    seg.setAttribute('stroke-linecap', 'round');
+    // Animate: start at full offset (invisible), transition to real arc
+    seg.setAttribute('stroke-dasharray', `0 ${CIRC}`);
+    seg.setAttribute('stroke-dashoffset', `${-offset}`);
+    donutEl.appendChild(seg);
+    // Trigger animation on next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        seg.style.transition = 'stroke-dasharray 0.6s cubic-bezier(0.22,1,0.36,1)';
+        seg.setAttribute('stroke-dasharray', `${arcLen} ${CIRC - arcLen}`);
+      });
+    });
+    offset += arcLen + GAP;
+  });
+
+  // ── Legend pills ─────────────────────────────────────────
+  const legendEl = q('#s17-legend');
+  legendEl.innerHTML = catOrder
+    .filter(cat => catSets[cat])
+    .map(cat => `
+      <div class="md-legend-pill">
+        <span class="md-legend-dot" style="background:${CAT_META[cat].color}"></span>
+        ${CAT_META[cat].label} · ${catSets[cat]}
+      </div>`).join('');
+
+  // ── Muscle rows helper ───────────────────────────────────
+  function buildMuscleRows(tally, containerId) {
+    const el = q(`#${containerId}`);
+    if (!el) return;
+    const sorted = Object.entries(tally).sort((a,b) => b[1]-a[1]);
+    if (!sorted.length) { el.closest('[id$="-wrap"]')?.style && (el.closest('[id$="-wrap"]').style.display = 'none'); return; }
+    const maxV = sorted[0][1];
+    el.innerHTML = '';
+    sorted.forEach(([m, sets]) => {
+      const cat   = MUSCLE_CAT[m] || 'push';
+      const color = CAT_META[cat]?.color || '#6C7FD8';
+      const pct   = Math.round(sets / maxV * 100);
+      const row   = document.createElement('div');
+      row.className = 'md-muscle-row';
+      row.innerHTML = `
+        <span class="md-muscle-dot" style="background:${color}"></span>
+        <span class="md-muscle-name">${MUSCLE_LABEL[m] || m}</span>
+        <div class="md-muscle-bar-wrap">
+          <div class="md-muscle-bar" data-pct="${pct}" style="background:${color}"></div>
+        </div>
+        <span class="md-muscle-sets">${sets}×</span>`;
+      el.appendChild(row);
+    });
+    // Animate bars after paint
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.querySelectorAll('.md-muscle-bar').forEach(bar => {
+          bar.style.width = `${bar.dataset.pct}%`;
+        });
+      });
+    });
+  }
+
+  buildMuscleRows(primary,   's17-primary');
+  buildMuscleRows(secondary, 's17-secondary');
+
+  const secWrap = q('#s17-secondary-wrap');
+  if (secWrap) secWrap.style.display = Object.keys(secondary).length ? '' : 'none';
+
+  q('#s17-back').onclick = () => showScreen('s-07');
+  q('#s17-done').onclick = () => showScreen('s-07');
+
+  showScreen('s-17');
+  updateNav('today');
 }
 
 // ─── S-16 Cool-down ───────────────────────────────────────
