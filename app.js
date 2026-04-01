@@ -2645,6 +2645,8 @@ function renderProgress() {
   // Wire export / import buttons every render
   q('#s13-export-json').onclick = exportJSON;
   q('#s13-export-csv').onclick  = exportCSV;
+  const pasteBtn = q('#s13-paste-restore');
+  if (pasteBtn) pasteBtn.onclick = pasteRestore;
   q('#s13-import-input').onchange = e => {
     const file = e.target.files[0];
     if (file) importJSON(file);
@@ -2700,45 +2702,66 @@ function buildBackupPayload() {
 }
 
 // ─── Import ───────────────────────────────────────────────
-function importJSON(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data.log || !Array.isArray(data.log)) {
-        alert('Invalid backup file — no log found.');
-        return;
-      }
-
-      // Merge: existing IDs win, incoming fills the gaps
-      const existingIds = new Set(state.log.map(e => e.id));
-      const newEntries  = data.log.filter(e => !existingIds.has(e.id));
-      state.log = [...state.log, ...newEntries]
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      // Restore week + count if backup is further ahead
-      if ((data.sessionCount || 0) > state.sessionCount) {
-        state.sessionCount = data.sessionCount;
-        state.currentWeek  = data.week || state.currentWeek;
-      }
-
-      // Merge skill levels — keep the higher level for each skill
-      if (data.skillLevels) {
-        Object.entries(data.skillLevels).forEach(([id, lvl]) => {
-          if ((lvl || 0) > (state.skillLevels[id] || 0)) {
-            state.skillLevels[id] = lvl;
-          }
+async function importJSON(file) {
+  try {
+    const text = typeof file.text === 'function'
+      ? await file.text()
+      : await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload  = e => res(e.target.result);
+          r.onerror = () => rej(new Error('FileReader error'));
+          r.readAsText(file);
         });
-      }
+    applyBackupText(text);
+  } catch (_) {
+    alert('Could not read backup file. Use the Paste option below instead.');
+  }
+}
 
-      saveState();
-      renderProgress(); // re-render to show restored log
-      alert(`Restored ${newEntries.length} session${newEntries.length !== 1 ? 's' : ''} from backup.`);
-    } catch (_) {
-      alert('Could not read backup file.');
-    }
-  };
-  reader.readAsText(file);
+function pasteRestore() {
+  const ta = q('#s13-paste-input');
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) { alert('Paste your backup JSON first.'); return; }
+  applyBackupText(text);
+  ta.value = '';
+}
+
+function applyBackupText(text) {
+  let data;
+  try { data = JSON.parse(text); } catch (_) {
+    alert('Invalid JSON — could not parse the backup.');
+    return;
+  }
+  if (!data.log || !Array.isArray(data.log)) {
+    alert('Invalid backup file — no log found.');
+    return;
+  }
+
+  // Merge: existing IDs win, incoming fills the gaps
+  const existingIds = new Set(state.log.map(e => e.id));
+  const newEntries  = data.log.filter(e => !existingIds.has(e.id));
+  state.log = [...state.log, ...newEntries]
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Restore week + count if backup is further ahead
+  if ((data.sessionCount || 0) > state.sessionCount) {
+    state.sessionCount = data.sessionCount;
+    state.currentWeek  = data.week || state.currentWeek;
+  }
+
+  // Merge skill levels — keep the higher level for each skill
+  if (data.skillLevels) {
+    Object.entries(data.skillLevels).forEach(([id, lvl]) => {
+      if ((lvl || 0) > (state.skillLevels[id] || 0)) {
+        state.skillLevels[id] = lvl;
+      }
+    });
+  }
+
+  saveState();
+  renderProgress();
+  alert(`Restored ${newEntries.length} session${newEntries.length !== 1 ? 's' : ''} from backup.`);
 }
 
 // ─── Export ───────────────────────────────────────────────
