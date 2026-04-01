@@ -2645,8 +2645,11 @@ function renderProgress() {
   // Wire export / import / drive buttons every render
   q('#s13-export-json').onclick  = exportJSON;
   q('#s13-export-csv').onclick   = exportCSV;
-  q('#s13-drive-backup').onclick  = () => driveBackup();
-  q('#s13-drive-restore').onclick = () => driveRestore();
+  q('#s13-drive-backup').onclick  = () => gistBackup();
+  q('#s13-drive-restore').onclick = () => gistRestore();
+  const saveTokenBtn = q('#s13-gist-save');
+  if (saveTokenBtn) saveTokenBtn.onclick = saveGistToken;
+  renderGistTokenUI();
   const pasteBtn = q('#s13-paste-restore');
   if (pasteBtn) pasteBtn.onclick = pasteRestore;
   q('#s13-import-input').onchange = e => {
@@ -2659,124 +2662,99 @@ function renderProgress() {
   updateNav('progress');
 }
 
-// ─── Google Drive backup ─────────────────────────────────
-// Uses OAuth 2.0 implicit redirect flow — no popup, works in Brave/mobile.
-// Flow: tap button → redirect to Google → return with token in URL hash →
-//       auto-run the pending action (backup or restore).
-const DRIVE_CLIENT_ID   = '834352003340-sirh9fis8bchnh646f89dnufc81a5lca.apps.googleusercontent.com';
-const DRIVE_SCOPE       = 'https://www.googleapis.com/auth/drive.appdata';
-const DRIVE_FILENAME    = 'ring-app-backup.json';
-const DRIVE_REDIRECT_URI = 'https://julien125.github.io/ring-app/';
-let _driveToken = null;
+// ─── GitHub Gist backup ──────────────────────────────────
+// Uses a Personal Access Token (gist scope) stored in localStorage.
+// No OAuth, no redirects — plain HTTPS API calls, works in all browsers.
+const GIST_TOKEN_KEY = 'ring-app-gist-token';
+const GIST_ID_KEY    = 'ring-app-gist-id';
+const GIST_FILENAME  = 'ring-app-backup.json';
 
-// On page load: if returning from OAuth redirect, grab the token and resume.
-(function checkOAuthReturn() {
-  if (!location.hash) return;
-  const params = new URLSearchParams(location.hash.slice(1));
-  const token  = params.get('access_token');
-  const state  = params.get('state');
-  if (!token) return;
-  _driveToken = token;
-  // Clean the token out of the URL immediately
-  history.replaceState(null, '', location.pathname + location.search);
-  // Resume the action that triggered the login
-  if (state === 'backup')  window.addEventListener('DOMContentLoaded', () => driveBackup(),  { once: true });
-  else if (state === 'restore') window.addEventListener('DOMContentLoaded', () => driveRestore(), { once: true });
-  // If DOM already loaded, run now
-  if (document.readyState !== 'loading') {
-    if (state === 'backup')  driveBackup();
-    else if (state === 'restore') driveRestore();
-  }
-})();
-
-function driveAuth(action) {
-  // Save any in-progress active session before navigating away
-  if (A) saveActive();
-  const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  url.searchParams.set('client_id',     DRIVE_CLIENT_ID);
-  url.searchParams.set('redirect_uri',  DRIVE_REDIRECT_URI);
-  url.searchParams.set('response_type', 'token');
-  url.searchParams.set('scope',         DRIVE_SCOPE);
-  url.searchParams.set('state',         action);
-  location.href = url.toString();
+function getGistToken() {
+  return localStorage.getItem(GIST_TOKEN_KEY) || '';
 }
 
-async function getDriveToken(action) {
-  if (_driveToken) return _driveToken;
-  driveAuth(action); // redirects — function will not return
-  return null;
+function renderGistTokenUI() {
+  const token   = getGistToken();
+  const tokenEl = q('#s13-gist-token');
+  const statusEl = q('#s13-gist-status');
+  if (!tokenEl) return;
+  tokenEl.value = token;
+  if (statusEl) statusEl.textContent = token ? '● Connected' : '○ Not connected';
 }
 
-async function driveBackup() {
+function saveGistToken() {
+  const val = (q('#s13-gist-token')?.value || '').trim();
+  if (!val) { alert('Paste your GitHub token first.'); return; }
+  localStorage.setItem(GIST_TOKEN_KEY, val);
+  renderGistTokenUI();
+}
+
+async function gistBackup() {
+  const token = getGistToken();
+  if (!token) { alert('Enter your GitHub token first (see below).'); return; }
   const btn = q('#s13-drive-backup');
-  const token = await getDriveToken('backup');
-  if (!token) return; // redirecting
   try {
-    if (btn) btn.textContent = '☁ Uploading…';
-    const content = JSON.stringify(buildBackupPayload(), null, 2);
+    if (btn) btn.textContent = '↑ Uploading…';
+    const content  = JSON.stringify(buildBackupPayload(), null, 2);
+    const gistId   = localStorage.getItem(GIST_ID_KEY);
+    const headers  = { Authorization: `token ${token}`, 'Content-Type': 'application/json' };
+    const body     = JSON.stringify({ description: 'Ring App backup', public: false,
+                       files: { [GIST_FILENAME]: { content } } });
 
-    // Find existing file to update (PATCH) or create new (POST)
-    const listResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILENAME}'&fields=files(id)`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const listData = await listResp.json();
-    const existingId = listData.files?.[0]?.id;
-
-    const metadata = JSON.stringify(
-      existingId ? { name: DRIVE_FILENAME } : { name: DRIVE_FILENAME, parents: ['appDataFolder'] }
-    );
-    const form = new FormData();
-    form.append('metadata', new Blob([metadata], { type: 'application/json' }));
-    form.append('file',     new Blob([content],  { type: 'application/json' }));
-
-    const url    = existingId
-      ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart`
-      : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
-    const method = existingId ? 'PATCH' : 'POST';
-
-    const upResp = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form });
-    if (!upResp.ok) throw new Error(`Drive upload failed: ${upResp.status}`);
-
-    if (btn) btn.textContent = '☁ Backed up ✓';
-    setTimeout(() => { if (btn) btn.textContent = '☁ Backup to Drive'; }, 3000);
+    let resp, data;
+    if (gistId) {
+      resp = await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers, body });
+    } else {
+      resp = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
+    }
+    if (!resp.ok) {
+      // Token expired or gist deleted — try creating fresh
+      if (resp.status === 404 || resp.status === 401) {
+        localStorage.removeItem(GIST_ID_KEY);
+        resp = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
+      }
+      if (!resp.ok) throw new Error(`GitHub API ${resp.status}`);
+    }
+    data = await resp.json();
+    localStorage.setItem(GIST_ID_KEY, data.id);
+    if (btn) btn.textContent = '↑ Backed up ✓';
+    setTimeout(() => { if (btn) btn.textContent = '↑ Backup to Gist'; }, 3000);
   } catch (err) {
-    _driveToken = null; // force re-auth next time
-    if (btn) btn.textContent = '☁ Backup to Drive';
-    alert('Drive backup failed: ' + err.message);
+    if (btn) btn.textContent = '↑ Backup to Gist';
+    alert('Gist backup failed: ' + err.message);
   }
 }
 
-async function driveRestore() {
+async function gistRestore() {
+  const token = getGistToken();
+  if (!token) { alert('Enter your GitHub token first (see below).'); return; }
   const btn = q('#s13-drive-restore');
-  const token = await getDriveToken('restore');
-  if (!token) return; // redirecting
   try {
-    if (btn) btn.textContent = '☁ Fetching…';
+    if (btn) btn.textContent = '↓ Fetching…';
+    const headers = { Authorization: `token ${token}` };
+    let gistId = localStorage.getItem(GIST_ID_KEY);
 
-    const listResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILENAME}'&fields=files(id,modifiedTime)`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const listData = await listResp.json();
-    const file = listData.files?.[0];
-    if (!file) {
-      if (btn) btn.textContent = '☁ Restore from Drive';
-      alert('No backup found in Google Drive.');
-      return;
+    if (!gistId) {
+      // Search all gists for our filename
+      const listResp = await fetch('https://api.github.com/gists?per_page=100', { headers });
+      if (!listResp.ok) throw new Error(`GitHub API ${listResp.status}`);
+      const list = await listResp.json();
+      const found = list.find(g => g.files?.[GIST_FILENAME]);
+      if (!found) { if (btn) btn.textContent = '↓ Restore from Gist'; alert('No backup gist found.'); return; }
+      gistId = found.id;
+      localStorage.setItem(GIST_ID_KEY, gistId);
     }
 
-    const dlResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const text = await dlResp.text();
-    if (btn) btn.textContent = '☁ Restore from Drive';
+    const resp = await fetch(`https://api.github.com/gists/${gistId}`, { headers });
+    if (!resp.ok) throw new Error(`GitHub API ${resp.status}`);
+    const data = await resp.json();
+    const text = data.files?.[GIST_FILENAME]?.content;
+    if (!text) throw new Error('Backup file not found in gist.');
+    if (btn) btn.textContent = '↓ Restore from Gist';
     applyBackupText(text);
   } catch (err) {
-    _driveToken = null;
-    if (btn) btn.textContent = '☁ Restore from Drive';
-    alert('Drive restore failed: ' + err.message);
+    if (btn) btn.textContent = '↓ Restore from Gist';
+    alert('Gist restore failed: ' + err.message);
   }
 }
 
