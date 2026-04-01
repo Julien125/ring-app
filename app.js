@@ -2642,9 +2642,11 @@ function renderProgress() {
     list.appendChild(card);
   });
 
-  // Wire export / import buttons every render
-  q('#s13-export-json').onclick = exportJSON;
-  q('#s13-export-csv').onclick  = exportCSV;
+  // Wire export / import / drive buttons every render
+  q('#s13-export-json').onclick  = exportJSON;
+  q('#s13-export-csv').onclick   = exportCSV;
+  q('#s13-drive-backup').onclick  = () => driveBackup();
+  q('#s13-drive-restore').onclick = () => driveRestore();
   const pasteBtn = q('#s13-paste-restore');
   if (pasteBtn) pasteBtn.onclick = pasteRestore;
   q('#s13-import-input').onchange = e => {
@@ -2655,6 +2657,104 @@ function renderProgress() {
 
   showScreen('s-13');
   updateNav('progress');
+}
+
+// ─── Google Drive backup ─────────────────────────────────
+const DRIVE_CLIENT_ID = '834352003340-sirh9fis8bchnh646f89dnufc81a5lca.apps.googleusercontent.com';
+const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILENAME  = 'ring-app-backup.json';
+let _driveToken = null;
+
+function getDriveToken() {
+  return new Promise((resolve, reject) => {
+    if (_driveToken) { resolve(_driveToken); return; }
+    if (typeof google === 'undefined' || !google.accounts) {
+      reject(new Error('Google Identity Services not loaded yet. Try again in a moment.'));
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope:     DRIVE_SCOPE,
+      callback:  resp => {
+        if (resp.error) { reject(new Error(resp.error)); return; }
+        _driveToken = resp.access_token;
+        resolve(_driveToken);
+      },
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function driveBackup() {
+  const btn = q('#s13-drive-backup');
+  try {
+    if (btn) btn.textContent = '☁ Connecting…';
+    const token = await getDriveToken();
+    if (btn) btn.textContent = '☁ Uploading…';
+
+    const content = JSON.stringify(buildBackupPayload(), null, 2);
+
+    // Find existing file to update (PATCH) or create new (POST)
+    const listResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILENAME}'&fields=files(id)`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const listData = await listResp.json();
+    const existingId = listData.files?.[0]?.id;
+
+    const metadata = JSON.stringify(
+      existingId ? { name: DRIVE_FILENAME } : { name: DRIVE_FILENAME, parents: ['appDataFolder'] }
+    );
+    const form = new FormData();
+    form.append('metadata', new Blob([metadata], { type: 'application/json' }));
+    form.append('file',     new Blob([content],  { type: 'application/json' }));
+
+    const url    = existingId
+      ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart`
+      : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+    const method = existingId ? 'PATCH' : 'POST';
+
+    const upResp = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: form });
+    if (!upResp.ok) throw new Error(`Drive upload failed: ${upResp.status}`);
+
+    if (btn) btn.textContent = '☁ Backed up ✓';
+    setTimeout(() => { if (btn) btn.textContent = '☁ Backup to Drive'; }, 3000);
+  } catch (err) {
+    if (btn) btn.textContent = '☁ Backup to Drive';
+    alert('Drive backup failed: ' + err.message);
+  }
+}
+
+async function driveRestore() {
+  const btn = q('#s13-drive-restore');
+  try {
+    if (btn) btn.textContent = '☁ Connecting…';
+    const token = await getDriveToken();
+    if (btn) btn.textContent = '☁ Fetching…';
+
+    const listResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILENAME}'&fields=files(id,modifiedTime)`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const listData = await listResp.json();
+    const file = listData.files?.[0];
+    if (!file) {
+      if (btn) btn.textContent = '☁ Restore from Drive';
+      alert('No backup found in Google Drive.');
+      return;
+    }
+
+    const dlResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const text = await dlResp.text();
+    if (btn) btn.textContent = '☁ Restore from Drive';
+    applyBackupText(text);
+  } catch (err) {
+    if (btn) btn.textContent = '☁ Restore from Drive';
+    alert('Drive restore failed: ' + err.message);
+  }
 }
 
 // ─── Auto-backup ─────────────────────────────────────────

@@ -1764,9 +1764,13 @@
       <button id="s13-export-json" class="btn-ghost flex-1" style="font-size:10px">Export JSON</button>
       <button id="s13-export-csv"  class="btn-ghost flex-1" style="font-size:10px">Export CSV</button>
     </div>
+    <div class="px-screen mt-1" style="display:flex;gap:10px">
+      <button id="s13-drive-backup"  class="btn-ghost flex-1" style="font-size:10px">☁ Backup to Drive</button>
+      <button id="s13-drive-restore" class="btn-ghost flex-1" style="font-size:10px">☁ Restore from Drive</button>
+    </div>
     <div class="px-screen mt-1">
       <label id="s13-import-label" class="btn-ghost" style="font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;cursor:pointer;box-sizing:border-box">
-        Restore from backup JSON
+        Restore from local backup JSON
         <input id="s13-import-input" type="file" accept=".json,application/json" style="display:none">
       </label>
     </div>
@@ -1875,6 +1879,7 @@
 
 </div><!-- #app -->
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
