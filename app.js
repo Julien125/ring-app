@@ -2660,38 +2660,59 @@ function renderProgress() {
 }
 
 // ─── Google Drive backup ─────────────────────────────────
-const DRIVE_CLIENT_ID = '834352003340-sirh9fis8bchnh646f89dnufc81a5lca.apps.googleusercontent.com';
-const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.appdata';
-const DRIVE_FILENAME  = 'ring-app-backup.json';
+// Uses OAuth 2.0 implicit redirect flow — no popup, works in Brave/mobile.
+// Flow: tap button → redirect to Google → return with token in URL hash →
+//       auto-run the pending action (backup or restore).
+const DRIVE_CLIENT_ID   = '834352003340-sirh9fis8bchnh646f89dnufc81a5lca.apps.googleusercontent.com';
+const DRIVE_SCOPE       = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILENAME    = 'ring-app-backup.json';
+const DRIVE_REDIRECT_URI = 'https://julien125.github.io/ring-app/';
 let _driveToken = null;
 
-function getDriveToken() {
-  return new Promise((resolve, reject) => {
-    if (_driveToken) { resolve(_driveToken); return; }
-    if (typeof google === 'undefined' || !google.accounts) {
-      reject(new Error('Google Identity Services not loaded yet. Try again in a moment.'));
-      return;
-    }
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: DRIVE_CLIENT_ID,
-      scope:     DRIVE_SCOPE,
-      callback:  resp => {
-        if (resp.error) { reject(new Error(resp.error)); return; }
-        _driveToken = resp.access_token;
-        resolve(_driveToken);
-      },
-    });
-    client.requestAccessToken();
-  });
+// On page load: if returning from OAuth redirect, grab the token and resume.
+(function checkOAuthReturn() {
+  if (!location.hash) return;
+  const params = new URLSearchParams(location.hash.slice(1));
+  const token  = params.get('access_token');
+  const state  = params.get('state');
+  if (!token) return;
+  _driveToken = token;
+  // Clean the token out of the URL immediately
+  history.replaceState(null, '', location.pathname + location.search);
+  // Resume the action that triggered the login
+  if (state === 'backup')  window.addEventListener('DOMContentLoaded', () => driveBackup(),  { once: true });
+  else if (state === 'restore') window.addEventListener('DOMContentLoaded', () => driveRestore(), { once: true });
+  // If DOM already loaded, run now
+  if (document.readyState !== 'loading') {
+    if (state === 'backup')  driveBackup();
+    else if (state === 'restore') driveRestore();
+  }
+})();
+
+function driveAuth(action) {
+  // Save any in-progress active session before navigating away
+  if (A) saveActive();
+  const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  url.searchParams.set('client_id',     DRIVE_CLIENT_ID);
+  url.searchParams.set('redirect_uri',  DRIVE_REDIRECT_URI);
+  url.searchParams.set('response_type', 'token');
+  url.searchParams.set('scope',         DRIVE_SCOPE);
+  url.searchParams.set('state',         action);
+  location.href = url.toString();
+}
+
+async function getDriveToken(action) {
+  if (_driveToken) return _driveToken;
+  driveAuth(action); // redirects — function will not return
+  return null;
 }
 
 async function driveBackup() {
   const btn = q('#s13-drive-backup');
+  const token = await getDriveToken('backup');
+  if (!token) return; // redirecting
   try {
-    if (btn) btn.textContent = '☁ Connecting…';
-    const token = await getDriveToken();
     if (btn) btn.textContent = '☁ Uploading…';
-
     const content = JSON.stringify(buildBackupPayload(), null, 2);
 
     // Find existing file to update (PATCH) or create new (POST)
@@ -2720,6 +2741,7 @@ async function driveBackup() {
     if (btn) btn.textContent = '☁ Backed up ✓';
     setTimeout(() => { if (btn) btn.textContent = '☁ Backup to Drive'; }, 3000);
   } catch (err) {
+    _driveToken = null; // force re-auth next time
     if (btn) btn.textContent = '☁ Backup to Drive';
     alert('Drive backup failed: ' + err.message);
   }
@@ -2727,9 +2749,9 @@ async function driveBackup() {
 
 async function driveRestore() {
   const btn = q('#s13-drive-restore');
+  const token = await getDriveToken('restore');
+  if (!token) return; // redirecting
   try {
-    if (btn) btn.textContent = '☁ Connecting…';
-    const token = await getDriveToken();
     if (btn) btn.textContent = '☁ Fetching…';
 
     const listResp = await fetch(
@@ -2752,6 +2774,7 @@ async function driveRestore() {
     if (btn) btn.textContent = '☁ Restore from Drive';
     applyBackupText(text);
   } catch (err) {
+    _driveToken = null;
     if (btn) btn.textContent = '☁ Restore from Drive';
     alert('Drive restore failed: ' + err.message);
   }
