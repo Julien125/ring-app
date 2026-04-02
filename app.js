@@ -303,9 +303,12 @@ function updateNav(activeTab) {
 
 // ─── Global UI bindings ───────────────────────────────────
 function bindGlobalUI() {
-  // Gist token save — use delegation since element exists in static HTML
+  // Gist buttons — use delegation so they work regardless of render timing
   document.addEventListener('click', e => {
-    if (e.target.id === 's13-gist-save') saveGistToken();
+    const id = e.target.closest('button')?.id;
+    if (id === 's13-gist-save')    saveGistToken();
+    if (id === 's13-drive-backup') gistBackup();
+    if (id === 's13-drive-restore') gistRestore();
   });
 
   // Session picker — tap backdrop to dismiss
@@ -2650,8 +2653,7 @@ function renderProgress() {
   // Wire export / import / drive buttons every render
   q('#s13-export-json').onclick  = exportJSON;
   q('#s13-export-csv').onclick   = exportCSV;
-  q('#s13-drive-backup').onclick  = () => gistBackup();
-  q('#s13-drive-restore').onclick = () => gistRestore();
+  // gistBackup / gistRestore wired via delegation in bindGlobalUI
   renderGistTokenUI();
   const pasteBtn = q('#s13-paste-restore');
   if (pasteBtn) pasteBtn.onclick = pasteRestore;
