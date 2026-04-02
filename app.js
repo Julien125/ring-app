@@ -303,8 +303,10 @@ function updateNav(activeTab) {
 
 // ─── Global UI bindings ───────────────────────────────────
 function bindGlobalUI() {
-  // Gist token save — static button, wire once at startup
-  q('#s13-gist-save').addEventListener('click', saveGistToken);
+  // Gist token save — use delegation since element exists in static HTML
+  document.addEventListener('click', e => {
+    if (e.target.id === 's13-gist-save') saveGistToken();
+  });
 
   // Session picker — tap backdrop to dismiss
   q('#dialog-pick').addEventListener('click', e => {
@@ -2650,8 +2652,6 @@ function renderProgress() {
   q('#s13-export-csv').onclick   = exportCSV;
   q('#s13-drive-backup').onclick  = () => gistBackup();
   q('#s13-drive-restore').onclick = () => gistRestore();
-  const saveTokenBtn = q('#s13-gist-save');
-  if (saveTokenBtn) saveTokenBtn.onclick = saveGistToken;
   renderGistTokenUI();
   const pasteBtn = q('#s13-paste-restore');
   if (pasteBtn) pasteBtn.onclick = pasteRestore;
