@@ -1773,10 +1773,8 @@
         <summary style="font-size:10px;color:var(--c-text-2,#888);cursor:pointer;padding:10px 0;user-select:none">GitHub token <span id="s13-gist-status" style="margin-left:6px"></span></summary>
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
           <p style="font-size:10px;color:var(--c-text-2,#888);margin:0">Go to github.com → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → check <strong>gist</strong> scope → copy and paste below.</p>
-          <form onsubmit="return false" style="display:contents">
-            <input id="s13-gist-token" type="password" placeholder="ghp_…" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--c-surface-2,#1a1a1c);color:var(--c-text-1,#f0f0f0);border:1px solid var(--c-border,#333);border-radius:8px;padding:10px;font-size:11px;font-family:monospace">
-            <button id="s13-gist-save" class="btn-ghost" type="submit" style="font-size:10px;width:100%;min-height:44px">Save token</button>
-          </form>
+          <input id="s13-gist-token" type="text" inputmode="text" placeholder="ghp_…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;box-sizing:border-box;background:var(--c-surface-2,#1a1a1c);color:var(--c-text-1,#f0f0f0);border:1px solid var(--c-border,#333);border-radius:8px;padding:10px;font-size:11px;font-family:monospace">
+          <button id="s13-gist-save" class="btn-ghost" style="font-size:10px;width:100%;min-height:44px">Save token</button>
         </div>
       </details>
     </div>

@@ -1,4 +1,4 @@
-const CACHE = 'ring-app-v32';
+const CACHE = 'ring-app-v33';
 
 const FILES = [
   './',
@@ -29,7 +29,25 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  const url = new URL(e.request.url);
+  const isHTML = e.request.destination === 'document' ||
+                 url.pathname.endsWith('.html') ||
+                 url.pathname.endsWith('/');
+  if (isHTML) {
+    // Network-first for HTML — always get latest app shell
+    e.respondWith(
+      fetch(e.request)
+        .then(resp => {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return resp;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // Cache-first for assets (JS, CSS, images)
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
 });
