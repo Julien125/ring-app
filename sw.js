@@ -1,4 +1,4 @@
-const CACHE = 'ring-app-v41';
+const CACHE = 'ring-app-v42';
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 

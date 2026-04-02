@@ -1708,8 +1708,8 @@
       <span id="s16-type" class="t-label" style="color:var(--txt-3)"></span>
     </div>
     <div class="px-screen mt-2">
-      <div class="t-display-md">Stretch &amp; recover</div>
-      <div class="t-body mt-1" style="color:var(--txt-3)">Tap each pose when done · breathe fully</div>
+      <div id="s16-title" class="t-display-md">Stretch &amp; recover</div>
+      <div id="s16-subtitle" class="t-body mt-1" style="color:var(--txt-3)">Tap each pose when done · breathe fully</div>
     </div>
     <div id="s16-list" class="mt-4" style="padding-bottom:100px"></div>
     <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
@@ -1895,6 +1895,15 @@
   </div>
 
 </div><!-- #app -->
+
+  <!-- ── Flex session picker ──────────────────────────────── -->
+  <div class="dialog-overlay" id="dialog-flex">
+    <div class="dialog-sheet" style="padding-bottom:48px">
+      <div class="dialog-title mb-1">Choose your practice</div>
+      <div id="dialog-flex-list"></div>
+      <button class="btn-text mt-3" id="dialog-flex-cancel">Cancel</button>
+    </div>
+  </div>
 
 <script type="module" src="./app.js"></script>
 </body>

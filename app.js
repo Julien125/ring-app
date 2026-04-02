@@ -2,7 +2,7 @@
 //  Ring App — Main Logic
 // ─────────────────────────────────────────────────────────
 
-import { SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
+import { SESSIONS, FLEX_SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
 
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY  = 'ring-app-state';
@@ -610,7 +610,7 @@ function renderHome() {
     q('#s01-focus').textContent = 'Recovery · mobility · sleep';
     q('#s01-cta').textContent = 'Start flexibility →';
     q('#s01-cta').disabled = false;
-    q('#s01-cta').onclick = () => renderCooldown({ type: 'push', cooldown: SESSIONS[0].cooldown });
+    q('#s01-cta').onclick = renderFlexPicker;
     q('#s01-secondary').style.display = 'none';
     q('#s01-pick').style.display = '';
     q('#s01-pick').textContent = 'Train anyway →';
@@ -1236,10 +1236,13 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-stop').textContent    = 'Stop left';
 
     q('#s04-start').onclick = () => {
-      startStopwatch();
       q('#s04-start').style.display = 'none';
-      q('#s04-stop').style.display  = '';
-      q('#s04-stop').textContent    = swSide === 1 ? 'Stop left' : 'Stop right & log';
+      q('#s04-stop').style.display  = 'none';
+      startCountdown(() => {
+        startStopwatch();
+        q('#s04-stop').style.display = '';
+        q('#s04-stop').textContent   = swSide === 1 ? 'Stop left' : 'Stop right & log';
+      });
     };
 
     q('#s04-stop').onclick = () => {
@@ -1280,9 +1283,12 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-stop').style.display  = 'none';
 
     q('#s04-start').onclick = () => {
-      startStopwatch();
       q('#s04-start').style.display = 'none';
-      q('#s04-stop').style.display  = '';
+      q('#s04-stop').style.display  = 'none';
+      startCountdown(() => {
+        startStopwatch();
+        q('#s04-stop').style.display = '';
+      });
     };
 
     q('#s04-stop').onclick = () => {
@@ -1302,6 +1308,26 @@ function renderHold(ex, ss, totalRounds) {
 }
 
 // ─── Stopwatch (S-04) ─────────────────────────────────────
+function startCountdown(onDone) {
+  // 3-2-1 countdown in the stopwatch display before recording starts
+  let count = 3;
+  const el = q('#s04-sw');
+  if (el) el.textContent = count;
+  if (navigator.vibrate) navigator.vibrate(40);
+  const iv = setInterval(() => {
+    count--;
+    if (count > 0) {
+      if (el) el.textContent = count;
+      if (navigator.vibrate) navigator.vibrate(40);
+    } else {
+      clearInterval(iv);
+      if (el) el.textContent = '0';
+      if (navigator.vibrate) navigator.vibrate(80);
+      onDone();
+    }
+  }, 1000);
+}
+
 function startStopwatch() {
   swSecs = 0;
   swRunning = true;
@@ -2441,7 +2467,11 @@ function renderCooldown(sess) {
 
   const list  = q('#s16-list');
   const typeEl = q('#s16-type');
-  if (typeEl) typeEl.textContent = sess.type === 'push' ? 'Push day' : 'Pull day';
+  const titleEl = q('#s16-title');
+  const subtitleEl = q('#s16-subtitle');
+  if (titleEl)    titleEl.textContent    = 'Stretch & recover';
+  if (subtitleEl) subtitleEl.textContent = 'Tap each pose when done · breathe fully';
+  if (typeEl)     typeEl.textContent     = sess.type === 'push' ? 'Push day' : 'Pull day';
 
   // Build rows
   list.innerHTML = '';
@@ -2482,6 +2512,88 @@ function renderCooldown(sess) {
   const prog = document.createElement('div');
   prog.className = 'cooldown-progress';
   prog.textContent = `0 / ${sess.cooldown.length} done`;
+  list.insertBefore(prog, list.firstChild);
+
+  q('#s16-done').onclick = goHome;
+
+  showScreen('s-16');
+  updateNav('today');
+}
+
+// ─── Flex session picker ──────────────────────────────────
+function renderFlexPicker() {
+  const overlay = q('#dialog-flex');
+  const list    = q('#dialog-flex-list');
+  if (!overlay || !list) return;
+
+  list.innerHTML = FLEX_SESSIONS.map(fs => `
+    <button class="btn-ghost mb-3 flex-pick-btn" data-id="${fs.id}"
+      style="width:100%;text-align:left;padding:var(--sp-3) var(--sp-4)">
+      <div class="t-body-strong">${fs.label}</div>
+      <div class="t-label mt-1" style="color:var(--txt-3)">${fs.focus} · ${fs.duration}</div>
+    </button>
+  `).join('');
+
+  overlay.classList.add('is-active');
+
+  overlay.querySelectorAll('.flex-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fs = FLEX_SESSIONS.find(s => s.id === btn.dataset.id);
+      overlay.classList.remove('is-active');
+      if (fs) renderFlexSession(fs);
+    });
+  });
+  q('#dialog-flex-cancel').onclick = () => overlay.classList.remove('is-active');
+}
+
+// ─── S-16 Flexibility session ─────────────────────────────
+function renderFlexSession(flexSess) {
+  const list   = q('#s16-list');
+  const typeEl = q('#s16-type');
+  const titleEl = q('#s16-title');
+  const subtitleEl = q('#s16-subtitle');
+
+  if (titleEl)    titleEl.textContent    = flexSess.label;
+  if (subtitleEl) subtitleEl.textContent = flexSess.focus + ' · ' + flexSess.duration;
+  if (typeEl)     typeEl.textContent     = '';
+
+  list.innerHTML = '';
+  let doneCnt = 0;
+
+  const updateProgress = () => {
+    const progEl = list.querySelector('.cooldown-progress');
+    if (progEl) progEl.textContent = `${doneCnt} / ${flexSess.poses.length} done`;
+  };
+
+  flexSess.poses.forEach(pose => {
+    const row = document.createElement('div');
+    row.className = 'cooldown-row';
+    row.innerHTML = `
+      <div class="cooldown-row__check"></div>
+      <div class="cooldown-row__body">
+        <div class="cooldown-row__name">${pose.name}</div>
+        <div class="cooldown-row__breaths">${pose.duration}</div>
+        ${pose.note ? `<div class="cooldown-row__note">${pose.note}</div>` : ''}
+        ${pose.cue  ? `<div class="cooldown-row__cue">"${pose.cue}"</div>` : ''}
+      </div>`;
+    row.addEventListener('click', () => {
+      if (!row.classList.contains('is-done')) {
+        row.classList.add('is-done');
+        doneCnt++;
+        updateProgress();
+        if (navigator.vibrate) navigator.vibrate(40);
+      } else {
+        row.classList.remove('is-done');
+        doneCnt--;
+        updateProgress();
+      }
+    });
+    list.appendChild(row);
+  });
+
+  const prog = document.createElement('div');
+  prog.className = 'cooldown-progress';
+  prog.textContent = `0 / ${flexSess.poses.length} done`;
   list.insertBefore(prog, list.firstChild);
 
   q('#s16-done').onclick = goHome;
