@@ -895,7 +895,8 @@ function levelUpSkill(skillId) {
       date:      fmtLocal(new Date()),
     });
     saveState();
-    renderSkills();
+    // Re-render the appropriate screen — caller decides context
+    if (A && !A.complete) renderSkills(); else renderSkillsOverview();
   }
 }
 
@@ -910,7 +911,7 @@ function renderSkillsOverview() {
     const card = buildSkillCard(skillId, {
       showDots: true,
       showDone: false,
-      onLevelUp: id => { levelUpSkill(id); renderSkillsOverview(); },
+      onLevelUp: id => levelUpSkill(id),
     });
     if (card) list.appendChild(card);
   });
@@ -2681,18 +2682,18 @@ function getGistToken() {
 }
 
 function renderGistTokenUI() {
-  const token   = getGistToken();
-  const tokenEl = q('#s13-gist-token');
+  const token    = getGistToken();
   const statusEl = q('#s13-gist-status');
-  if (!tokenEl) return;
-  tokenEl.value = token;
+  const wrapEl   = q('#s13-token-wrap');
   if (statusEl) statusEl.textContent = token ? '● Connected' : '○ Not connected';
+  if (wrapEl)   wrapEl.style.display = token ? 'none' : '';
 }
 
 function saveGistToken() {
   const val = (q('#s13-gist-token')?.value || '').trim();
   if (!val) { alert('Paste your GitHub token first.'); return; }
   localStorage.setItem(GIST_TOKEN_KEY, val);
+  if (q('#s13-gist-token')) q('#s13-gist-token').value = '';
   renderGistTokenUI();
 }
 
