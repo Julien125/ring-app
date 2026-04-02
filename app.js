@@ -1238,7 +1238,7 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-start').onclick = () => {
       q('#s04-start').style.display = 'none';
       q('#s04-stop').style.display  = 'none';
-      startCountdown(() => {
+      startHoldCountdown(() => {
         startStopwatch();
         q('#s04-stop').style.display = '';
         q('#s04-stop').textContent   = swSide === 1 ? 'Stop left' : 'Stop right & log';
@@ -1285,7 +1285,7 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-start').onclick = () => {
       q('#s04-start').style.display = 'none';
       q('#s04-stop').style.display  = 'none';
-      startCountdown(() => {
+      startHoldCountdown(() => {
         startStopwatch();
         q('#s04-stop').style.display = '';
       });
@@ -1308,7 +1308,7 @@ function renderHold(ex, ss, totalRounds) {
 }
 
 // ─── Stopwatch (S-04) ─────────────────────────────────────
-function startCountdown(onDone) {
+function startHoldCountdown(onDone) {
   // 3-2-1 countdown in the stopwatch display before recording starts
   let count = 3;
   const el = q('#s04-sw');
