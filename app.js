@@ -608,8 +608,9 @@ function renderHome() {
     q('#s01-phase').textContent = ph.label;
     q('#s01-label').textContent = 'Rest day';
     q('#s01-focus').textContent = 'Recovery · mobility · sleep';
-    q('#s01-cta').textContent = 'No session today';
-    q('#s01-cta').disabled = true;
+    q('#s01-cta').textContent = 'Start flexibility →';
+    q('#s01-cta').disabled = false;
+    q('#s01-cta').onclick = () => renderCooldown({ type: 'push', cooldown: SESSIONS[0].cooldown });
     q('#s01-secondary').style.display = 'none';
     q('#s01-pick').style.display = '';
     q('#s01-pick').textContent = 'Train anyway →';
@@ -1581,6 +1582,7 @@ function finishSession() {
   saveState();
   clearActive();
   autoBackup();
+  if (getGistToken()) gistBackup();
   applyInterSessionAdaptations(entry);
   runPatternDetectors(entry);
   renderSummary(entry);

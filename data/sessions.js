@@ -223,7 +223,7 @@ export const SESSIONS = [
   },
   {
     id: 'thu-push2',
-    day: 'Thursday', weekday: 4,
+    day: 'Friday', weekday: 5,
     type: 'push', label: 'Push 2',
     focus: 'Anterior legs · Rotation core',
     skills: ['muscle-up', 'manna', 'ring-handstand'],
