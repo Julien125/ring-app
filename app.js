@@ -303,12 +303,22 @@ function updateNav(activeTab) {
 
 // ─── Global UI bindings ───────────────────────────────────
 function bindGlobalUI() {
-  // Gist buttons — use delegation so they work regardless of render timing
+  // All Progress screen buttons — delegation so render timing doesn't matter
   document.addEventListener('click', e => {
     const id = e.target.closest('button')?.id;
-    if (id === 's13-gist-save')    saveGistToken();
-    if (id === 's13-drive-backup') gistBackup();
-    if (id === 's13-drive-restore') gistRestore();
+    if (id === 's13-gist-save')     { saveGistToken(); return; }
+    if (id === 's13-drive-backup')  { gistBackup();    return; }
+    if (id === 's13-drive-restore') { gistRestore();   return; }
+    if (id === 's13-paste-restore') { pasteRestore();  return; }
+    if (id === 's13-export-json')   { exportJSON();    return; }
+    if (id === 's13-export-csv')    { exportCSV();     return; }
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 's13-import-input') {
+      const file = e.target.files[0];
+      if (file) importJSON(file);
+      e.target.value = '';
+    }
   });
 
   // Session picker — tap backdrop to dismiss
@@ -2650,18 +2660,8 @@ function renderProgress() {
     list.appendChild(card);
   });
 
-  // Wire export / import / drive buttons every render
-  q('#s13-export-json').onclick  = exportJSON;
-  q('#s13-export-csv').onclick   = exportCSV;
-  // gistBackup / gistRestore wired via delegation in bindGlobalUI
+  // All buttons wired via delegation in bindGlobalUI
   renderGistTokenUI();
-  const pasteBtn = q('#s13-paste-restore');
-  if (pasteBtn) pasteBtn.onclick = pasteRestore;
-  q('#s13-import-input').onchange = e => {
-    const file = e.target.files[0];
-    if (file) importJSON(file);
-    e.target.value = ''; // reset so same file can be picked again
-  };
 
   showScreen('s-13');
   updateNav('progress');
