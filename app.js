@@ -303,6 +303,9 @@ function updateNav(activeTab) {
 
 // ─── Global UI bindings ───────────────────────────────────
 function bindGlobalUI() {
+  // Gist token save — static button, wire once at startup
+  q('#s13-gist-save').addEventListener('click', saveGistToken);
+
   // Session picker — tap backdrop to dismiss
   q('#dialog-pick').addEventListener('click', e => {
     if (e.target === q('#dialog-pick')) hideDialog('dialog-pick');
