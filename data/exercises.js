@@ -9,7 +9,7 @@ export const EX = {
   'handstand-drills': {
     id: 'handstand-drills', name: 'Handstand Drills',
     category: 'shoulder', type: 'reps', targetReps: 5,
-    desc: 'Kick up to a wall handstand and hold. Stack shoulders over wrists, hollow body, toes pointed. Exit with control.',
+    desc: '5× shrugs · 3 tuck slides · 5× lean forwards · 10× shoulder taps',
     note: 'Neural — fully fresh CNS',
     muscles: { primary: ['shoulders', 'core'], secondary: ['front-delt', 'serratus'] },
   },
