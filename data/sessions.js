@@ -57,11 +57,12 @@ const COOLDOWN_PULL = [
 
 // ─── Leg supersets ────────────────────────────────────────
 
-// Variant A — Monday / Wednesday (baseline)
+// Variant A — Monday (baseline)
 const ssLegsAnterior = {
-  id: 'D', label: 'Legs — Anterior Chain', rings: 'none', rounds: 1,
+  id: 'B', label: 'Legs — Anterior Chain', rings: 'none', rounds: 2,
   restIntra: 60, restRound: 90,
   exercises: [
+    EX['bulgarian-split-squat'],
     EX['pistol-squat'],
     EX['sissy-squat'],
     EX['single-leg-calf-raise'],
@@ -69,7 +70,7 @@ const ssLegsAnterior = {
 };
 
 const ssLegsPosterior = {
-  id: 'D', label: 'Legs — Posterior Chain', rings: 'none', rounds: 1,
+  id: 'B', label: 'Legs — Posterior Chain', rings: 'none', rounds: 2,
   restIntra: 60, restRound: 90,
   exercises: [
     EX['nordic-curl'],
@@ -78,20 +79,21 @@ const ssLegsPosterior = {
   ],
 };
 
-// Variant B — Thursday anterior (3s descent + eyes closed for pistol; 3×12 sissy)
+// Variant B — Friday anterior (3s descent pistol; loaded BSS; 3×12 sissy)
 const ssLegsAnteriorB = {
-  id: 'D', label: 'Legs — Anterior Chain', rings: 'none', rounds: 1,
+  id: 'B', label: 'Legs — Anterior Chain', rings: 'none', rounds: 2,
   restIntra: 60, restRound: 90,
   exercises: [
+    { ...EX['bulgarian-split-squat'],  note: 'Add KB/DB — load it' },
     { ...EX['pistol-squat'],           note: '3s descent · eyes closed — proprioception challenge' },
     { ...EX['sissy-squat'],            targetReps: 12 },
     { ...EX['single-leg-calf-raise'],  note: 'Bent knee — soleus focus' },
   ],
 };
 
-// Variant B — Saturday posterior (3×6 explosive nordic; weighted SL deadlift; foot-elevated bridge)
+// Variant B — Saturday posterior (explosive nordic; weighted SL deadlift; foot-elevated bridge)
 const ssLegsPosteriorB = {
-  id: 'D', label: 'Legs — Posterior Chain', rings: 'none', rounds: 1,
+  id: 'B', label: 'Legs — Posterior Chain', rings: 'none', rounds: 2,
   restIntra: 60, restRound: 90,
   exercises: [
     { ...EX['nordic-curl'],             targetReps: 6,  note: 'Explosive descent — use hands to push back up if needed' },
@@ -188,6 +190,30 @@ const ssIsolationPull = {
   ],
 };
 
+// ─── Core finisher supersets ──────────────────────────────
+
+// Push days: hanging leg raise → ab wheel → dragon flag
+const ssCoreFinisherPush = {
+  id: 'E', label: 'Core Finisher', rings: 'bar', rounds: 2,
+  restIntra: 45, restRound: 90,
+  exercises: [
+    EX['hanging-leg-raise'],
+    EX['ab-wheel-rollout'],
+    EX['dragon-flag'],
+  ],
+};
+
+// Pull days: hanging leg raise → ab wheel → tuck-to-L (hip flexor compression from hang)
+const ssCoreFinisherPull = {
+  id: 'E', label: 'Core Finisher', rings: 'bar', rounds: 2,
+  restIntra: 45, restRound: 90,
+  exercises: [
+    EX['hanging-leg-raise'],
+    EX['ab-wheel-rollout'],
+    EX['tuck-to-l'],
+  ],
+};
+
 // ─── Flexibility sessions ─────────────────────────────────
 
 export const FLEX_SESSIONS = [
@@ -250,14 +276,15 @@ export const SESSIONS = [
     id: 'mon-push1',
     day: 'Monday', weekday: 1,
     type: 'push', label: 'Push 1',
-    focus: 'Anterior legs · Lateral core',
+    focus: 'Anterior legs · Planche · Core finisher',
     skills: ['planche', 'shoulderstand-press'],
     warmup: WARMUP_PUSH,
     supersets: [
-      ssOverheadSkill(EX['copenhagen-plank']),
-      ssHeavyDips(EX['side-plank-thread']),
-      ssIsolationPush,
-      ssLegsAnterior,
+      ssOverheadSkill(EX['copenhagen-plank']),  // A — skill, CNS fresh
+      ssLegsAnterior,                            // B — legs while energy is high
+      ssHeavyDips(EX['side-plank-thread']),      // C — heavy dips
+      ssIsolationPush,                           // D — isolation
+      ssCoreFinisherPush,                        // E — dedicated core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -265,14 +292,15 @@ export const SESSIONS = [
     id: 'wed-pull1',
     day: 'Wednesday', weekday: 3,
     type: 'pull', label: 'Pull 1',
-    focus: 'Posterior legs · IAP + rotation core',
+    focus: 'Posterior legs · Front lever · Core finisher',
     skills: ['front-lever', 'iron-cross', 'back-lever'],
     warmup: WARMUP_PULL_WED,
     supersets: [
-      ssSkillPower,
-      ssStrengthVolume(EX['dead-bug']),
-      ssIsolationPull,
-      ssLegsPosterior,
+      ssSkillPower,                               // A — skill, CNS fresh
+      ssLegsPosterior,                            // B — legs while energy is high
+      ssStrengthVolume(EX['hollow-body-hold']),   // C — strength volume (dead-bug → hollow body)
+      ssIsolationPull,                            // D — isolation
+      ssCoreFinisherPull,                         // E — dedicated core
     ],
     cooldown: COOLDOWN_PULL,
   },
@@ -280,14 +308,15 @@ export const SESSIONS = [
     id: 'thu-push2',
     day: 'Friday', weekday: 5,
     type: 'push', label: 'Push 2',
-    focus: 'Anterior legs · Rotation core',
+    focus: 'Anterior legs · Muscle up · Core finisher',
     skills: ['muscle-up', 'manna', 'ring-handstand'],
     warmup: WARMUP_PUSH,
     supersets: [
-      ssOverheadSkill(EX['hollow-body-hold']),
-      ssHeavyDips(EX['windshield-wipers']),
-      ssIsolationPush,
-      ssLegsAnteriorB,
+      ssOverheadSkill(EX['hollow-body-hold']),   // A — skill
+      ssLegsAnteriorB,                            // B — legs (loaded variant)
+      ssHeavyDips(EX['windshield-wipers']),       // C — heavy dips
+      ssIsolationPush,                            // D — isolation
+      ssCoreFinisherPush,                         // E — dedicated core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -295,14 +324,15 @@ export const SESSIONS = [
     id: 'sat-pull2',
     day: 'Saturday', weekday: 6,
     type: 'pull', label: 'Pull 2',
-    focus: 'Posterior legs · Lateral core',
+    focus: 'Posterior legs · Dynamic skills · Core finisher',
     skills: ['forward-roll', 'backward-roll'],
     warmup: WARMUP_PULL_SAT,
     supersets: [
-      ssSkillPower,
-      ssStrengthVolume(EX['windmill']),
-      ssIsolationPull,
-      ssLegsPosteriorB,
+      ssSkillPower,                               // A — skill
+      ssLegsPosteriorB,                           // B — legs (loaded variant)
+      ssStrengthVolume(EX['windmill']),            // C — strength volume
+      ssIsolationPull,                            // D — isolation
+      ssCoreFinisherPull,                         // E — dedicated core
     ],
     cooldown: COOLDOWN_PULL,
   },

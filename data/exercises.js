@@ -348,6 +348,13 @@ export const EX = {
   },
 
   // ── Legs — Anterior chain (push days) ────────────────
+  'bulgarian-split-squat': {
+    id: 'bulgarian-split-squat', name: 'Bulgarian Split Squat',
+    category: 'legs', type: 'reps', targetReps: 8,
+    desc: 'Rear foot elevated on a bench or chair, front foot far enough forward that your shin stays vertical. Lower until rear knee nearly grazes the floor. Keep chest tall — no forward collapse. Add KB or DB at sides when bodyweight feels easy. Each leg.',
+    note: 'Quad + glute compound — each leg',
+    muscles: { primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves', 'core'] },
+  },
   'pistol-squat': {
     id: 'pistol-squat', name: 'Pistol Squat',
     category: 'legs', type: 'reps', targetReps: 5,
@@ -391,6 +398,22 @@ export const EX = {
     desc: 'Lie on back, one knee bent with foot flat on the floor, other leg extended straight. Drive hips up with the working leg, squeezing the glute hard at the top. Pause.',
     note: 'Glute isolation — pause at top',
     muscles: { primary: ['glutes'], secondary: ['hamstrings', 'core'] },
+  },
+
+  // ── Core finisher ─────────────────────────────────────
+  'hanging-leg-raise': {
+    id: 'hanging-leg-raise', name: 'Hanging Leg Raise',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Dead hang from bar. Posterior pelvic tilt FIRST — pull the pelvis under before the legs move. Raise straight legs until parallel or higher. Lower slow and controlled. Zero swing, zero kip.',
+    note: 'Posterior tilt is everything — if the low back arches, the abs have switched off',
+    muscles: { primary: ['core'], secondary: ['lats', 'hip-flexors'] },
+  },
+  'ab-wheel-rollout': {
+    id: 'ab-wheel-rollout', name: 'Ab Wheel Rollout',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Kneeling, wheel under shoulders. Brace hard and roll forward until body is nearly flat — hips stay off the floor, lower back NEVER sags. Pull back by contracting the abs from the pelvis up, not by yanking the arms.',
+    note: 'Full-chain anti-extension — the hardest core move in the program',
+    muscles: { primary: ['core'], secondary: ['lats', 'serratus', 'shoulders'] },
   },
 
   // ── Ring handstand ────────────────────────────────────
