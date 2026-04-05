@@ -1615,7 +1615,7 @@ function finishSession() {
   renderSummary(entry);
 }
 
-function renderSummary(entry) {
+function renderSummary(entry, { readOnly = false } = {}) {
   const sess = SESSIONS.find(s => s.id === entry.sessionId);
   const mins  = Math.round(entry.durationSecs / 60);
 
@@ -1706,9 +1706,15 @@ function renderSummary(entry) {
     }
   }
 
-  // RPE selector
+  // RPE selector — hidden in read-only (log review) mode
   const rpeEl = q('#s07-rpe');
   if (rpeEl) {
+    if (readOnly) {
+      const rpeEmojis = ['😴','🙂','💪','🔥','💀'];
+      rpeEl.innerHTML = entry.rpe
+        ? `<div class="rpe-label">Effort: ${rpeEmojis[entry.rpe - 1]}</div>`
+        : '';
+    } else {
     rpeEl.innerHTML = `
       <div class="rpe-label">How hard was that?</div>
       <div class="rpe-buttons">
@@ -1725,6 +1731,7 @@ function renderSummary(entry) {
         if (idx >= 0) { state.log[idx].rpe = +btn.dataset.rpe; saveState(); }
       });
     });
+    } // end else (not readOnly)
   }
 
   // Muscles teaser (taps to S-17)
@@ -1733,18 +1740,25 @@ function renderSummary(entry) {
   // Signals card (autoregulation feedback)
   renderSignalsCard(entry);
 
-  // Cool-down CTA
+  // Cool-down CTA — hidden in read-only mode
   const cdBtn = q('#s07-cooldown');
   if (cdBtn) {
-    cdBtn.style.display = sess?.cooldown?.length ? '' : 'none';
-    cdBtn.onclick = () => renderCooldown(sess);
+    cdBtn.style.display = (!readOnly && sess?.cooldown?.length) ? '' : 'none';
+    if (!readOnly) cdBtn.onclick = () => renderCooldown(sess);
   }
 
-  q('#s07-done').onclick = goHome;
+  const doneBtn = q('#s07-done');
+  if (readOnly) {
+    doneBtn.textContent = '← Back to log';
+    doneBtn.onclick = renderProgress;
+  } else {
+    doneBtn.textContent = 'Done — go home';
+    doneBtn.onclick = goHome;
+  }
   showScreen('s-07');
   updateProgressStrip(); // hide strip on summary
-  updateNav('today');
-  launchConfetti();
+  updateNav(readOnly ? 'progress' : 'today');
+  if (!readOnly) launchConfetti();
 }
 
 // ─── Muscle helpers ───────────────────────────────────────
@@ -2765,6 +2779,8 @@ function renderProgress() {
         <div class="muscles-teaser__chips">${chipsHtml}</div>
         <button class="prog-muscles-btn">muscles →</button>
       </div>` : ''}`;
+
+    card.addEventListener('click', () => renderSummary(entry, { readOnly: true }));
 
     if (topMuscles.length) {
       card.querySelector('.prog-muscles-btn').addEventListener('click', e => {
