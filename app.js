@@ -267,7 +267,7 @@ function getTargetReps(ex) {
 // ─── Nav ──────────────────────────────────────────────────
 function bindNav() {
   q('#nav-today').addEventListener('click', () => {
-    stopTimer(); stopStopwatch(); stopVoiceInput(); window.speechSynthesis?.cancel();
+    stopTimer(); stopStopwatch(); stopVoiceInput(); stopPoseTimer(); window.speechSynthesis?.cancel();
     goHome();
   });
   q('#nav-live').addEventListener('click', () => {
@@ -516,6 +516,7 @@ function goHome() {
   stopTimer();
   stopStopwatch();
   stopVoiceInput();
+  stopPoseTimer();
   window.speechSynthesis?.cancel();
   renderHome();
   renderPatternCard();
@@ -2618,10 +2619,16 @@ function renderFlexSession(flexSess) {
         updateProgress();
         if (navigator.vibrate) navigator.vibrate(40);
         announcePose(pose.name, pose.duration);
+        startPoseTimer(pose.name, pose.duration, () => {
+          // on timer done: vibrate + mark row done if not already
+          if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+          cueRestEnd();
+        });
       } else {
         row.classList.remove('is-done');
         doneCnt--;
         updateProgress();
+        stopPoseTimer();
       }
     });
     list.appendChild(row);
@@ -2632,7 +2639,10 @@ function renderFlexSession(flexSess) {
   prog.textContent = `0 / ${flexSess.poses.length} done`;
   list.insertBefore(prog, list.firstChild);
 
-  q('#s16-done').onclick = goHome;
+  // Stop timer btn
+  q('#s16-timer-stop').onclick = () => stopPoseTimer();
+
+  q('#s16-done').onclick = () => { stopPoseTimer(); goHome(); };
 
   showScreen('s-16');
   updateNav('today');
@@ -3141,6 +3151,71 @@ function cueRestWarning() {
 function cueCountdownTick(count) {
   const freqs = { 3: 440, 2: 554, 1: 660, 0: 880 };
   beep(freqs[count] ?? 440, count === 0 ? 200 : 120, 'sine');
+}
+
+// ─── Pose timer (S-16 flex) ───────────────────────────────
+let _poseTimerIv  = null;
+let _poseTimerSec = 0;
+let _poseCountdown = false; // true = countdown, false = stopwatch
+
+// Parse "3 min" → 180, "90s" → 90, "2 min" → 120, "60s/side" → 60, etc.
+// Returns seconds or null if unparseable.
+function parsePoseDuration(str) {
+  if (!str) return null;
+  const s = str.toLowerCase().trim();
+  const minMatch = s.match(/^(\d+(?:\.\d+)?)\s*min/);
+  if (minMatch) return Math.round(parseFloat(minMatch[1]) * 60);
+  const secMatch = s.match(/^(\d+)s/);
+  if (secMatch) return parseInt(secMatch[1], 10);
+  return null; // "3 holds", "10s/rep" etc → stopwatch
+}
+
+function fmtPoseTime(secs) {
+  const m = Math.floor(Math.abs(secs) / 60);
+  const s = Math.abs(secs) % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function startPoseTimer(name, durationStr, onDone) {
+  stopPoseTimer();
+  const totalSecs = parsePoseDuration(durationStr);
+  _poseCountdown = totalSecs !== null;
+  _poseTimerSec  = _poseCountdown ? totalSecs : 0;
+
+  const barEl  = q('#s16-timer-bar');
+  const valEl  = q('#s16-timer-val');
+  const nameEl = q('#s16-timer-name');
+  const modeEl = q('#s16-timer-mode');
+  if (!barEl) return;
+
+  nameEl.textContent = name;
+  modeEl.textContent = _poseCountdown ? durationStr : 'stopwatch';
+  valEl.textContent  = fmtPoseTime(_poseTimerSec);
+  barEl.style.display = '';
+
+  _poseTimerIv = setInterval(() => {
+    if (_poseCountdown) {
+      _poseTimerSec--;
+      if (_poseTimerSec <= 0) {
+        _poseTimerSec = 0;
+        valEl.textContent = fmtPoseTime(0);
+        clearInterval(_poseTimerIv);
+        _poseTimerIv = null;
+        onDone?.();
+        return;
+      }
+      if (_poseTimerSec === 3) cueRestWarning();
+    } else {
+      _poseTimerSec++;
+    }
+    valEl.textContent = fmtPoseTime(_poseTimerSec);
+  }, 1000);
+}
+
+function stopPoseTimer() {
+  if (_poseTimerIv) { clearInterval(_poseTimerIv); _poseTimerIv = null; }
+  const barEl = q('#s16-timer-bar');
+  if (barEl) barEl.style.display = 'none';
 }
 
 // ─── TTS: announce pose (flexibility / cooldown) ─────────
