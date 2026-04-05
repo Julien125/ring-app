@@ -2507,6 +2507,8 @@ function renderCooldown(sess) {
   if (titleEl)    titleEl.textContent    = 'Stretch & recover';
   if (subtitleEl) subtitleEl.textContent = 'Tap each pose when done · breathe fully';
   if (typeEl)     typeEl.textContent     = sess.type === 'push' ? 'Push day' : 'Pull day';
+  const labelEl2 = q('#s16-label');
+  if (labelEl2)   labelEl2.textContent   = 'Cool-down';
 
   // Build rows
   list.innerHTML = '';
@@ -2592,6 +2594,8 @@ function renderFlexSession(flexSess) {
   if (titleEl)    titleEl.textContent    = flexSess.label;
   if (subtitleEl) subtitleEl.textContent = flexSess.focus + ' · ' + flexSess.duration;
   if (typeEl)     typeEl.textContent     = '';
+  const labelEl = q('#s16-label');
+  if (labelEl)    labelEl.textContent    = 'Flexibility';
 
   list.innerHTML = '';
   let doneCnt = 0;

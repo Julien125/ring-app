@@ -1704,24 +1704,24 @@
   <!-- ── S-16 Cool-down / Stretching ──────────────────────── -->
   <section id="s-16" class="screen">
     <div class="status-bar px-screen">
-      <span class="t-label">Cool-down</span>
+      <span id="s16-label" class="t-label">Cool-down</span>
       <span id="s16-type" class="t-label" style="color:var(--txt-3)"></span>
     </div>
     <div class="px-screen mt-2">
       <div id="s16-title" class="t-display-md">Stretch &amp; recover</div>
       <div id="s16-subtitle" class="t-body mt-1" style="color:var(--txt-3)">Tap each pose when done · breathe fully</div>
     </div>
-    <div id="s16-list" class="mt-4" style="padding-bottom:160px"></div>
+    <div id="s16-list" class="mt-4" style="padding-bottom:200px"></div>
 
     <!-- Pose timer bar — shown when a pose is active -->
-    <div id="s16-timer-bar" style="display:none;position:fixed;bottom:72px;left:0;right:0;z-index:50;padding:0 16px 8px">
-      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
-        <div id="s16-timer-val" style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--progress);min-width:72px;text-align:center">0:00</div>
-        <div style="flex:1">
-          <div id="s16-timer-name" style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--txt)"></div>
+    <div id="s16-timer-bar" style="display:none;position:fixed;bottom:60px;left:0;right:0;z-index:50">
+      <div style="background:var(--bg-2,#111);border-top:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px">
+        <div id="s16-timer-val" style="font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;color:var(--progress);min-width:80px">0:00</div>
+        <div style="flex:1;min-width:0">
+          <div id="s16-timer-name" style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
           <div id="s16-timer-mode" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--txt-3);margin-top:2px"></div>
         </div>
-        <button id="s16-timer-stop" style="font-family:'DM Mono',monospace;font-size:11px;background:var(--line);border:none;color:var(--txt);border-radius:8px;padding:8px 12px;cursor:pointer">done</button>
+        <button id="s16-timer-stop" style="font-family:'DM Mono',monospace;font-size:11px;background:var(--line);border:none;color:var(--txt);border-radius:8px;padding:10px 16px;cursor:pointer;flex-shrink:0">done ✓</button>
       </div>
     </div>
 
