@@ -39,6 +39,19 @@
     .stepper__val { font-size: 52px; }
     .muscle-chip  { font-size: 9px; }
 
+    /* Weekly summary dialog */
+    .weekly-stat-row  { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); }
+    .weekly-stat-label{ font-size:12px; color:var(--txt-3); font-family:'DM Mono',monospace; }
+    .weekly-stat-val  { font-size:15px; font-weight:700; font-family:'Unbounded',sans-serif; color:var(--txt); }
+    .weekly-section-label { font-size:10px; color:var(--txt-3); text-transform:uppercase; letter-spacing:.08em; margin-top:14px; margin-bottom:6px; font-family:'DM Mono',monospace; }
+    .weekly-pr-row    { font-size:12px; color:var(--txt-2); padding:3px 0; font-family:'DM Mono',monospace; }
+    .weekly-prs       { padding:2px 0; }
+    .weekly-muscles   { display:flex; flex-wrap:wrap; gap:6px; }
+    .weekly-muscle-chip { font-size:10px; padding:3px 9px; border-radius:20px; background:var(--bg-3,#222); color:var(--txt-2); border:1px solid var(--line); font-family:'DM Mono',monospace; }
+    /* Week link buttons in progress screen */
+    .weekly-link-btn  { display:block; width:100%; text-align:left; padding:11px 0; background:none; border:none; border-bottom:1px solid var(--line); color:var(--txt-2); font-family:'DM Mono',monospace; font-size:12px; cursor:pointer; }
+    .weekly-link-btn:last-child { border-bottom:none; }
+
     html, body { height: 100%; overflow: hidden; }
 
     #app {
@@ -1455,6 +1468,9 @@
     <div class="px-screen mt-2" id="s03-lastset-wrap" style="display:none">
       <div class="last-set-ref" id="s03-lastset"></div>
     </div>
+    <div class="px-screen mt-1" id="s03-lastsess-wrap" style="display:none">
+      <div class="last-set-ref" id="s03-lastsess" style="color:var(--txt-3)"></div>
+    </div>
     <div class="px-screen mt-4">
       <div class="stepper" style="justify-content:center; gap:0">
         <button class="stepper__btn" id="s03-minus">−</button>
@@ -1505,6 +1521,9 @@
     <div class="px-screen mt-4">
       <div class="t-label-xs mb-2" style="color:var(--txt-3);letter-spacing:0.1em">Sets</div>
       <div class="set-tracker" id="s04-pills"></div>
+    </div>
+    <div class="px-screen mt-2" id="s04-lastsess-wrap" style="display:none">
+      <div class="last-set-ref" id="s04-lastsess" style="color:var(--txt-3)"></div>
     </div>
     <!-- Side label for unilateral exercises (hidden for bilateral) -->
     <div class="px-screen mt-2 text-center" id="s04-side-wrap" style="display:none">
@@ -1774,6 +1793,9 @@
     </div>
     <div class="px-screen" id="s13-list" style="padding-bottom:20px"></div>
 
+    <!-- Weekly summaries -->
+    <div class="px-screen mt-3" id="s13-week-links" style="display:none;padding-bottom:4px"></div>
+
     <!-- Audio / voice toggle -->
     <div class="px-screen mt-3">
       <label style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer">
@@ -1919,6 +1941,15 @@
   </div>
 
 </div><!-- #app -->
+
+  <!-- ── Weekly summary dialog ───────────────────────────── -->
+  <div class="dialog-overlay" id="dialog-weekly">
+    <div class="dialog-sheet" style="padding-bottom:48px">
+      <div class="dialog-title mb-2" id="dialog-weekly-title">Week complete</div>
+      <div id="dialog-weekly-body"></div>
+      <button class="btn-primary mt-4" id="dialog-weekly-close" style="width:100%;margin-top:20px">Got it →</button>
+    </div>
+  </div>
 
   <!-- ── Flex session picker ──────────────────────────────── -->
   <div class="dialog-overlay" id="dialog-flex">

@@ -308,12 +308,15 @@ function bindGlobalUI() {
   // All Progress screen buttons — delegation so render timing doesn't matter
   document.addEventListener('click', e => {
     const id = e.target.closest('button')?.id;
-    if (id === 's13-gist-save')     { saveGistToken(); return; }
-    if (id === 's13-drive-backup')  { gistBackup();    return; }
-    if (id === 's13-drive-restore') { gistRestore();   return; }
-    if (id === 's13-paste-restore') { pasteRestore();  return; }
-    if (id === 's13-export-json')   { exportJSON();    return; }
-    if (id === 's13-export-csv')    { exportCSV();     return; }
+    if (id === 's13-gist-save')      { saveGistToken(); return; }
+    if (id === 's13-drive-backup')   { gistBackup();    return; }
+    if (id === 's13-drive-restore')  { gistRestore();   return; }
+    if (id === 's13-paste-restore')  { pasteRestore();  return; }
+    if (id === 's13-export-json')    { exportJSON();    return; }
+    if (id === 's13-export-csv')     { exportCSV();     return; }
+    if (id === 'dialog-weekly-close') { hideDialog('dialog-weekly'); return; }
+    const weekBtn = e.target.closest('button[data-week]');
+    if (weekBtn) { renderWeeklySummaryModal(+weekBtn.dataset.week); return; }
   });
   document.addEventListener('change', e => {
     if (e.target.id === 's13-import-input') {
@@ -511,6 +514,71 @@ function classifySession(entry) {
   return 'normal';
 }
 
+// ─── Weekly summary ───────────────────────────────────────
+function getShownWeeks() {
+  try { return new Set(JSON.parse(localStorage.getItem(WEEKLY_SHOWN_KEY) || '[]')); }
+  catch(_) { return new Set(); }
+}
+function markWeekShown(w) {
+  const s = getShownWeeks(); s.add(w);
+  localStorage.setItem(WEEKLY_SHOWN_KEY, JSON.stringify([...s]));
+}
+
+function buildWeeklySummary(weekNum) {
+  const entries = state.log.filter(e => e.week === weekNum);
+  if (!entries.length) return null;
+  const totalSets = entries.reduce((sum, e) =>
+    sum + Object.values(e.exercises || {}).reduce((s2, ex) => s2 + (ex.sets?.length || 0), 0), 0);
+  const prList = entries.flatMap(e =>
+    Object.entries(e.prs || {}).map(([exId, val]) => ({ exId, val })));
+  const muscleTotals = {};
+  entries.forEach(e => {
+    const { primary } = buildMuscleTally(e);
+    Object.entries(primary).forEach(([m, pts]) => { muscleTotals[m] = (muscleTotals[m] || 0) + pts; });
+  });
+  const topMuscles = Object.entries(muscleTotals).sort((a,b) => b[1]-a[1]).slice(0,4).map(([m]) => MUSCLE_LABEL[m] || m);
+  return { weekNum, completed: entries.length, expected: 4, totalSets, prList, topMuscles };
+}
+
+function renderWeeklySummaryModal(weekNum) {
+  const data = buildWeeklySummary(weekNum);
+  if (!data) return;
+  const el = q('#dialog-weekly');
+  if (!el) return;
+  const { completed, expected, totalSets, prList, topMuscles } = data;
+  const prsHtml = prList.length
+    ? prList.map(({ exId, val }) => {
+        let name = exId;
+        for (const sess of SESSIONS) {
+          const ex = sess.supersets.flatMap(ss => ss.exercises).find(e => e.id === exId);
+          if (ex) { name = ex.name; break; }
+        }
+        return `<div class="weekly-pr-row">🔥 ${name} — ${val}</div>`;
+      }).join('')
+    : `<div style="color:var(--txt-3);font-size:11px">None this week</div>`;
+  const musclesHtml = topMuscles.map(m =>
+    `<span class="weekly-muscle-chip">${m}</span>`).join('');
+  q('#dialog-weekly-title').textContent = `Week ${weekNum} complete`;
+  q('#dialog-weekly-body').innerHTML = `
+    <div class="weekly-stat-row"><span class="weekly-stat-label">Sessions</span><span class="weekly-stat-val">${completed}/${expected}</span></div>
+    <div class="weekly-stat-row"><span class="weekly-stat-label">Total sets</span><span class="weekly-stat-val">${totalSets}</span></div>
+    <div class="weekly-section-label">PRs</div>
+    <div class="weekly-prs">${prsHtml}</div>
+    <div class="weekly-section-label">Top muscles</div>
+    <div class="weekly-muscles">${musclesHtml}</div>`;
+  markWeekShown(weekNum);
+  showDialog('dialog-weekly');
+}
+
+// ─── Last-session reference ───────────────────────────────
+function getLastSessionSets(exId) {
+  for (let i = state.log.length - 1; i >= 0; i--) {
+    const sets = state.log[i].exercises?.[exId]?.sets;
+    if (sets?.length > 0) return sets;
+  }
+  return null;
+}
+
 // ─── S-01 Home ────────────────────────────────────────────
 function goHome() {
   stopTimer();
@@ -614,15 +682,27 @@ function renderHome() {
     metaEl.style.display = (streakHtml || deloadHtml || phaseHtml) ? '' : 'none';
   }
 
+  // Weekly summary — show once after week advances
+  if (state.log.length > 0) {
+    const lastEntry = state.log[state.log.length - 1];
+    if (lastEntry.week < state.currentWeek && !getShownWeeks().has(lastEntry.week)) {
+      setTimeout(() => renderWeeklySummaryModal(lastEntry.week), 500);
+    }
+  }
+
   if (!today) {
     // Rest day
     q('#s01-phase').textContent = ph.label;
     q('#s01-label').textContent = 'Rest day';
     q('#s01-focus').textContent = 'Recovery · mobility · sleep';
-    q('#s01-cta').textContent = 'Start flexibility →';
+    const nextFlex  = getNextFlexSession();
+    const otherFlex = FLEX_SESSIONS.find(fs => fs.id !== nextFlex.id);
+    q('#s01-cta').textContent = `${nextFlex.label} →`;
     q('#s01-cta').disabled = false;
-    q('#s01-cta').onclick = renderFlexPicker;
-    q('#s01-secondary').style.display = 'none';
+    q('#s01-cta').onclick = () => renderFlexSession(nextFlex);
+    q('#s01-secondary').style.display = otherFlex ? '' : 'none';
+    q('#s01-secondary').textContent = otherFlex ? `Switch: ${otherFlex.label} →` : '';
+    q('#s01-secondary').onclick = otherFlex ? () => renderFlexSession(otherFlex) : null;
     q('#s01-pick').style.display = '';
     q('#s01-pick').textContent = 'Train anyway →';
     q('#s01-pick').onclick = showSessionPicker;
@@ -1175,6 +1255,19 @@ function renderReps(ex, ss, totalRounds) {
     lastSetWrap.style.display = 'none';
   }
 
+  // Cross-session reference
+  const lastSessWrap = q('#s03-lastsess-wrap');
+  const lastSessEl   = q('#s03-lastsess');
+  if (lastSessWrap && lastSessEl) {
+    const prev = getLastSessionSets(ex.id);
+    if (prev) {
+      lastSessEl.innerHTML = `Last session: <strong>${prev.join(' → ')}</strong>`;
+      lastSessWrap.style.display = '';
+    } else {
+      lastSessWrap.style.display = 'none';
+    }
+  }
+
   // Tempo chip
   const tempoChip = q('#s03-tempo-chip');
   if (ex.tempo) {
@@ -1228,6 +1321,19 @@ function renderHold(ex, ss, totalRounds) {
   q('#s04-pills').innerHTML        = buildSetPills(ex, ss);
   q('#s04-muscles').innerHTML      = buildMuscleChips(ex);
   q('#s04-note').textContent       = ex.note || '';
+
+  // Cross-session reference
+  const lastSessWrap4 = q('#s04-lastsess-wrap');
+  const lastSessEl4   = q('#s04-lastsess');
+  if (lastSessWrap4 && lastSessEl4) {
+    const prev = getLastSessionSets(ex.id);
+    if (prev) {
+      lastSessEl4.innerHTML = `Last session: <strong>${prev.map(v => `${v}s`).join(' → ')}</strong>`;
+      lastSessWrap4.style.display = '';
+    } else {
+      lastSessWrap4.style.display = 'none';
+    }
+  }
 
   // Toggle bilateral vs unilateral timer layout
   q('#s04-sw-single').style.display = isUnilateral ? 'none' : '';
@@ -2584,8 +2690,15 @@ function renderFlexPicker() {
   q('#dialog-flex-cancel').onclick = () => overlay.classList.remove('is-active');
 }
 
+function getNextFlexSession() {
+  const lastId = localStorage.getItem(LAST_FLEX_KEY);
+  if (!lastId) return FLEX_SESSIONS[0];
+  return FLEX_SESSIONS.find(fs => fs.id !== lastId) || FLEX_SESSIONS[0];
+}
+
 // ─── S-16 Flexibility session ─────────────────────────────
 function renderFlexSession(flexSess) {
+  localStorage.setItem(LAST_FLEX_KEY, flexSess.id);
   const list   = q('#s16-list');
   const typeEl = q('#s16-type');
   const titleEl = q('#s16-title');
@@ -2826,6 +2939,23 @@ function renderProgress() {
     }
     list.appendChild(card);
   });
+
+  // Week summary links
+  const weekLinksEl = q('#s13-week-links');
+  if (weekLinksEl) {
+    const weeks = [...new Set(state.log.map(e => e.week))].sort((a,b) => b-a);
+    if (weeks.length > 0) {
+      weekLinksEl.innerHTML = `<div style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--txt-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Weekly summaries</div>` +
+        weeks.map(w => {
+          const data = buildWeeklySummary(w);
+          if (!data) return '';
+          return `<button class="weekly-link-btn" data-week="${w}">Week ${w} — ${data.completed} session${data.completed !== 1 ? 's' : ''} →</button>`;
+        }).join('');
+      weekLinksEl.style.display = '';
+    } else {
+      weekLinksEl.style.display = 'none';
+    }
+  }
 
   // All buttons wired via delegation in bindGlobalUI
   renderGistTokenUI();
@@ -3096,7 +3226,9 @@ function exportCSV() {
 // ═══════════════════════════════════════════════════════════
 
 // ─── Toggle ───────────────────────────────────────────────
-const AUDIO_KEY = 'ring-app-audio';
+const AUDIO_KEY         = 'ring-app-audio';
+const LAST_FLEX_KEY     = 'ring-app-last-flex';
+const WEEKLY_SHOWN_KEY  = 'ring-app-weekly-shown';
 
 function isAudioOn() {
   return localStorage.getItem(AUDIO_KEY) !== 'off';
