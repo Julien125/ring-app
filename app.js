@@ -180,6 +180,7 @@ function addTime(secs) {
 
 function onTimerTick(secs) {
   timerRestSecs = secs;
+  if (secs === 3) cueRestWarning();
   const screen = currentScreen();
   if (screen === 's-05') updateRestUI('s05', secs);
   if (screen === 's-06') updateRestUI('s06', secs);
@@ -192,6 +193,7 @@ function onTimerDone() {
     if (valEl) valEl.classList.add('overtime');
     // Haptics — vibrate on rest end
     if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    cueRestEnd();
     // Auto-advance after 1.5 s — user can still tap "Next" early
     setTimeout(() => {
       if (currentScreen() === screen) {
@@ -265,7 +267,7 @@ function getTargetReps(ex) {
 // ─── Nav ──────────────────────────────────────────────────
 function bindNav() {
   q('#nav-today').addEventListener('click', () => {
-    stopTimer(); stopStopwatch();
+    stopTimer(); stopStopwatch(); stopVoiceInput(); window.speechSynthesis?.cancel();
     goHome();
   });
   q('#nav-live').addEventListener('click', () => {
@@ -273,15 +275,15 @@ function bindNav() {
     resumeSession();
   });
   q('#nav-muscles').addEventListener('click', () => {
-    stopTimer(); stopStopwatch();
+    stopTimer(); stopStopwatch(); stopVoiceInput(); window.speechSynthesis?.cancel();
     renderMusclesWeek();
   });
   q('#nav-progress').addEventListener('click', () => {
-    stopTimer(); stopStopwatch();
+    stopTimer(); stopStopwatch(); stopVoiceInput(); window.speechSynthesis?.cancel();
     renderProgress();
   });
   q('#nav-skills').addEventListener('click', () => {
-    stopTimer(); stopStopwatch();
+    stopTimer(); stopStopwatch(); stopVoiceInput(); window.speechSynthesis?.cancel();
     renderSkillsOverview();
   });
 }
@@ -365,6 +367,12 @@ function bindGlobalUI() {
 
   // Adaptation popover dismiss
   q('#dp-cancel')?.addEventListener('click', () => hideDialog('dialog-adapt'));
+
+  // Audio toggle
+  q('#s13-audio-toggle')?.addEventListener('change', e => setAudioOn(e.target.checked));
+
+  // Unlock AudioContext on first touch (browser autoplay policy)
+  document.addEventListener('touchstart', () => getAudioCtx(), { capture: true, passive: true, once: true });
 
   // Swipe-left on exercise screens → skip
   bindSwipeToSkip();
@@ -507,6 +515,8 @@ function classifySession(entry) {
 function goHome() {
   stopTimer();
   stopStopwatch();
+  stopVoiceInput();
+  window.speechSynthesis?.cancel();
   renderHome();
   renderPatternCard();
   showScreen('s-01');
@@ -1193,6 +1203,8 @@ function renderReps(ex, ss, totalRounds) {
   };
 
   showScreen('s-03');
+  announceExercise(ex);
+  startVoiceInput('reps');
   updateProgressStrip();
   updateNav('live');
 }
@@ -1303,6 +1315,8 @@ function renderHold(ex, ss, totalRounds) {
   };
 
   showScreen('s-04');
+  announceExercise(ex);
+  startVoiceInput('hold');
   updateProgressStrip();
   updateNav('live');
 }
@@ -1314,15 +1328,18 @@ function startHoldCountdown(onDone) {
   const el = q('#s04-sw');
   if (el) el.textContent = count;
   if (navigator.vibrate) navigator.vibrate(40);
+  cueCountdownTick(3);
   const iv = setInterval(() => {
     count--;
     if (count > 0) {
       if (el) el.textContent = count;
       if (navigator.vibrate) navigator.vibrate(40);
+      cueCountdownTick(count);
     } else {
       clearInterval(iv);
       if (el) el.textContent = '0';
       if (navigator.vibrate) navigator.vibrate(80);
+      cueCountdownTick(0);
       onDone();
     }
   }, 1000);
@@ -1488,6 +1505,8 @@ function advance(ss, totalRounds) {
 
 // ─── S-05/06 Rest ─────────────────────────────────────────
 function showRest(type, ss, nextEx) {
+  stopVoiceInput();
+  window.speechSynthesis?.cancel();
   const isIntra   = type === 'intra';
   const pfx       = isIntra ? 's05' : 's06';
   const screenId  = isIntra ? 's-05' : 's-06';
@@ -1562,6 +1581,7 @@ function showRest(type, ss, nextEx) {
     renderExercise();
   };
 
+  cueRestStart();
   startCountdown(secs);
   showScreen(screenId);
   updateProgressStrip();
@@ -2793,6 +2813,7 @@ function renderProgress() {
 
   // All buttons wired via delegation in bindGlobalUI
   renderGistTokenUI();
+  syncAudioToggleUI();
 
   showScreen('s-13');
   updateNav('progress');
@@ -3052,4 +3073,157 @@ function exportCSV() {
   const csv = [header.join(','), ...rows].join('\n');
   const date = new Date().toISOString().slice(0, 10);
   shareOrDownload(`ring-app-${date}.csv`, csv, 'text/csv');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Audio cues + Voice input
+// ═══════════════════════════════════════════════════════════
+
+// ─── Toggle ───────────────────────────────────────────────
+const AUDIO_KEY = 'ring-app-audio';
+
+function isAudioOn() {
+  return localStorage.getItem(AUDIO_KEY) !== 'off';
+}
+
+function setAudioOn(on) {
+  localStorage.setItem(AUDIO_KEY, on ? 'on' : 'off');
+  syncAudioToggleUI();
+  if (!on) stopVoiceInput();
+}
+
+function syncAudioToggleUI() {
+  const el = q('#s13-audio-toggle');
+  if (el) el.checked = isAudioOn();
+}
+
+// ─── AudioContext (lazy) ──────────────────────────────────
+let _audioCtx = null;
+
+function getAudioCtx() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+  }
+  if (_audioCtx?.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
+// ─── Beep ─────────────────────────────────────────────────
+function beep(freq = 880, duration = 120, type = 'sine', gain = 0.4) {
+  if (!isAudioOn()) return Promise.resolve();
+  const ctx = getAudioCtx();
+  if (!ctx) return Promise.resolve();
+  return new Promise(resolve => {
+    const osc = ctx.createOscillator();
+    const vol = ctx.createGain();
+    osc.connect(vol);
+    vol.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    vol.gain.setValueAtTime(gain, ctx.currentTime);
+    vol.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration / 1000);
+    osc.onended = resolve;
+  });
+}
+
+// ─── Named cues ───────────────────────────────────────────
+function cueRestStart()   { beep(660, 180, 'sine'); }
+function cueRestEnd()     { beep(1047, 220, 'sine'); }
+function cueRestWarning() {
+  beep(880, 100, 'sine')
+    .then(() => new Promise(r => setTimeout(r, 120)))
+    .then(() => beep(880, 100, 'sine'));
+}
+function cueCountdownTick(count) {
+  const freqs = { 3: 440, 2: 554, 1: 660, 0: 880 };
+  beep(freqs[count] ?? 440, count === 0 ? 200 : 120, 'sine');
+}
+
+// ─── TTS: announce exercise ───────────────────────────────
+function announceExercise(ex) {
+  if (!isAudioOn()) return;
+  if (!('speechSynthesis' in window)) return;
+  const target = ex.type === 'hold'
+    ? `${ex.targetSecs} seconds`
+    : `${getEffectiveTarget(ex)} reps`;
+  const utt = new SpeechSynthesisUtterance(`${ex.name} — ${target}`);
+  utt.rate = 0.92;
+  utt.pitch = 1;
+  utt.volume = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
+}
+
+// ─── Voice input ──────────────────────────────────────────
+let _recognition = null;
+let _voiceMode   = null; // 'hold' | 'reps' | null
+
+const SpeechRecognitionAPI =
+  window.SpeechRecognition || window.webkitSpeechRecognition || null;
+
+function startVoiceInput(mode) {
+  if (!isAudioOn() || !SpeechRecognitionAPI) return;
+  stopVoiceInput();
+  _voiceMode = mode;
+  _recognition = new SpeechRecognitionAPI();
+  _recognition.lang = 'en-US';
+  _recognition.continuous = true;
+  _recognition.interimResults = false;
+  _recognition.maxAlternatives = 1;
+
+  _recognition.onresult = e => {
+    const last = e.results[e.results.length - 1];
+    if (!last.isFinal) return;
+    handleVoiceResult(last[0].transcript.trim().toLowerCase());
+  };
+
+  // Android kills continuous recognition after silence — auto-restart
+  _recognition.onend = () => {
+    if (_voiceMode && isAudioOn()) {
+      try { _recognition.start(); } catch (_) {}
+    }
+  };
+
+  _recognition.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') stopVoiceInput();
+  };
+
+  try { _recognition.start(); } catch (_) {}
+}
+
+function stopVoiceInput() {
+  _voiceMode = null;
+  if (_recognition) {
+    try { _recognition.stop(); } catch (_) {}
+    _recognition = null;
+  }
+}
+
+function handleVoiceResult(transcript) {
+  if (_voiceMode === 'hold') {
+    if (transcript.includes('stop')) {
+      const btn = q('#s04-stop');
+      if (btn && btn.style.display !== 'none') btn.click();
+    }
+  } else if (_voiceMode === 'reps') {
+    const words = {
+      'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,
+      'six':6,'seven':7,'eight':8,'nine':9,'ten':10,
+      'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,
+      'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,
+    };
+    let val = null;
+    for (const [word, num] of Object.entries(words)) {
+      if (transcript.includes(word)) { val = num; break; }
+    }
+    if (val === null) { const m = transcript.match(/\d+/); if (m) val = parseInt(m[0], 10); }
+    if (val !== null && val >= 0 && val <= 50) {
+      const valEl = q('#s03-val');
+      if (valEl) valEl.textContent = val;
+      const doneBtn = q('#s03-done');
+      if (doneBtn) doneBtn.click();
+    }
+  }
 }
