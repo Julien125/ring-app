@@ -2533,6 +2533,7 @@ function renderCooldown(sess) {
         doneCnt++;
         updateProgress();
         if (navigator.vibrate) navigator.vibrate(40);
+        announcePose(pose.name, pose.breaths);
       } else {
         row.classList.remove('is-done');
         doneCnt--;
@@ -2616,6 +2617,7 @@ function renderFlexSession(flexSess) {
         doneCnt++;
         updateProgress();
         if (navigator.vibrate) navigator.vibrate(40);
+        announcePose(pose.name, pose.duration);
       } else {
         row.classList.remove('is-done');
         doneCnt--;
@@ -3139,6 +3141,18 @@ function cueRestWarning() {
 function cueCountdownTick(count) {
   const freqs = { 3: 440, 2: 554, 1: 660, 0: 880 };
   beep(freqs[count] ?? 440, count === 0 ? 200 : 120, 'sine');
+}
+
+// ─── TTS: announce pose (flexibility / cooldown) ─────────
+function announcePose(name, duration) {
+  if (!isAudioOn()) return;
+  if (!('speechSynthesis' in window)) return;
+  const utt = new SpeechSynthesisUtterance(`${name} — ${duration}`);
+  utt.rate = 0.92;
+  utt.pitch = 1;
+  utt.volume = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
 }
 
 // ─── TTS: announce exercise ───────────────────────────────
