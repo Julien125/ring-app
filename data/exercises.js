@@ -41,6 +41,13 @@ export const EX = {
     note: 'Planche push-up progression — maintain the lean or it becomes a regular push-up',
     muscles: { primary: ['serratus', 'front-delt', 'chest'], secondary: ['triceps', 'core'] },
   },
+  'shoulderstand-press': {
+    id: 'shoulderstand-press', name: 'Shoulderstand Press',
+    category: 'shoulder', type: 'reps', targetReps: 3,
+    desc: 'From a shoulderstand (inverted, weight on upper back and arms), press legs overhead to vertical, then slowly lower back down. The press-to-handstand version starts from a tucked shoulderstand and extends to full inversion. Control the descent entirely — no collapsing.',
+    note: 'Inversion press — bridge toward press to handstand',
+    muscles: { primary: ['shoulders', 'core'], secondary: ['triceps', 'serratus'] },
+  },
   'dragon-flag': {
     id: 'dragon-flag', name: 'Dragon Flag',
     category: 'core', type: 'reps', targetReps: 5,

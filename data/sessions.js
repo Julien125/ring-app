@@ -111,6 +111,7 @@ function ssOverheadSkill(coreFinisher) {
     exercises: [
       EX['handstand-drills'],
       EX['hspu'],
+      EX['shoulderstand-press'],
       EX['straight-bar-dips'],
       EX['pseudo-planche-lean'],
       EX['dragon-flag'],
