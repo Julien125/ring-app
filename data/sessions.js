@@ -140,6 +140,7 @@ const ssIsolationPush = {
     EX['ring-fly'],
     EX['push-up-rto'],
     EX['ring-overhead-ext'],
+    EX['russian-push-up'],
     EX['l-sit'],
     EX['side-bend'],
   ],
