@@ -127,6 +127,7 @@ function ssHeavyDips(rotationEx) {
       EX['bulgarian-dips'],
       EX['korean-dips'],
       EX['archer-push-up'],
+      EX['pseudo-planche-push-up'],
       EX['ring-dip-deep'],
       rotationEx,
     ],

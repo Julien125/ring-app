@@ -34,6 +34,13 @@ export const EX = {
     note: 'Serratus + scapular protraction',
     muscles: { primary: ['serratus', 'front-delt'], secondary: ['triceps', 'core'] },
   },
+  'pseudo-planche-push-up': {
+    id: 'pseudo-planche-push-up', name: 'Pseudo Planche Push Up',
+    category: 'straight', type: 'reps', targetReps: 5,
+    desc: 'Push-up position with fingers pointing back and shoulders leaned forward past the wrists — the pseudo planche lean position. From there, perform a full push-up while maintaining the forward lean throughout. Elbows track back, not out. The lean must not collapse at the bottom.',
+    note: 'Planche push-up progression — maintain the lean or it becomes a regular push-up',
+    muscles: { primary: ['serratus', 'front-delt', 'chest'], secondary: ['triceps', 'core'] },
+  },
   'dragon-flag': {
     id: 'dragon-flag', name: 'Dragon Flag',
     category: 'core', type: 'reps', targetReps: 5,
