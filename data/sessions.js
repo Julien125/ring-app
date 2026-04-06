@@ -143,6 +143,7 @@ const ssIsolationPush = {
     EX['russian-push-up'],
     EX['l-sit'],
     EX['side-bend'],
+    EX['cuban-press'],
   ],
 };
 
@@ -182,7 +183,9 @@ const ssIsolationPull = {
   restIntra: 20, restRound: 90,
   exercises: [
     EX['row'],
+    EX['inverted-deadlift'],
     EX['pelican-curl'],
+    EX['ring-hammer-curl'],
     EX['ring-y-raise'],
     EX['face-pull'],
     EX['pallof-press'],
