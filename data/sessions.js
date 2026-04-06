@@ -138,7 +138,7 @@ const ssIsolationPush = {
   restIntra: 20, restRound: 90,
   exercises: [
     EX['ring-fly'],
-    EX['push-up-rto'],
+    EX['bulgarian-push-up'],
     EX['ring-overhead-ext'],
     EX['russian-push-up'],
     EX['l-sit'],

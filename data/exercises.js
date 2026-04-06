@@ -116,6 +116,13 @@ export const EX = {
     note: 'Rings turned out at lockout',
     muscles: { primary: ['chest', 'triceps', 'serratus'], secondary: ['shoulders'] },
   },
+  'bulgarian-push-up': {
+    id: 'bulgarian-push-up', name: 'Bulgarian Push Up',
+    category: 'shoulder', type: 'reps', targetReps: 8,
+    desc: 'Rings set low behind you, hands gripping in reverse (like Bulgarian dips but face down). Lower into a deep push-up — the rings travel back as you descend, creating an extreme pec and anterior delt stretch. Press back up with full control.',
+    note: 'Deep pec stretch — mirror of Bulgarian dips',
+    muscles: { primary: ['chest', 'front-delt'], secondary: ['triceps', 'serratus'] },
+  },
   'ring-overhead-ext': {
     id: 'ring-overhead-ext', name: 'Ring Overhead Extension',
     category: 'shoulder', type: 'reps', targetReps: 10,
