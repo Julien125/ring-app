@@ -217,6 +217,7 @@ const ssCoreFinisherPull = {
     EX['hanging-leg-raise'],
     EX['ab-wheel-rollout'],
     EX['tuck-to-l'],
+    EX['v-sit-pulse'],
   ],
 };
 

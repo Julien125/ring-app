@@ -429,6 +429,13 @@ export const EX = {
     note: 'Posterior tilt is everything — if the low back arches, the abs have switched off',
     muscles: { primary: ['core'], secondary: ['lats', 'hip-flexors'] },
   },
+  'v-sit-pulse': {
+    id: 'v-sit-pulse', name: 'V-sit Pulse',
+    category: 'core', type: 'reps', targetReps: 10,
+    desc: 'Hold an L-sit (legs at 90°), then pulse legs upward toward a V — pushing past horizontal through active hip flexor contraction. Small controlled pulses at end range, not a full swing. Arms locked, chest tall, posterior pelvic tilt throughout.',
+    note: 'Hip flexor end-range compression — direct manna prerequisite',
+    muscles: { primary: ['core', 'hip-flexors'], secondary: ['shoulders', 'triceps'] },
+  },
   'ab-wheel-rollout': {
     id: 'ab-wheel-rollout', name: 'Ab Wheel Rollout',
     category: 'core', type: 'reps', targetReps: 8,
