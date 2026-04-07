@@ -24,8 +24,9 @@ let adaptations = {
   patterns: [],  // [{ type, exerciseId?, detectedDate, dismissed }]
 };
 
-// Default skill levels — front-lever pre-set to 5 (achieved)
+// Default skill levels — front-lever pre-set to 5 (achieved), handstand at 3 (wall work phase)
 const DEFAULT_SKILL_LEVELS = {
+  'handstand':           3,
   'planche':             1,
   'shoulderstand-press': 1,
   'muscle-up':           1,

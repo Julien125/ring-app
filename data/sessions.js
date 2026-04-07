@@ -283,7 +283,7 @@ export const SESSIONS = [
     day: 'Monday', weekday: 1,
     type: 'push', label: 'Push 1',
     focus: 'Anterior legs · Planche · Core finisher',
-    skills: ['planche', 'shoulderstand-press'],
+    skills: ['handstand', 'planche', 'shoulderstand-press'],
     warmup: WARMUP_PUSH,
     supersets: [
       ssOverheadSkill(EX['copenhagen-plank']),  // A — skill, CNS fresh
@@ -315,7 +315,7 @@ export const SESSIONS = [
     day: 'Friday', weekday: 5,
     type: 'push', label: 'Push 2',
     focus: 'Anterior legs · Muscle up · Core finisher',
-    skills: ['muscle-up', 'manna', 'ring-handstand'],
+    skills: ['handstand', 'muscle-up', 'manna', 'ring-handstand'],
     warmup: WARMUP_PUSH,
     supersets: [
       ssOverheadSkill(EX['hollow-body-hold']),   // A — skill
