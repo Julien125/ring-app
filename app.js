@@ -3098,12 +3098,51 @@ function silentDownload(filename, content, mime) {
 }
 
 function buildBackupPayload() {
+  // ── Exercise library snapshot (muscles map) ────────────────────────────
+  const exerciseLibrary = {};
+  for (const [id, ex] of Object.entries(EX)) {
+    exerciseLibrary[id] = {
+      name:     ex.name,
+      category: ex.category,
+      type:     ex.type,
+      muscles:  ex.muscles || { primary: [], secondary: [] },
+    };
+  }
+
+  // ── Per-session muscle volume ──────────────────────────────────────────
+  // Uses same logic as the Muscles tab: reps for dynamic, reps×0.2 for holds.
+  // Volumes keyed by primary muscle; secondary muscles get 0.5× weight.
+  const logWithMuscles = state.log.map(entry => {
+    const session = [...SESSIONS, ...FLEX_SESSIONS].find(s => s.id === entry.sessionId);
+    const primary   = {};
+    const secondary = {};
+    if (session) {
+      session.supersets.forEach(ss => {
+        ss.exercises.forEach(ex => {
+          const logged = entry.exercises?.[ex.id];
+          if (!logged || !logged.sets?.length) return;
+          const isHold = ex.type === 'hold';
+          const pts = logged.sets.reduce((sum, v) => {
+            const n = typeof v === 'number' ? v : 0;
+            return sum + (isHold ? n * 0.2 : n);
+          }, 0);
+          (ex.muscles?.primary   || []).forEach(m => { primary[m]   = (primary[m]   || 0) + pts; });
+          (ex.muscles?.secondary || []).forEach(m => { secondary[m] = (secondary[m] || 0) + pts * 0.5; });
+        });
+      });
+    }
+    // Remove muscles that appear in primary from secondary
+    Object.keys(primary).forEach(m => { delete secondary[m]; });
+    return { ...entry, muscleVolume: { primary, secondary } };
+  });
+
   return {
     exportedAt:   new Date().toISOString(),
     week:         state.currentWeek,
     sessionCount: state.sessionCount,
     skillLevels:  state.skillLevels,
-    log:          state.log,
+    exercises:    exerciseLibrary,
+    log:          logWithMuscles,
   };
 }
 
