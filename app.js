@@ -313,8 +313,9 @@ function bindGlobalUI() {
     if (id === 's13-drive-backup')   { gistBackup();    return; }
     if (id === 's13-drive-restore')  { gistRestore();   return; }
     if (id === 's13-paste-restore')  { pasteRestore();  return; }
-    if (id === 's13-export-json')    { exportJSON();    return; }
-    if (id === 's13-export-csv')     { exportCSV();     return; }
+    if (id === 's13-export-json')    { exportJSON();          return; }
+    if (id === 's13-export-csv')     { exportCSV();           return; }
+    if (id === 's13-sync-body')      { syncBodyAnalysis();    return; }
     if (id === 'dialog-weekly-close') { hideDialog('dialog-weekly'); return; }
     const weekBtn = e.target.closest('button[data-week]');
     if (weekBtn) { renderWeeklySummaryModal(+weekBtn.dataset.week); return; }
@@ -3190,6 +3191,35 @@ function exportJSON() {
     JSON.stringify(buildBackupPayload(), null, 2),
     'application/json'
   );
+}
+
+async function syncBodyAnalysis() {
+  const btn    = document.getElementById('s13-sync-body');
+  const status = document.getElementById('s13-sync-status');
+  if (!btn || !status) return;
+
+  btn.disabled   = true;
+  btn.textContent = '⟳ Syncing…';
+  status.textContent = '';
+
+  try {
+    const payload = buildBackupPayload();
+    const res = await fetch('http://localhost:5001/api/training/sync', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    status.style.color  = '#22c55e';
+    status.textContent  = `✓ Synced ${data.sessions} sessions · ${data.skills} skills`;
+  } catch (err) {
+    status.style.color = '#ef4444';
+    status.textContent = err.message.includes('fetch') ? '✗ Body Analysis not running' : `✗ ${err.message}`;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '⇄ Sync to Body Analysis';
+  }
 }
 
 function exportCSV() {
