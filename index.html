@@ -697,6 +697,28 @@
       font-weight: 500;
     }
 
+    /* PR reference line on S-03 / S-04 */
+    .pr-ref {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+      color: rgba(212,160,23,0.6);
+      transition: color 0.15s;
+    }
+    .pr-ref strong { font-weight: 600; color: rgba(212,160,23,0.85); }
+    .pr-ref--beat {
+      color: rgba(212,160,23,1);
+      animation: pr-pulse 0.35s ease;
+    }
+    .pr-ref--beat strong { color: rgba(212,160,23,1); }
+    @keyframes pr-pulse {
+      0%   { transform: scale(1);    }
+      45%  { transform: scale(1.12); }
+      100% { transform: scale(1);    }
+    }
+
     /* Session progress strip */
     #session-strip {
       position: fixed;
@@ -1471,6 +1493,9 @@
     <div class="px-screen mt-1" id="s03-lastsess-wrap" style="display:none">
       <div class="last-set-ref" id="s03-lastsess" style="color:var(--txt-3)"></div>
     </div>
+    <div class="px-screen mt-1" id="s03-pr-wrap" style="display:none">
+      <div class="pr-ref" id="s03-pr"></div>
+    </div>
     <div class="px-screen mt-4">
       <div class="stepper" style="justify-content:center; gap:0">
         <button class="stepper__btn" id="s03-minus">−</button>
@@ -1524,6 +1549,9 @@
     </div>
     <div class="px-screen mt-2" id="s04-lastsess-wrap" style="display:none">
       <div class="last-set-ref" id="s04-lastsess" style="color:var(--txt-3)"></div>
+    </div>
+    <div class="px-screen mt-1" id="s04-pr-wrap" style="display:none">
+      <div class="pr-ref" id="s04-pr"></div>
     </div>
     <!-- Side label for unilateral exercises (hidden for bilateral) -->
     <div class="px-screen mt-2 text-center" id="s04-side-wrap" style="display:none">

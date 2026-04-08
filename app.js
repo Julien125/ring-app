@@ -581,6 +581,28 @@ function getLastSessionSets(exId) {
   return null;
 }
 
+/** Returns the all-time best logged value for an exercise, or null if no history. */
+function getExPR(exId) {
+  const allSets = state.log.flatMap(e => (e.exercises?.[exId]?.sets || []));
+  if (!allSets.length) return null;
+  return Math.max(...allSets);
+}
+
+/** Update the PR line on a screen based on current value vs all-time best. */
+function updatePRLine(wrapId, elId, current, prVal, unit) {
+  const wrap = q(`#${wrapId}`);
+  const el   = q(`#${elId}`);
+  if (!wrap || !el || prVal === null) { if (wrap) wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const beating = current >= prVal;
+  el.className = `pr-ref${beating ? ' pr-ref--beat' : ''}`;
+  if (beating) {
+    el.innerHTML = `🔥 <strong>NEW PR</strong> — best was ${prVal}${unit}`;
+  } else {
+    el.innerHTML = `PR: <strong>${prVal}${unit}</strong> &nbsp;·&nbsp; ${prVal - current}${unit} away`;
+  }
+}
+
 // ─── S-01 Home ────────────────────────────────────────────
 function goHome() {
   stopTimer();
@@ -1279,14 +1301,20 @@ function renderReps(ex, ss, totalRounds) {
     tempoChip.style.display = 'none';
   }
 
+  // PR line
+  const prVal03 = getExPR(ex.id);
+  updatePRLine('s03-pr-wrap', 's03-pr', currentReps, prVal03, ' reps');
+
   // Stepper
   q('#s03-minus').onclick = () => {
     currentReps = Math.max(0, currentReps - 1);
     q('#s03-val').textContent = currentReps;
+    updatePRLine('s03-pr-wrap', 's03-pr', currentReps, prVal03, ' reps');
   };
   q('#s03-plus').onclick = () => {
     currentReps = currentReps + 1;
     q('#s03-val').textContent = currentReps;
+    updatePRLine('s03-pr-wrap', 's03-pr', currentReps, prVal03, ' reps');
   };
 
   // Done
@@ -1335,6 +1363,18 @@ function renderHold(ex, ss, totalRounds) {
     } else {
       lastSessWrap4.style.display = 'none';
     }
+  }
+
+  // PR line — show all-time best as static reference (stopwatch, not stepper)
+  const prVal04 = getExPR(ex.id);
+  const s04PrWrap = q('#s04-pr-wrap');
+  const s04PrEl   = q('#s04-pr');
+  if (s04PrWrap && s04PrEl && prVal04 !== null) {
+    s04PrWrap.style.display = '';
+    s04PrEl.className = 'pr-ref';
+    s04PrEl.innerHTML = `PR: <strong>${prVal04}s</strong>`;
+  } else if (s04PrWrap) {
+    s04PrWrap.style.display = 'none';
   }
 
   // Toggle bilateral vs unilateral timer layout
