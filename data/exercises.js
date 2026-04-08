@@ -89,6 +89,7 @@ export const EX = {
   'archer-push-up': {
     id: 'archer-push-up', name: 'Archer Push Up',
     category: 'shoulder', type: 'reps', targetReps: 5,
+    unilateral: true,
     desc: 'Wide push-up position. Lower to one side while the other arm extends fully straight. Each rep is unilateral — a stepping stone toward one-arm push-up.',
     note: 'Unilateral load',
     muscles: { primary: ['chest', 'triceps'], secondary: ['shoulders', 'core'] },
@@ -96,6 +97,7 @@ export const EX = {
   'side-plank-thread': {
     id: 'side-plank-thread', name: 'Side Plank + Thread Needle',
     category: 'core', type: 'reps', targetReps: 8,
+    unilateral: true,
     desc: 'Side plank on one hand. Reach the free arm under your body (threading the needle), then extend it up to the ceiling. Rotate controlled — obliques and serratus.',
     note: 'Anti-lateral + rotation',
     muscles: { primary: ['core', 'serratus'], secondary: ['glutes', 'shoulders'] },
@@ -168,6 +170,7 @@ export const EX = {
   'side-bend': {
     id: 'side-bend', name: 'Loaded Side Bend',
     category: 'core', type: 'reps', targetReps: 10,
+    unilateral: true,
     desc: 'Stand upright, KB or DB in one hand hanging at your side. Allow the weight to slowly pull you into a lateral bend, then drive back to upright through the obliques. Full range — feel the stretch at the bottom. Switch sides.',
     note: 'Lateral flexion — oblique + QL',
     muscles: { primary: ['core'], secondary: ['lower-back'] },
@@ -342,9 +345,10 @@ export const EX = {
   },
   'cross-body-band-hold': {
     id: 'cross-body-band-hold', name: 'Cross Body Band Hold',
-    category: 'straight', type: 'hold', targetSecs: 10,
-    desc: 'Band anchored at shoulder height. Hold arm extended straight to the side against the band\'s pull — isometric at the exact iron cross arm angle. Nothing else replicates this specific adduction demand.',
-    note: 'Iron cross specific — isometric at cross angle',
+    category: 'straight', type: 'reps', targetReps: 10,
+    unilateral: true,
+    desc: 'Band anchored at shoulder height. Extend arm straight to the side against the band\'s pull, then slowly return. Iron cross arm angle throughout — resist the band the whole way. Switch sides.',
+    note: 'Iron cross specific — adduction against resistance',
     muscles: { primary: ['lats', 'chest'], secondary: ['rear-delt', 'serratus'] },
   },
   'jefferson-curl': {
