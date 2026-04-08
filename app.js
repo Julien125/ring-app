@@ -335,6 +335,11 @@ function bindGlobalUI() {
 
   // Quit dialog
   q('#dq-keep').addEventListener('click', () => hideDialog('dialog-quit'));
+  q('#dq-finish').addEventListener('click', () => {
+    hideDialog('dialog-quit');
+    stopTimer();
+    finishSession({ partial: true });
+  });
   q('#dq-save').addEventListener('click', () => {
     hideDialog('dialog-quit');
     stopTimer();
@@ -1738,8 +1743,8 @@ function showRest(type, ss, nextEx) {
 }
 
 // ─── S-07 Summary ─────────────────────────────────────────
-function finishSession() {
-  A.complete = true;
+function finishSession({ partial = false } = {}) {
+  A.complete = !partial;
   A.endTime  = Date.now();
   saveActive();
 
@@ -1751,7 +1756,7 @@ function finishSession() {
     week:       state.currentWeek,
     phase:      phase().label,
     durationSecs: Math.round((A.endTime - A.startTime) / 1000),
-    complete:   true,
+    complete:   !partial,
     skillsDone: A.skillsDone,
     exercises:  A.log,
     skips:      A.skips || [],
@@ -1789,7 +1794,8 @@ function renderSummary(entry, { readOnly = false } = {}) {
   const mins  = Math.round(entry.durationSecs / 60);
 
   q('#s07-date').textContent  = entry.date;
-  q('#s07-title').textContent = sess ? sess.label : 'Session';
+  q('#s07-title').innerHTML   = (sess ? sess.label : 'Session') +
+    (entry.complete === false ? ' <span class="partial-badge">partial</span>' : '');
 
   // Stats
   const allSets = Object.values(entry.exercises).flatMap(e => e.sets);
@@ -2959,7 +2965,7 @@ function renderProgress() {
     card.className = 'prog-session-card';
     card.innerHTML = `
       <div class="prog-session-card__header">
-        <div class="prog-session-card__label">${label}</div>
+        <div class="prog-session-card__label">${label}${entry.complete === false ? ' <span class="partial-badge">partial</span>' : ''}</div>
         <div class="prog-session-card__date">${entry.date}</div>
       </div>
       <div class="prog-session-card__meta">

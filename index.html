@@ -237,6 +237,22 @@
     }
     .adapt-badge--up   { background: rgba(43,168,138,0.18); color: #2BA88A; }
     .adapt-badge--down { background: rgba(224,80,80,0.15);  color: #E05050; }
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 56px;
+      background: rgba(212,160,23,0.12);
+      border: 1px solid rgba(212,160,23,0.35);
+      border-radius: var(--r-2xl);
+      color: rgba(212,160,23,0.95);
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
     .btn-danger {
       display: flex;
       align-items: center;
@@ -1300,6 +1316,20 @@
     }
 
     /* PR badge inline in rest confirmed */
+    .partial-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.06em;
+      color: rgba(212,160,23,0.9);
+      background: rgba(212,160,23,0.12);
+      border: 1px solid rgba(212,160,23,0.3);
+      border-radius: 4px;
+      padding: 2px 7px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
     .pr-badge {
       font-family: 'DM Mono', monospace;
       font-size: 8px;
@@ -1789,10 +1819,11 @@
   <div class="dialog-overlay" id="dialog-quit">
     <div class="dialog-sheet">
       <div class="dialog-title">Quit session?</div>
-      <div class="dialog-body">Your progress so far will be saved and you can resume later.</div>
+      <div class="dialog-body">Log what you've done so far, or save a draft to resume later.</div>
       <div class="dialog-actions">
         <button class="btn-primary" id="dq-keep">Keep going</button>
-        <button class="btn-danger" id="dq-save">Save &amp; exit</button>
+        <button class="btn-secondary" id="dq-finish">Finish &amp; log partial</button>
+        <button class="btn-danger" id="dq-save">Save draft &amp; exit</button>
       </div>
     </div>
   </div>
