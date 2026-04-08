@@ -337,7 +337,7 @@ export const SESSIONS = [
     supersets: [
       ssSkillPower,                               // A — skill
       ssLegsPosteriorB,                           // B — legs (loaded variant)
-      ssStrengthVolume(EX['windmill']),            // C — strength volume
+      ssStrengthVolume(EX['windshield-wipers']),    // C — strength volume
       ssIsolationPull,                            // D — isolation
       ssCoreFinisherPull,                         // E — dedicated core
     ],

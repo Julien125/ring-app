@@ -247,11 +247,11 @@ export const EX = {
     muscles: { primary: ['lats', 'biceps'], secondary: ['rear-delt', 'core'] },
   },
   'commande': {
-    id: 'commande', name: 'Commande',
+    id: 'commande', name: 'Commando Pull Up',
     category: 'pull', type: 'reps', targetReps: 8,
-    desc: 'Neutral (hammer) grip pull-up with hands facing each other. Emphasizes brachialis and mid-back over biceps. Full range, slow descent.',
-    note: 'Neutral grip — brachialis',
-    muscles: { primary: ['brachialis', 'lats'], secondary: ['biceps'] },
+    desc: 'Grip the bar with both hands overlapping in a parallel stance, one hand pronated and one supinated. Pull up alternating which side of the bar your head goes to each rep. Emphasizes brachialis and oblique pulling.',
+    note: 'Alternating side — brachialis + lats',
+    muscles: { primary: ['brachialis', 'lats'], secondary: ['biceps', 'core'] },
   },
   'ice-cream-maker': {
     id: 'ice-cream-maker', name: 'Ice-cream Maker',
@@ -273,6 +273,7 @@ export const EX = {
     desc: 'Stand with a weight held overhead in one hand, arm locked out. Hinge laterally, reaching the free hand down toward your foot on the same side. Keep the top arm vertical.',
     note: 'Lateral + oblique rotation',
     muscles: { primary: ['core'], secondary: ['lower-back', 'shoulders'] },
+    _deprecated: true,
   },
   'l-sit-pike-press': {
     id: 'l-sit-pike-press', name: 'L-sit Pike Press',
