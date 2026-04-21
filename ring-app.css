@@ -138,6 +138,130 @@
 
 
 /* ─────────────────────────────────────────────────────────
+   2b. LIGHT MODE TOKENS
+───────────────────────────────────────────────────────── */
+
+/* Shared overrides — applied by data-theme="light" attribute
+   (set immediately by the inline theme script to avoid flash)   */
+[data-theme="light"] {
+  /* Backgrounds — cool clinical whites, sport-watch aesthetic */
+  --bg:        #f4f4f6;
+  --bg-2:      #eaeaed;
+  --bg-3:      #dededf;
+  --bg-rest:   #e6e6e9;
+
+  /* Borders — cool neutral, punched up for sunlight clarity */
+  --line:        rgba(0, 0, 0, 0.13);
+  --line-2:      rgba(0, 0, 0, 0.22);
+  --line-active: rgba(0, 0, 0, 0.38);
+
+  /* Text — maximum contrast for outdoor / sunny-day use */
+  --txt:   #000000;
+  --txt-2: rgba(0, 0, 0, 0.68);
+  --txt-3: rgba(0, 0, 0, 0.48);
+
+  /* Semantic */
+  --accent: #0d0d10;
+  --danger: #C42B2B;
+
+  /* Category colors — full original saturation; neutral bg needs no darkening */
+  --cat-pull:     #5568D0;
+  --cat-core:     #22A088;
+  --cat-shoulder: #C8960A;
+  --cat-lowback:  #C05030;
+  --cat-straight: #3A90C8;
+  --cat-pelican:  #B04880;
+  --cat-legs:     #5AAA5A;
+
+  /* Category backgrounds */
+  --cat-pull-bg:     rgba(85,  104, 208, 0.11);
+  --cat-core-bg:     rgba(34,  160, 136, 0.11);
+  --cat-shoulder-bg: rgba(200, 150, 10,  0.11);
+  --cat-lowback-bg:  rgba(192, 80,  48,  0.11);
+  --cat-straight-bg: rgba(58,  144, 200, 0.11);
+  --cat-pelican-bg:  rgba(176, 72,  128, 0.11);
+  --cat-legs-bg:     rgba(90,  170, 90,  0.11);
+
+  /* Category borders */
+  --cat-pull-border:     rgba(85,  104, 208, 0.38);
+  --cat-core-border:     rgba(34,  160, 136, 0.38);
+  --cat-shoulder-border: rgba(200, 150, 10,  0.38);
+  --cat-lowback-border:  rgba(192, 80,  48,  0.38);
+  --cat-straight-border: rgba(58,  144, 200, 0.38);
+  --cat-pelican-border:  rgba(176, 72,  128, 0.38);
+  --cat-legs-border:     rgba(90,  170, 90,  0.38);
+
+  /* Status badges */
+  --badge-pr-color:    #C8960A;
+  --badge-pr-bg:       rgba(200, 150, 10,  0.11);
+  --badge-pr-border:   rgba(200, 150, 10,  0.35);
+
+  --badge-ok-color:    #22A088;
+  --badge-ok-bg:       rgba(34,  160, 136, 0.11);
+  --badge-ok-border:   rgba(34,  160, 136, 0.30);
+
+  --badge-miss-color:  #C05030;
+  --badge-miss-bg:     rgba(192, 80,  48,  0.11);
+  --badge-miss-border: rgba(192, 80,  48,  0.30);
+
+  /* Progress / ring timer */
+  --progress:   #5568D0;
+  --progress-2: rgba(85, 104, 208, 0.30);
+  --progress-3: rgba(85, 104, 208, 0.18);
+  --progress-4: rgba(85, 104, 208, 0.10);
+
+  /* Navigation */
+  --nav-bg: rgba(244, 244, 246, 0.96);
+}
+
+/* btn-accent text — vivid blue, matches --progress */
+[data-theme="light"] .btn-accent { color: #5568D0; }
+
+/* Rest timer — hardcoded cream text → dark equivalents */
+[data-theme="light"] .rest-next-name       { color: var(--txt); }
+[data-theme="light"] .rest-confirmed strong { color: var(--txt-2); }
+
+/* Breadcrumbs use inline style with cream color — override with !important */
+[data-theme="light"] .act-breadcrumb { color: rgba(0, 0, 0, 0.40) !important; }
+
+/* Stepper press ripple — white flash → dark flash */
+[data-theme="light"] .stepper__btn:active { background: rgba(10, 10, 14, 0.07); }
+
+/* SVG timer ring track — white ghost → dark ghost */
+[data-theme="light"] .timer-ring-wrap svg circle:first-child { stroke: rgba(26, 23, 20, 0.10); }
+
+/* SVG ring fill + donut track */
+[data-theme="light"] #s05-ring,
+[data-theme="light"] #s06-ring              { stroke: var(--progress); }
+[data-theme="light"] #s17-donut circle      { stroke: rgba(26, 23, 20, 0.08); }
+
+/* Theme toggle button — sits in the home screen status bar */
+.btn-theme-toggle {
+  background: none;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--txt-2);
+  /* 44px min touch target */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--t-base), border-color var(--t-base);
+  -webkit-tap-highlight-color: transparent;
+  /* pull it flush with the status-bar edge without eating layout space */
+  margin-right: -8px;
+}
+.btn-theme-toggle:active {
+  color: var(--txt);
+  border-color: var(--line-active);
+}
+
+
+/* ─────────────────────────────────────────────────────────
    3. TYPOGRAPHY
 ───────────────────────────────────────────────────────── */
 
@@ -208,7 +332,7 @@ body {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 54px;
-  background: rgba(15, 15, 16, 0.96);
+  background: var(--nav-bg, rgba(15, 15, 16, 0.96));
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;

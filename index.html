@@ -3,20 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0f0f10">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" id="meta-theme-color" content="#0f0f10">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Ring Workout</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <!-- Theme init — runs before CSS to avoid flash of wrong theme -->
+  <script>
+    (function () {
+      const KEY = 'ring-app-theme';
+      const stored = localStorage.getItem(KEY);
+      const system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      const theme  = stored || system;
+      document.documentElement.setAttribute('data-theme', theme);
+
+      window._applyTheme = function (t) {
+        document.documentElement.setAttribute('data-theme', t);
+        const meta = document.getElementById('meta-theme-color');
+        if (meta) meta.content = t === 'light' ? '#f5f2ed' : '#0f0f10';
+        const btn = document.getElementById('btn-theme');
+        if (btn) btn.textContent = t === 'light' ? '☾' : '☀';
+      };
+      window.toggleTheme = function () {
+        const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = cur === 'light' ? 'dark' : 'light';
+        localStorage.setItem(KEY, next);
+        window._applyTheme(next);
+      };
+
+      document.addEventListener('DOMContentLoaded', function () {
+        window._applyTheme(document.documentElement.getAttribute('data-theme'));
+      });
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./ring-app.css">
   <style>
     /* ── Contrast + size overrides for gym readability ─────
        ring-app.css defaults are too dim and small for bright
-       conditions and chalk-hands squinting at a screen. ─── */
-    :root {
+       conditions and chalk-hands squinting at a screen.
+       Scoped to dark mode so they don't bleed into light mode. */
+    html[data-theme="dark"] {
       --txt-2:    rgba(240, 237, 232, 0.75);  /* was 0.45 */
       --txt-3:    rgba(240, 237, 232, 0.52);  /* was 0.20 */
       --line:     rgba(255, 255, 255, 0.13);  /* was 0.07 */
@@ -1400,11 +1430,26 @@
 
 <div id="app">
 
+  <!-- ── Global pose/warmup timer bar ─────────────────────
+       position:fixed so it floats over any active screen.
+       Used by flexibility, warmup, and cool-down screens.  -->
+  <div id="pose-timer-bar" style="display:none;position:fixed;bottom:60px;left:0;right:0;z-index:50">
+    <div style="background:var(--bg-2);border-top:1px solid var(--line-2);padding:12px 20px;display:flex;align-items:center;gap:16px">
+      <div id="pose-timer-val" style="font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;color:var(--progress);min-width:80px;letter-spacing:-0.02em">0:00</div>
+      <div style="flex:1;min-width:0">
+        <div id="pose-timer-name" style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="pose-timer-mode" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--txt-3);margin-top:2px;letter-spacing:0.06em"></div>
+      </div>
+      <button id="pose-timer-stop" style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg-3);border:1px solid var(--line-2);color:var(--txt);border-radius:8px;padding:10px 16px;cursor:pointer;flex-shrink:0">done ✓</button>
+    </div>
+  </div>
+
   <!-- ── S-01 Home ──────────────────────────────────────── -->
   <section id="s-01" class="screen">
     <div class="status-bar px-screen">
       <span id="s01-date" class="t-label"></span>
       <span id="s01-week" class="t-label"></span>
+      <button id="btn-theme" class="btn-theme-toggle" aria-label="Toggle light/dark mode" onclick="toggleTheme()"></button>
     </div>
     <div class="home-hero">
       <div id="s01-week-dots" class="week-dots mb-3"></div>
@@ -1790,17 +1835,7 @@
     </div>
     <div id="s16-list" class="mt-4" style="padding-bottom:200px"></div>
 
-    <!-- Pose timer bar — shown when a pose is active -->
-    <div id="s16-timer-bar" style="display:none;position:fixed;bottom:60px;left:0;right:0;z-index:50">
-      <div style="background:var(--bg-2,#111);border-top:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px">
-        <div id="s16-timer-val" style="font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;color:var(--progress);min-width:80px">0:00</div>
-        <div style="flex:1;min-width:0">
-          <div id="s16-timer-name" style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-          <div id="s16-timer-mode" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--txt-3);margin-top:2px"></div>
-        </div>
-        <button id="s16-timer-stop" style="font-family:'DM Mono',monospace;font-size:11px;background:var(--line);border:none;color:var(--txt);border-radius:8px;padding:10px 16px;cursor:pointer;flex-shrink:0">done ✓</button>
-      </div>
-    </div>
+    <!-- timer bar moved to global overlay — see #pose-timer-bar below -->
 
     <div class="px-screen mt-4 mb-nav" style="padding-bottom:32px">
       <button class="btn-primary" id="s16-done">Done</button>

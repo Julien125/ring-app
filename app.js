@@ -118,8 +118,14 @@ function saveAdaptations() {
 function getEffectiveTarget(ex) {
   // ex is an exercise object from SESSIONS
   const adapted = adaptations.targets[ex.id];
-  if (adapted) return adapted.value;
-  return ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+  let val = adapted ? adapted.value : (ex.type === 'hold' ? ex.targetSecs : ex.targetReps);
+  // Enforce PR ceiling: never let target exceed PR - 1 rep (or PR - 5s for holds)
+  const pr = getExPR(ex.id);
+  if (pr !== null) {
+    const ceiling = ex.type === 'hold' ? Math.max(5, pr - 5) : Math.max(1, pr - 1);
+    if (val > ceiling) val = ceiling;
+  }
+  return val;
 }
 
 function getEffectiveRest(sessionId, ssId, type) {
@@ -671,6 +677,14 @@ function renderPatternCard() {
       renderHome();
       card.style.display = 'none';
     };
+  } else if (pattern.type === 'pr-peak') {
+    actBtn.textContent = 'Got it — noted for next cycle';
+    actBtn.style.display = '';
+    actBtn.onclick = () => {
+      pattern.dismissed = true;
+      saveAdaptations();
+      card.style.display = 'none';
+    };
   }
 
   disBtn.onclick = () => {
@@ -898,7 +912,17 @@ function renderWarmup() {
       </div>`;
     el.addEventListener('click', () => {
       const done = el.classList.toggle('is-done');
-      if (done) checked.add(i); else checked.delete(i);
+      if (done) {
+        checked.add(i);
+        if (navigator.vibrate) navigator.vibrate(30);
+        startPoseTimer(item.name, item.duration, () => {
+          if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+          cueRestEnd();
+        });
+      } else {
+        checked.delete(i);
+        stopPoseTimer();
+      }
     });
     list.appendChild(el);
   });
@@ -1251,7 +1275,7 @@ function showAdaptPopover(exId, label, progTarget) {
 function renderReps(ex, ss, totalRounds) {
   const progTarget = getTargetReps(ex);
   const adapted    = adaptations.targets[ex.id];
-  const target     = adapted ? adapted.value : progTarget;
+  const target     = getEffectiveTarget(ex);
   const logged     = (A.log[ex.id] || { sets: [] }).sets;
   const lastLogged = logged.length > 0 ? logged[logged.length - 1] : null;
   // Auto-progression: if last round beat the target, default to lastRound − 1
@@ -2070,12 +2094,27 @@ function applyInterSessionAdaptations(entry) {
       const bump = evaluateTargetBump(ex);
       if (bump !== 0) {
         const current = getEffectiveTarget(ex);
-        const newVal  = current + (ex.type === 'hold' ? bump * 5 : bump);
+        let newVal = current + (ex.type === 'hold' ? bump * 5 : bump);
+
+        // PR ceiling: cap upward bumps so target never exceeds PR - 1 (or PR - 5s for holds)
+        let prCapped = false;
+        if (bump > 0) {
+          const pr = getExPR(ex.id);
+          if (pr !== null) {
+            const ceiling = ex.type === 'hold' ? Math.max(5, pr - 5) : Math.max(1, pr - 1);
+            if (newVal > ceiling) { newVal = ceiling; prCapped = true; }
+          }
+        }
+
+        const prevEntry   = adaptations.targets[ex.id] || {};
+        const prCapHits   = prCapped ? (prevEntry.prCapHits || 0) + 1 : 0;
+
         adaptations.targets[ex.id] = {
           value:  newVal,
           reason: bump > 0 ? 'above-target' : 'below-target',
           since:  today,
           base:   ex.type === 'hold' ? ex.targetSecs : ex.targetReps,
+          ...(prCapHits > 0 && { prCapHits }),
         };
       }
     });
@@ -2313,6 +2352,13 @@ function runPatternDetectors(entry) {
       if (detectPlateau(ex.id)) {
         addPattern({ type: 'plateau', exerciseId: ex.id,
           msg: `${ex.name} hasn't progressed in 3 sessions. Consider the next variation in Skills.` });
+      }
+
+      // PR peak: bump was capped at PR ceiling twice — athlete has maxed this variation
+      const adapted = adaptations.targets[ex.id];
+      if ((adapted?.prCapHits || 0) >= 2) {
+        addPattern({ type: 'pr-peak', exerciseId: ex.id,
+          msg: `${ex.name} — you've been at your all-time best for several sessions and can't progress further. Plan to swap to a harder variation at the start of next mesocycle.` });
       }
 
       if (detectRepeatedSkip(ex.id)) {
@@ -2803,9 +2849,6 @@ function renderFlexSession(flexSess) {
   prog.className = 'cooldown-progress';
   prog.textContent = `0 / ${flexSess.poses.length} done`;
   list.insertBefore(prog, list.firstChild);
-
-  // Stop timer btn
-  q('#s16-timer-stop').onclick = () => stopPoseTimer();
 
   q('#s16-done').onclick = () => { stopPoseTimer(); goHome(); };
 
@@ -3434,16 +3477,20 @@ function startPoseTimer(name, durationStr, onDone) {
   _poseCountdown = totalSecs !== null;
   _poseTimerSec  = _poseCountdown ? totalSecs : 0;
 
-  const barEl  = q('#s16-timer-bar');
-  const valEl  = q('#s16-timer-val');
-  const nameEl = q('#s16-timer-name');
-  const modeEl = q('#s16-timer-mode');
+  const barEl  = q('#pose-timer-bar');
+  const valEl  = q('#pose-timer-val');
+  const nameEl = q('#pose-timer-name');
+  const modeEl = q('#pose-timer-mode');
   if (!barEl) return;
 
-  nameEl.textContent = name;
-  modeEl.textContent = _poseCountdown ? durationStr : 'stopwatch';
-  valEl.textContent  = fmtPoseTime(_poseTimerSec);
+  nameEl.textContent  = name;
+  modeEl.textContent  = _poseCountdown ? durationStr : 'stopwatch';
+  valEl.textContent   = fmtPoseTime(_poseTimerSec);
   barEl.style.display = '';
+
+  // Wire stop button here so it works regardless of which screen triggered the timer
+  const stopBtn = q('#pose-timer-stop');
+  if (stopBtn) stopBtn.onclick = () => stopPoseTimer();
 
   _poseTimerIv = setInterval(() => {
     if (_poseCountdown) {
@@ -3466,7 +3513,7 @@ function startPoseTimer(name, durationStr, onDone) {
 
 function stopPoseTimer() {
   if (_poseTimerIv) { clearInterval(_poseTimerIv); _poseTimerIv = null; }
-  const barEl = q('#s16-timer-bar');
+  const barEl = q('#pose-timer-bar');
   if (barEl) barEl.style.display = 'none';
 }
 
