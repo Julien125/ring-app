@@ -66,6 +66,7 @@ const ssLegsAnterior = {
     EX['pistol-squat'],
     EX['sissy-squat'],
     EX['single-leg-calf-raise'],
+    EX['copenhagen-plank'],
   ],
 };
 
@@ -88,6 +89,7 @@ const ssLegsAnteriorB = {
     { ...EX['pistol-squat'],           note: '3s descent · eyes closed — proprioception challenge' },
     { ...EX['sissy-squat'],            targetReps: 12 },
     { ...EX['single-leg-calf-raise'],  note: 'Bent knee — soleus focus' },
+    EX['copenhagen-plank'],
   ],
 };
 
@@ -104,95 +106,180 @@ const ssLegsPosteriorB = {
 
 // ─── Superset builders ────────────────────────────────────
 
-function ssOverheadSkill(coreFinisher) {
-  return {
-    id: 'A', label: 'Overhead Skill', rings: 'none', rounds: 3,
-    restIntra: 25, restRound: 90,
-    exercises: [
-      EX['handstand-drills'],
-      EX['hspu'],
-      EX['shoulderstand-press'],
-      EX['straight-bar-dips'],
-      EX['pseudo-planche-lean'],
-      EX['dragon-flag'],
-      coreFinisher,
-    ],
-  };
-}
-
-function ssHeavyDips(rotationEx) {
-  return {
-    id: 'B', label: 'Heavy Dips', rings: 'mid', rounds: 3,
-    restIntra: 25, restRound: 90,
-    exercises: [
-      EX['bulgarian-dips'],
-      EX['korean-dips'],
-      EX['archer-push-up'],
-      EX['pseudo-planche-push-up'],
-      EX['ring-dip-deep'],
-      rotationEx,
-    ],
-  };
-}
-
-const ssIsolationPush = {
-  id: 'C', label: 'Isolation', rings: 'low', rounds: 3,
-  restIntra: 20, restRound: 90,
+// Monday SS A — pure handstand skill, CNS fresh, no strength mixed in
+const ssOverheadSkillMon = {
+  id: 'A', label: 'Skill — Handstand & Planche', rings: 'none', rounds: 3,
+  restIntra: 30, restRound: 120,
   exercises: [
-    EX['ring-fly'],
-    EX['bulgarian-push-up'],
-    EX['ring-overhead-ext'],
-    EX['russian-push-up'],
-    EX['l-sit'],
-    EX['side-bend'],
-    EX['cuban-press'],
+    EX['wall-kick-up'],
+    EX['chest-wall-handstand'],
+    EX['back-wall-handstand'],
+    EX['toe-pulls'],
+    EX['shoulderpress-negative'],
+    EX['planche-lean'],
+    EX['tuck-planche'],
+    EX['planche-protraction'],
   ],
 };
 
-const ssSkillPower = {
-  id: 'A', label: 'Skill & Power', rings: 'high', rounds: 3,
-  restIntra: 25, restRound: 90,
+// Monday SS C — overhead + dips strength block
+const ssOverheadDipsStrength = {
+  id: 'C', label: 'Overhead & Dips', rings: 'mid', rounds: 3,
+  restIntra: 30, restRound: 120,
   exercises: [
+    EX['hspu'],
+    EX['straight-bar-dips'],
+    EX['bulgarian-dips'],
+    EX['korean-dips'],
+    EX['ring-dip-deep'],
+  ],
+};
+
+// Friday SS A — skill + planche overhead, CNS fresh
+const ssOverheadSkillFri = {
+  id: 'A', label: 'Overhead & Planche Skill', rings: 'none', rounds: 3,
+  restIntra: 30, restRound: 120,
+  exercises: [
+    EX['handstand-drills'],
+    EX['pseudo-planche-lean'],
+    EX['pseudo-planche-push-up'],
+  ],
+};
+
+// Monday SS D — shoulder health + isolation, no redundancy with SS C
+const ssIsolationPushMon = {
+  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 3,
+  restIntra: 20, restRound: 90,
+  exercises: [
+    EX['cuban-press'],
+    EX['lateral-raise'],
+    EX['ring-overhead-ext'],
+    EX['l-sit'],
+    EX['side-bend'],
+    EX['pallof-press'],
+  ],
+};
+
+// ─── Skill support blocks (SS B on each day) ─────────────
+
+const ssSkillSupportWed = {
+  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  restIntra: 30, restRound: 90,
+  exercises: [
+    EX['iron-cross-pull'],
     EX['front-lever-hold'],
+    EX['german-hang'],
+    EX['back-lever-negative'],
+    EX['hollow-body-hold'],
+  ],
+};
+
+const ssSkillSupportFri = {
+  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  restIntra: 30, restRound: 90,
+  exercises: [
+    EX['shoulderpress-negative'],
+    EX['v-sit-pulse'],
+    EX['ring-dip-deep'],
+    EX['muscle-up-negative'],
+    EX['rto-support-hold'],
+  ],
+};
+
+const ssSkillSupportSat = {
+  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  restIntra: 30, restRound: 90,
+  exercises: [
+    EX['german-hang'],
+    EX['back-lever-negative'],
+    EX['false-grip-row'],
+    EX['muscle-up-negative'],
+    EX['rto-support-hold'],
+    EX['hollow-body-hold'],
+  ],
+};
+
+// Friday SS C — horizontal push strength, no overlap with SS A or SS D
+const ssHorizontalPush = {
+  id: 'C', label: 'Horizontal Push', rings: 'mid', rounds: 3,
+  restIntra: 25, restRound: 120,
+  exercises: [
+    EX['hspu'],
+    EX['archer-push-up'],
+    EX['ring-fly'],
+    EX['push-up-rto'],
+    EX['russian-push-up'],
+  ],
+};
+
+// Friday SS D — isolation + shoulder health, no overlap with SS A or SS C
+const ssIsolationPushFri = {
+  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 3,
+  restIntra: 20, restRound: 90,
+  exercises: [
+    EX['bulgarian-push-up'],
+    EX['cuban-press'],
+    EX['lateral-raise'],
+    EX['ring-overhead-ext'],
+    EX['l-sit'],
+    EX['side-bend'],
+    EX['pallof-press'],
+  ],
+};
+
+// Wednesday SS A — static skill focus: iron cross + back lever (straight-arm, posterior)
+const ssSkillPowerWed = {
+  id: 'A', label: 'Skill — Iron Cross & Back Lever', rings: 'high', rounds: 3,
+  restIntra: 30, restRound: 120,
+  exercises: [
+    EX['skin-the-cat'],
+    EX['chest-to-bar'],
+    EX['superman-hold'],
+    EX['false-grip-dead-hang'],
+    EX['wide-support-hold'],
+  ],
+};
+
+// Saturday SS A — explosive + transition focus: muscle up + back lever
+const ssSkillPowerSat = {
+  id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 3,
+  restIntra: 30, restRound: 120,
+  exercises: [
+    EX['skin-the-cat'],
     EX['chest-to-bar'],
     EX['360-pull'],
     EX['typewriter'],
     EX['false-grip-dead-hang'],
-    EX['tuck-to-l'],
     EX['superman-hold'],
   ],
 };
 
-function ssStrengthVolume(coreEx) {
-  return {
-    id: 'B', label: 'Strength Volume', rings: 'high', rounds: 3,
-    restIntra: 25, restRound: 90,
-    exercises: [
-      EX['wide-pull-up'],
-      EX['archer-pull-up'],
-      EX['commande'],
-      EX['ice-cream-maker'],
-      coreEx,
-      EX['l-sit-pike-press'],
-      EX['back-extension'],
-      EX['planche-lean'],
-    ],
-  };
-}
+const ssStrengthVolume = {
+  id: 'D', label: 'Strength Volume', rings: 'high', rounds: 3,
+  restIntra: 25, restRound: 90,
+  exercises: [
+    EX['wide-pull-up'],
+    EX['archer-pull-up'],
+    EX['commande'],
+    EX['ice-cream-maker'],
+    EX['l-sit-pike-press'],
+    EX['back-extension'],
+    EX['tuck-to-l'],
+  ],
+};
 
 const ssIsolationPull = {
-  id: 'C', label: 'Isolation + Health', rings: 'mid', rounds: 3,
+  id: 'E', label: 'Isolation + Health', rings: 'mid', rounds: 3,
   restIntra: 20, restRound: 90,
   exercises: [
     EX['row'],
-    EX['inverted-deadlift'],
     EX['pelican-curl'],
     EX['ring-hammer-curl'],
     EX['ring-y-raise'],
     EX['face-pull'],
     EX['pallof-press'],
-    EX['cross-body-band-hold'],
     EX['jefferson-curl'],
+    EX['windshield-wipers'],
   ],
 };
 
@@ -200,23 +287,26 @@ const ssIsolationPull = {
 
 // Push days: hanging leg raise → ab wheel → dragon flag
 const ssCoreFinisherPush = {
-  id: 'E', label: 'Core Finisher', rings: 'bar', rounds: 2,
+  id: 'F', label: 'Core Finisher', rings: 'bar', rounds: 2,
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
     EX['ab-wheel-rollout'],
+    EX['butt-lift'],
+    EX['hollow-body-hold'],
+    EX['windshield-wipers'],
     EX['dragon-flag'],
   ],
 };
 
 // Pull days: hanging leg raise → ab wheel → tuck-to-L (hip flexor compression from hang)
 const ssCoreFinisherPull = {
-  id: 'E', label: 'Core Finisher', rings: 'bar', rounds: 2,
+  id: 'F', label: 'Core Finisher', rings: 'bar', rounds: 2,
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
     EX['ab-wheel-rollout'],
-    EX['tuck-to-l'],
+    EX['butt-lift'],
     EX['v-sit-pulse'],
   ],
 };
@@ -283,15 +373,15 @@ export const SESSIONS = [
     id: 'mon-push1',
     day: 'Monday', weekday: 1,
     type: 'push', label: 'Push 1',
-    focus: 'Anterior legs · Planche · Core finisher',
-    skills: ['handstand', 'planche', 'shoulderstand-press'],
+    focus: 'Anterior legs · Dips & Overhead · Core finisher',
+    skills: ['handstand', 'planche'],
     warmup: WARMUP_PUSH,
     supersets: [
-      ssOverheadSkill(EX['copenhagen-plank']),  // A — skill, CNS fresh
-      ssLegsAnterior,                            // B — legs while energy is high
-      ssHeavyDips(EX['side-plank-thread']),      // C — heavy dips
-      ssIsolationPush,                           // D — isolation
-      ssCoreFinisherPush,                        // E — dedicated core
+      ssOverheadSkillMon,                        // A — skill tries
+      ssLegsAnterior,                            // B — legs
+      ssOverheadDipsStrength,                    // C — overhead + dips strength
+      ssIsolationPushMon,                        // D — shoulder health + isolation
+      ssCoreFinisherPush,                        // E — core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -299,15 +389,16 @@ export const SESSIONS = [
     id: 'wed-pull1',
     day: 'Wednesday', weekday: 3,
     type: 'pull', label: 'Pull 1',
-    focus: 'Posterior legs · Front lever · Core finisher',
-    skills: ['front-lever', 'iron-cross', 'back-lever'],
+    focus: 'Posterior legs · Iron Cross · Back Lever',
+    skills: ['iron-cross', 'back-lever'],
     warmup: WARMUP_PULL_WED,
     supersets: [
-      ssSkillPower,                               // A — skill, CNS fresh
-      ssLegsPosterior,                            // B — legs while energy is high
-      ssStrengthVolume(EX['hollow-body-hold']),   // C — strength volume (dead-bug → hollow body)
-      ssIsolationPull,                            // D — isolation
-      ssCoreFinisherPull,                         // E — dedicated core
+      ssSkillPowerWed,                            // A — skill tries
+      ssSkillSupportWed,                          // B — skill support
+      ssLegsPosterior,                            // C — legs
+      ssStrengthVolume,                           // D — strength volume
+      ssIsolationPull,                            // E — isolation
+      ssCoreFinisherPull,                         // F — core
     ],
     cooldown: COOLDOWN_PULL,
   },
@@ -315,15 +406,16 @@ export const SESSIONS = [
     id: 'thu-push2',
     day: 'Friday', weekday: 5,
     type: 'push', label: 'Push 2',
-    focus: 'Anterior legs · Muscle up · Core finisher',
-    skills: ['handstand', 'muscle-up', 'manna', 'ring-handstand'],
+    focus: 'Anterior legs · Overhead & Horizontal Push · Core finisher',
+    skills: ['handstand', 'muscle-up', 'manna'],
     warmup: WARMUP_PUSH,
     supersets: [
-      ssOverheadSkill(EX['hollow-body-hold']),   // A — skill
-      ssLegsAnteriorB,                            // B — legs (loaded variant)
-      ssHeavyDips(EX['windshield-wipers']),       // C — heavy dips
-      ssIsolationPush,                            // D — isolation
-      ssCoreFinisherPush,                         // E — dedicated core
+      ssOverheadSkillFri,                          // A — skill tries
+      ssSkillSupportFri,                           // B — skill support
+      ssLegsAnteriorB,                             // C — legs (loaded variant)
+      ssHorizontalPush,                            // D — horizontal push
+      ssIsolationPushFri,                          // E — isolation
+      ssCoreFinisherPush,                          // F — core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -331,15 +423,16 @@ export const SESSIONS = [
     id: 'sat-pull2',
     day: 'Saturday', weekday: 6,
     type: 'pull', label: 'Pull 2',
-    focus: 'Posterior legs · Dynamic skills · Core finisher',
-    skills: ['forward-roll', 'backward-roll'],
+    focus: 'Posterior legs · Muscle Up · Back Lever',
+    skills: ['muscle-up', 'back-lever'],
     warmup: WARMUP_PULL_SAT,
     supersets: [
-      ssSkillPower,                               // A — skill
-      ssLegsPosteriorB,                           // B — legs (loaded variant)
-      ssStrengthVolume(EX['windshield-wipers']),    // C — strength volume
-      ssIsolationPull,                            // D — isolation
-      ssCoreFinisherPull,                         // E — dedicated core
+      ssSkillPowerSat,                             // A — skill tries
+      ssSkillSupportSat,                           // B — skill support
+      ssLegsPosteriorB,                            // C — legs (loaded variant)
+      ssStrengthVolume,                            // D — strength volume
+      ssIsolationPull,                             // E — isolation
+      ssCoreFinisherPull,                          // F — core
     ],
     cooldown: COOLDOWN_PULL,
   },

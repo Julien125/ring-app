@@ -41,13 +41,6 @@ export const EX = {
     note: 'Planche push-up progression — maintain the lean or it becomes a regular push-up',
     muscles: { primary: ['serratus', 'front-delt', 'chest'], secondary: ['triceps', 'core'] },
   },
-  'shoulderstand-press': {
-    id: 'shoulderstand-press', name: 'Shoulderstand Press',
-    category: 'shoulder', type: 'reps', targetReps: 3,
-    desc: 'From a shoulderstand (inverted, weight on upper back and arms), press legs overhead to vertical, then slowly lower back down. The press-to-handstand version starts from a tucked shoulderstand and extends to full inversion. Control the descent entirely — no collapsing.',
-    note: 'Inversion press — bridge toward press to handstand',
-    muscles: { primary: ['shoulders', 'core'], secondary: ['triceps', 'serratus'] },
-  },
   'dragon-flag': {
     id: 'dragon-flag', name: 'Dragon Flag',
     category: 'core', type: 'reps', targetReps: 5,
@@ -184,13 +177,6 @@ export const EX = {
   },
 
   // ── Skill & power (SS A pull) ─────────────────────────
-  'front-lever-hold': {
-    id: 'front-lever-hold', name: 'Front Lever Hold',
-    category: 'straight', type: 'hold', targetSecs: 5,
-    desc: 'From a bar hang, pull your body horizontal face-up with straight arms. Body completely rigid. Progress: tuck → advanced tuck → straddle → full.',
-    note: 'Static skill — fresh CNS',
-    muscles: { primary: ['lats', 'rear-delt', 'core'], secondary: ['biceps', 'serratus'] },
-  },
   'chest-to-bar': {
     id: 'chest-to-bar', name: 'Chest to Bar',
     category: 'pull', type: 'reps', targetReps: 5,
@@ -292,6 +278,20 @@ export const EX = {
     note: 'Erectors — active rest',
     muscles: { primary: ['lower-back'], secondary: ['glutes', 'hamstrings'] },
   },
+  'tuck-planche': {
+    id: 'tuck-planche', name: 'Tuck Planche',
+    category: 'straight', type: 'hold', targetSecs: 5,
+    desc: 'From a support on rings or parallettes, tuck knees tight to chest and lean forward until shoulders pass the wrists. Arms completely straight, scapulas protracted hard, posterior pelvic tilt. Hips level with shoulders. Hold.',
+    note: 'First true planche — straight arms, body off the floor',
+    muscles: { primary: ['serratus', 'front-delt', 'core'], secondary: ['triceps', 'lats'] },
+  },
+  'planche-protraction': {
+    id: 'planche-protraction', name: 'Planche Protraction Drill',
+    category: 'straight', type: 'reps', targetReps: 10,
+    desc: 'In a planche lean position (shoulders past wrists, fingers back), push the floor away — drive the scapulas apart and forward. Hold 2s at max protraction, release slightly, repeat. This trains the serratus anterior contraction that holds the planche position.',
+    note: 'Serratus activation — the most undertrained component of planche',
+    muscles: { primary: ['serratus'], secondary: ['front-delt', 'core', 'triceps'] },
+  },
   'planche-lean': {
     id: 'planche-lean', name: 'Planche Lean',
     category: 'straight', type: 'hold', targetSecs: 15,
@@ -357,6 +357,13 @@ export const EX = {
     desc: 'Standing on a box holding light weight. Round your spine one vertebra at a time — chin first, then thoracic, then lumbar — until hanging, then slowly unroll. Loaded flexion for back health.',
     note: 'Loaded spinal flexion',
     muscles: { primary: ['lower-back', 'hamstrings'], secondary: ['glutes'] },
+  },
+  'lateral-raise': {
+    id: 'lateral-raise', name: 'Lateral Raise',
+    category: 'shoulder', type: 'reps', targetReps: 12,
+    desc: 'Stand with dumbbells at sides. Raise arms out to 90° — lead with the elbows, not the hands. Stop at shoulder height, control the descent slowly. Slight forward lean isolates the medial head of the deltoid.',
+    note: 'Lateral delt isolation — slow eccentric',
+    muscles: { primary: ['lateral-delt'], secondary: ['rear-delt', 'traps'] },
   },
   'cuban-press': {
     id: 'cuban-press', name: 'Cuban Press',
@@ -441,21 +448,19 @@ export const EX = {
     note: 'Hip flexor end-range compression — direct manna prerequisite',
     muscles: { primary: ['core', 'hip-flexors'], secondary: ['shoulders', 'triceps'] },
   },
+  'butt-lift': {
+    id: 'butt-lift', name: 'Butt Lift',
+    category: 'core', type: 'reps', targetReps: 8,
+    desc: 'Seated on the floor in L-sit position — legs straight out, hands beside hips. Press down through the palms and lift the glutes off the floor. Hold 1–2s at the top, lower slowly. Posterior pelvic tilt throughout, quads tight, toes pointed.',
+    note: 'L-sit compression lift — manna and L-sit prerequisite',
+    muscles: { primary: ['core', 'hip-flexors', 'triceps'], secondary: ['shoulders', 'serratus'] },
+  },
   'ab-wheel-rollout': {
     id: 'ab-wheel-rollout', name: 'Ab Wheel Rollout',
     category: 'core', type: 'reps', targetReps: 8,
     desc: 'Kneeling, wheel under shoulders. Brace hard and roll forward until body is nearly flat — hips stay off the floor, lower back NEVER sags. Pull back by contracting the abs from the pelvis up, not by yanking the arms.',
     note: 'Full-chain anti-extension — the hardest core move in the program',
     muscles: { primary: ['core'], secondary: ['lats', 'serratus', 'shoulders'] },
-  },
-
-  // ── Ring handstand ────────────────────────────────────
-  'ring-handstand': {
-    id: 'ring-handstand', name: 'Ring Handstand',
-    category: 'shoulder', type: 'hold', targetSecs: 10,
-    desc: 'Kick up to a handstand on rings. The unstable surface demands extreme serratus activation, scapular stability, and full-body tension. Start wall-assisted, progress to freestanding.',
-    note: 'Balance + scapular stability — fresh CNS only',
-    muscles: { primary: ['shoulders', 'serratus', 'core'], secondary: ['triceps', 'front-delt'] },
   },
 
   // ── Skill support (referenced from SKILL_PROGRESSIONS) ─
@@ -465,5 +470,96 @@ export const EX = {
     desc: 'From a bar or ring hang, slowly rotate backward until hanging with arms extended behind you. Passive shoulder opener — exit slowly and controlled. Essential prerequisite for back lever.',
     note: 'Back lever prerequisite — shoulder flexion mobility',
     muscles: { primary: ['shoulders', 'chest'], secondary: ['biceps'] },
+  },
+  'skin-the-cat': {
+    id: 'skin-the-cat', name: 'Skin the Cat',
+    category: 'straight', type: 'reps', targetReps: 5,
+    desc: 'From a hang on rings or bar, pull knees up and over, passing through an inverted hang, then continue rotating until arms are fully extended behind you (German hang). Return the same way. Fully controlled throughout — no dropping.',
+    note: 'Back lever and shoulder mobility foundation',
+    muscles: { primary: ['lats', 'shoulders', 'core'], secondary: ['biceps', 'rear-delt'] },
+  },
+  'wide-support-hold': {
+    id: 'wide-support-hold', name: 'Wide Support Hold',
+    category: 'straight', type: 'hold', targetSecs: 10,
+    desc: 'In support position on rings, push the rings out wide — arms at 45° below horizontal. Engage lats hard to resist the rings spreading. Shoulders depressed, body vertical. The gateway position between support hold and full iron cross.',
+    note: 'Iron cross prerequisite — lat adduction at angle',
+    muscles: { primary: ['lats', 'rear-delt', 'serratus'], secondary: ['biceps', 'core'] },
+  },
+  'iron-cross-pull': {
+    id: 'iron-cross-pull', name: 'Iron Cross Pull',
+    category: 'straight', type: 'reps', targetReps: 5,
+    desc: 'From a wide ring hang with arms extended at 90°, pull the rings together to a support position. Straight arms throughout — this is a lat adduction movement, not a pull-up. Control the descent back to the cross position.',
+    note: 'Iron cross strength builder — straight arm adduction',
+    muscles: { primary: ['lats', 'rear-delt'], secondary: ['biceps', 'serratus'] },
+  },
+  'false-grip-row': {
+    id: 'false-grip-row', name: 'False Grip Ring Row',
+    category: 'pull', type: 'reps', targetReps: 6,
+    desc: 'Rings at chest height, body inclined under them. Grip with false grip — wrist draped over, not around. Row chest to rings. The horizontal angle is less demanding than a pull-up, letting you focus entirely on maintaining the wrist position under load.',
+    note: 'False grip conditioning — builds the wrist position for muscle up',
+    muscles: { primary: ['lats', 'biceps', 'rear-delt'], secondary: ['core', 'forearms'] },
+  },
+  'muscle-up-negative': {
+    id: 'muscle-up-negative', name: 'Muscle Up Negative',
+    category: 'pull', type: 'reps', targetReps: 3,
+    desc: 'Start in support position (arms locked, rings at hips). Lower slowly — 5–8s descent — through the transition point and all the way to a dead hang. The transition is the hardest phase: control the moment the elbows pass chest height. This is the most specific drill for the muscle up.',
+    note: 'Eccentric transition — 5–8s descent, the most specific MU drill',
+    muscles: { primary: ['lats', 'biceps', 'chest'], secondary: ['triceps', 'core', 'forearms'] },
+  },
+  'rto-support-hold': {
+    id: 'rto-support-hold', name: 'RTO Support Hold',
+    category: 'straight', type: 'hold', targetSecs: 20,
+    desc: 'In the top position of the muscle up — arms locked, rings at hips — actively turn the rings out so palms face forward. Shoulders depressed, chest tall, body rigid. This is the lockout position you need to own.',
+    note: 'Muscle up top position — ring turn out, arms locked',
+    muscles: { primary: ['triceps', 'shoulders', 'serratus'], secondary: ['core', 'lats'] },
+  },
+  'back-lever-negative': {
+    id: 'back-lever-negative', name: 'Back Lever Negative',
+    category: 'straight', type: 'reps', targetReps: 3,
+    desc: 'From an inverted hang on rings, slowly lower into the back lever position over 5–8 seconds. Focus on maintaining hollow body and straight arms throughout the descent. Return by pulling knees through.',
+    note: 'Back lever eccentric — 5–8s descent',
+    muscles: { primary: ['lats', 'rear-delt', 'core'], secondary: ['biceps', 'glutes'] },
+  },
+  'wall-kick-up': {
+    id: 'wall-kick-up', name: 'Wall Kick-Up',
+    category: 'shoulder', type: 'reps', targetReps: 12, sets: 3,
+    desc: 'Kick up to a wall handstand with consistent technique — same lead leg, same distance from the wall every rep. Focus on body alignment at the top: hollow body, arms locked, ears between arms. Come down controlled, reset, repeat.',
+    note: 'Handstand entry — build consistent kick-up mechanics',
+    muscles: { primary: ['shoulders', 'core'], secondary: ['serratus', 'triceps'] },
+  },
+  'chest-wall-handstand': {
+    id: 'chest-wall-handstand', name: 'Chest to Wall Handstand',
+    category: 'shoulder', type: 'hold', targetSecs: 12, sets: 3,
+    desc: 'Face the wall, kick up so your chest faces it. Find vertical alignment: ears between arms, hollow body, no arch. This position forces a straight, stacked handstand — the wall is a guide, not a crutch.',
+    note: 'Alignment drill — chest facing wall enforces hollow body',
+    muscles: { primary: ['shoulders', 'serratus', 'core'], secondary: ['triceps', 'forearms'] },
+  },
+  'back-wall-handstand': {
+    id: 'back-wall-handstand', name: 'Back to Wall Handstand',
+    category: 'shoulder', type: 'hold', targetSecs: 12, sets: 3,
+    desc: 'Back to the wall, heels lightly touching. Aim for minimal wall contact — just enough to catch a fall. Build the freestanding balance here. Each second of light contact trains the correction reflex.',
+    note: 'Freestanding bridge — heels barely touching',
+    muscles: { primary: ['shoulders', 'serratus', 'core'], secondary: ['triceps', 'forearms'] },
+  },
+  'toe-pulls': {
+    id: 'toe-pulls', name: 'Toe Pulls',
+    category: 'shoulder', type: 'reps', targetReps: 12, sets: 3,
+    desc: 'In a back-to-wall handstand, alternately tap one foot away from the wall and pull it back. Each tap forces a balance correction — fingertip pressure shifts, abs engage. Small controlled movements only.',
+    note: 'Balance correction drill — trains freestanding adjustments',
+    muscles: { primary: ['core', 'shoulders'], secondary: ['forearms', 'serratus'] },
+  },
+  'shoulderpress-negative': {
+    id: 'shoulderpress-negative', name: 'Shoulderpress Negative',
+    category: 'shoulder', type: 'reps', targetReps: 3,
+    desc: 'From a shoulderstand or supported headstand, slowly lower with control — 5s descent. Elbows track back, hips stay high. The negative builds the pressing strength and body awareness needed for the full press.',
+    note: 'Handstand press eccentric — 5s controlled descent',
+    muscles: { primary: ['shoulders', 'core'], secondary: ['triceps', 'serratus'] },
+  },
+  'front-lever-hold': {
+    id: 'front-lever-hold', name: 'Front Lever Hold',
+    category: 'straight', type: 'hold', targetSecs: 5,
+    desc: 'From a bar or ring hang, pull your body horizontal face-up with straight arms. Body completely rigid. Progress: tuck → advanced tuck → straddle → full.',
+    note: 'Straight-arm horizontal — static skill',
+    muscles: { primary: ['lats', 'rear-delt', 'core'], secondary: ['biceps', 'serratus'] },
   },
 };

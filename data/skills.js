@@ -8,6 +8,7 @@ export const SKILL_PROGRESSIONS = {
   'planche': {
     name: 'Planche',
     goal: 'Straight-arm horizontal planche, 5 seconds',
+    support: ['planche-lean', 'tuck-planche', 'planche-protraction'],
     progressions: [
       { level: 1, drill: 'Planche Lean Hold',       type: 'hold', targetSecs: 30, sets: 4,
         note: 'Fingers back, lean shoulders past wrists. Arms straight, scapulas protracted, posterior pelvic tilt.',
@@ -26,27 +27,10 @@ export const SKILL_PROGRESSIONS = {
         criteria: 'Planche achieved' },
     ],
   },
-  'shoulderstand-press': {
-    name: 'Shoulderstand Press',
-    goal: 'Freestanding pike press to headstand, 3s descent',
-    progressions: [
-      { level: 1, drill: 'Pike Push-Up to Headstand', type: 'reps', targetReps: 3, sets: 3,
-        note: 'Start in pike, bend elbows and lower head to floor between hands. Learn the arm path.',
-        criteria: '3 clean reps all sets' },
-      { level: 2, drill: 'Tripod to Headstand Press', type: 'reps', targetReps: 5, sets: 3,
-        note: 'From tripod headstand, press to full headstand and back. Builds the top range.',
-        criteria: '5 clean reps all sets' },
-      { level: 3, drill: 'Pike Press to Headstand',   type: 'reps', targetReps: 5, sets: 3,
-        note: 'Slow 3s descent. Hips drive high, elbows track back, core braced throughout.',
-        criteria: '5 reps with 3s descent all sets' },
-      { level: 4, drill: 'Freestanding HS Press',     type: 'reps', targetReps: 3, sets: 3,
-        note: 'No wall. From pike, press to freestanding handstand. Skill achieved.',
-        criteria: 'Shoulderstand press achieved' },
-    ],
-  },
   'muscle-up': {
     name: 'Muscle Up',
     goal: 'Clean false grip muscle up, no kip',
+    support: ['straight-bar-dips', 'false-grip-row', 'muscle-up-negative', 'rto-support-hold'],
     progressions: [
       { level: 1, drill: 'False Grip Dead Hang + RTO Hold', type: 'hold', targetSecs: 20, sets: 4,
         note: 'Wrist draped over the bar, not around it. Shoulders depress fully. Build grip endurance.',
@@ -64,6 +48,7 @@ export const SKILL_PROGRESSIONS = {
   },
   'iron-cross': {
     name: 'Iron Cross',
+    support: ['iron-cross-pull', 'front-lever-hold'],
     goal: 'Full iron cross, arms at 90°, 3 seconds',
     progressions: [
       { level: 1, drill: 'Cross Lean + Support Hold', type: 'hold', targetSecs: 15, sets: 4,
@@ -86,7 +71,7 @@ export const SKILL_PROGRESSIONS = {
   'back-lever': {
     name: 'Back Lever',
     goal: 'Full back lever, straight body, 10 seconds',
-    support: ['german-hang', '360-pull'],
+    support: ['german-hang', '360-pull', 'back-lever-negative'],
     progressions: [
       { level: 1, drill: 'Skin the Cat',              type: 'reps', targetReps: 5, sets: 3,
         note: 'From hang, pull knees over, pass through inverted hang, return. Slow and fully controlled.',
@@ -105,7 +90,7 @@ export const SKILL_PROGRESSIONS = {
   'manna': {
     name: 'Manna',
     goal: 'Manna hold — legs above horizontal, 5 seconds',
-    support: ['wrist-extension-hold'],
+    support: ['v-sit-pulse'],
     progressions: [
       { level: 1, drill: 'Seated Hip Compression',   type: 'hold', targetSecs: 20, sets: 4,
         note: 'Seated, hands beside hips, push floor. Compress hip flexors actively. Legs stay grounded.',
@@ -123,6 +108,7 @@ export const SKILL_PROGRESSIONS = {
   },
   'handstand': {
     name: 'Handstand',
+    support: ['wall-kick-up', 'chest-wall-handstand', 'back-wall-handstand', 'toe-pulls', 'shoulderpress-negative'],
     goal: 'Freestanding handstand, 10+ seconds, hollow body',
     progressions: [
       { level: 1, drill: 'Hollow Body + Wall Walks',    type: 'hold', targetSecs: 20, sets: 4,
@@ -140,78 +126,6 @@ export const SKILL_PROGRESSIONS = {
       { level: 5, drill: 'Freestanding Handstand',      type: 'hold', targetSecs: 10, sets: 3,
         note: 'Kick up, find the line, stay. Wall HSPU as accessory strength. Freestanding handstand achieved.',
         criteria: 'Handstand achieved — 10s freestanding' },
-    ],
-  },
-  'ring-handstand': {
-    name: 'Ring Handstand',
-    goal: 'Freestanding ring handstand, 10 seconds, arms locked',
-    progressions: [
-      { level: 1, drill: 'Ring Support Hold (RTO)',   type: 'hold', targetSecs: 30, sets: 4,
-        note: 'In support position, turn rings out hard. Arms locked, shoulders depressed. Hold perfectly still.',
-        criteria: 'All 4 sets ≥ 30s, rings not wobbling' },
-      { level: 2, drill: 'Wall Ring Handstand',       type: 'hold', targetSecs: 20, sets: 4,
-        note: 'Feet lightly on wall — barely touching. Learn ring-specific micro-corrections while inverted.',
-        criteria: 'All 4 sets ≥ 20s, feet barely touching' },
-      { level: 3, drill: 'Chest-to-Wall Ring HS',    type: 'hold', targetSecs: 15, sets: 4,
-        note: 'Face away from wall. Hollow body only — arched back means instant bail on rings.',
-        criteria: 'All 4 sets ≥ 15s, hollow body' },
-      { level: 4, drill: 'Freestanding HS Attempts', type: 'hold', targetSecs: 5,  sets: 5,
-        note: 'Short freestanding attempts. Same kick-up every time. You are learning the ring-specific corrections.',
-        criteria: 'Consistent 5s+ holds across most attempts' },
-      { level: 5, drill: 'Freestanding Ring Handstand', type: 'hold', targetSecs: 10, sets: 3,
-        note: 'Ring handstand achieved.',
-        criteria: 'Ring handstand achieved' },
-    ],
-  },
-  'front-lever': {
-    name: 'Front Lever',
-    goal: 'Full front lever, horizontal, arms locked — achieved',
-    progressions: [
-      { level: 1, drill: 'Tuck Front Lever',          type: 'hold', targetSecs: 10, sets: 4,
-        note: 'Knees tucked to chest, arms straight. Body parallel to floor.',
-        criteria: 'All 4 sets ≥ 10s' },
-      { level: 2, drill: 'Advanced Tuck Front Lever', type: 'hold', targetSecs: 8,  sets: 4,
-        note: 'Back flat and parallel to floor — not rounded. Knees still tucked.',
-        criteria: 'All 4 sets ≥ 8s' },
-      { level: 3, drill: 'One-Leg Front Lever',       type: 'hold', targetSecs: 6,  sets: 4,
-        note: 'One leg extended, one tucked. Steps down the leverage progressively.',
-        criteria: 'All 4 sets ≥ 6s' },
-      { level: 4, drill: 'Straddle Front Lever',      type: 'hold', targetSecs: 5,  sets: 4,
-        note: 'Legs straddled wide, body horizontal. Almost full.',
-        criteria: 'All 4 sets ≥ 5s' },
-      { level: 5, drill: 'Full Front Lever Hold',     type: 'hold', targetSecs: 5,  sets: 2,
-        note: 'Achieved. Maintenance only — 2 sets. Stop at first sign of shoulder fatigue.',
-        criteria: 'Maintenance — achieved' },
-    ],
-  },
-  'forward-roll': {
-    name: 'Forward Roll on Rings',
-    goal: 'Controlled forward roll from support to support',
-    progressions: [
-      { level: 1, drill: 'Spotted Forward Roll',      type: 'reps', targetReps: 3, sets: 3,
-        note: 'Tuck chin, hollow body, roll forward slowly. Spotter keeps rings stable.',
-        criteria: '3 controlled rolls all sets' },
-      { level: 2, drill: 'Slow Solo Forward Roll',    type: 'reps', targetReps: 3, sets: 3,
-        note: 'Solo. Stay fully in control — this is not a fall. Return to support clean.',
-        criteria: '3 clean solo rolls all sets' },
-      { level: 3, drill: 'Forward Roll — Free',       type: 'reps', targetReps: 5, sets: 3,
-        note: 'Consistent, controlled, clean entry and exit. Forward roll achieved.',
-        criteria: 'Forward roll achieved' },
-    ],
-  },
-  'backward-roll': {
-    name: 'Backward Roll on Rings',
-    goal: 'Controlled backward roll from hang to hang',
-    progressions: [
-      { level: 1, drill: 'Skin the Cat to Invert',    type: 'reps', targetReps: 3, sets: 3,
-        note: 'From hang, pull knees up and over. Control the descent. Shoulders stay packed.',
-        criteria: '3 controlled reps all sets' },
-      { level: 2, drill: 'Controlled Backward Roll',  type: 'reps', targetReps: 3, sets: 3,
-        note: 'Full backward roll. Control through the transition — no falling through.',
-        criteria: '3 clean rolls all sets' },
-      { level: 3, drill: 'Backward Roll — Free',      type: 'reps', targetReps: 5, sets: 3,
-        note: 'Consistent, controlled, shoulders packed throughout. Backward roll achieved.',
-        criteria: 'Backward roll achieved' },
     ],
   },
 };

@@ -24,19 +24,14 @@ let adaptations = {
   patterns: [],  // [{ type, exerciseId?, detectedDate, dismissed }]
 };
 
-// Default skill levels — front-lever pre-set to 5 (achieved), handstand at 3 (wall work phase)
+// Default skill levels — handstand at 3 (wall work phase)
 const DEFAULT_SKILL_LEVELS = {
-  'handstand':           3,
-  'planche':             1,
-  'shoulderstand-press': 1,
-  'muscle-up':           1,
-  'iron-cross':          1,
-  'back-lever':          1,
-  'manna':               1,
-  'ring-handstand':      1,
-  'front-lever':         5,
-  'forward-roll':        1,
-  'backward-roll':       1,
+  'handstand':  3,
+  'planche':    1,
+  'muscle-up':  1,
+  'iron-cross': 1,
+  'back-lever': 1,
+  'manna':      1,
 };
 
 // active session (ephemeral, persisted for resume)
