@@ -329,6 +329,13 @@ export const EX = {
     note: 'Lower trap — arms wide',
     muscles: { primary: ['rear-delt', 'lower-back'], secondary: ['serratus'] },
   },
+  'tyi-raise': {
+    id: 'tyi-raise', name: 'T-Y-I Raise',
+    category: 'pull', type: 'reps', targetReps: 10,
+    desc: 'Prone on rings or lying face down. Three positions per rep: T (arms out at 90°), Y (arms at 45° diagonal), I (arms straight overhead). Squeeze scapulas together and down at each position. 3–5s per position.',
+    note: 'Full lower trap + rear delt sweep',
+    muscles: { primary: ['rear-delt', 'lower-trap'], secondary: ['rhomboids', 'serratus'] },
+  },
   'face-pull': {
     id: 'face-pull', name: 'Face Pull',
     category: 'pull', type: 'reps', targetReps: 12,

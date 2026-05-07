@@ -276,7 +276,7 @@ const ssIsolationPull = {
     EX['row'],
     EX['pelican-curl'],
     EX['ring-hammer-curl'],
-    EX['ring-y-raise'],
+    EX['tyi-raise'],
     EX['face-pull'],
     EX['pallof-press'],
     EX['jefferson-curl'],
