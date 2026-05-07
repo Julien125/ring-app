@@ -3106,7 +3106,10 @@ async function gistBackup() {
         localStorage.removeItem(GIST_ID_KEY);
         resp = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
       }
-      if (!resp.ok) throw new Error(`GitHub API ${resp.status}`);
+      if (!resp.ok) {
+        const errBody = await resp.json().catch(() => ({}));
+        throw new Error(`GitHub API ${resp.status}: ${errBody.message || 'unknown error'}`);
+      }
     }
     data = await resp.json();
     localStorage.setItem(GIST_ID_KEY, data.id);
