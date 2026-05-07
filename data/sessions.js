@@ -77,6 +77,7 @@ const ssLegsPosterior = {
     EX['nordic-curl'],
     EX['single-leg-deadlift'],
     EX['single-leg-glute-bridge'],
+    EX['superman-hold'],
   ],
 };
 
@@ -160,7 +161,7 @@ const ssIsolationPushMon = {
 // ─── Skill support blocks (SS B on each day) ─────────────
 
 const ssSkillSupportWed = {
-  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  id: 'A', label: 'Skill Support — Iron Cross & Back Lever', rings: 'high', rounds: 3,
   restIntra: 30, restRound: 90,
   exercises: [
     EX['iron-cross-pull'],
@@ -168,6 +169,8 @@ const ssSkillSupportWed = {
     EX['german-hang'],
     EX['back-lever-negative'],
     EX['hollow-body-hold'],
+    EX['false-grip-dead-hang'],
+    EX['wide-support-hold'],
   ],
 };
 
@@ -255,6 +258,7 @@ const ssStrengthVolume = {
   id: 'D', label: 'Strength Volume', rings: 'high', rounds: 3,
   restIntra: 25, restRound: 90,
   exercises: [
+    EX['chest-to-bar'],
     EX['wide-pull-up'],
     EX['archer-pull-up'],
     EX['commande'],
@@ -433,12 +437,11 @@ export const SESSIONS = [
     skills: ['iron-cross', 'back-lever'],
     warmup: WARMUP_PULL_WED,
     supersets: [
-      ssSkillPowerWed,                            // A — skill tries
-      ssSkillSupportWed,                          // B — skill support
-      ssLegsPosterior,                            // C — legs
-      ssStrengthVolume,                           // D — strength volume
-      ssIsolationPull,                            // E — isolation
-      ssCoreFinisherPull,                         // F — core
+      ssSkillSupportWed,                          // A — skill support (no separate skill tries block)
+      ssLegsPosterior,                            // B — legs
+      ssStrengthVolume,                           // C — strength volume
+      ssIsolationPull,                            // D — isolation
+      ssCoreFinisherPull,                         // E — core
     ],
     cooldown: COOLDOWN_PULL,
   },
