@@ -3097,8 +3097,12 @@ async function gistBackup() {
       resp = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
     }
     if (!resp.ok) {
-      // Token expired or gist deleted — try creating fresh
-      if (resp.status === 404 || resp.status === 401) {
+      if (resp.status === 401) {
+        localStorage.removeItem(GIST_TOKEN_KEY);
+        renderGistTokenUI();
+        throw new Error('Token expired or invalid — please paste a new GitHub token below.');
+      }
+      if (resp.status === 404) {
         localStorage.removeItem(GIST_ID_KEY);
         resp = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
       }
