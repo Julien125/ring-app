@@ -102,6 +102,7 @@ const ssLegsPosteriorB = {
     { ...EX['nordic-curl'],             targetReps: 6,  note: 'Explosive descent — use hands to push back up if needed' },
     { ...EX['single-leg-deadlift'],     note: 'Weighted KB · 3s pause at bottom — eccentric emphasis' },
     { ...EX['single-leg-glute-bridge'], targetReps: 10, note: 'Foot elevated · weighted KB on hip — full glute stretch' },
+    EX['superman-hold'],
   ],
 };
 
@@ -245,12 +246,54 @@ const ssSkillPowerSat = {
   id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 3,
   restIntra: 30, restRound: 120,
   exercises: [
-    EX['skin-the-cat'],
+    EX['false-grip-dead-hang'],
     EX['chest-to-bar'],
     EX['360-pull'],
     EX['typewriter'],
-    EX['false-grip-dead-hang'],
-    EX['superman-hold'],
+    EX['german-hang'],
+    EX['back-lever-negative'],
+  ],
+};
+
+// Saturday SS C/D/E — Pull 2-specific variants with correct IDs
+const ssStrengthVolumeSat = {
+  id: 'C', label: 'Strength Volume', rings: 'high', rounds: 3,
+  restIntra: 25, restRound: 90,
+  exercises: [
+    EX['chest-to-bar'],
+    EX['wide-pull-up'],
+    EX['archer-pull-up'],
+    EX['commande'],
+    EX['ice-cream-maker'],
+    EX['l-sit-pike-press'],
+    EX['back-extension'],
+    EX['tuck-to-l'],
+  ],
+};
+
+const ssIsolationPullSat = {
+  id: 'D', label: 'Isolation + Health', rings: 'mid', rounds: 3,
+  restIntra: 20, restRound: 90,
+  exercises: [
+    EX['row'],
+    EX['pelican-curl'],
+    EX['one-arm-ring-curl'],
+    EX['tyi-raise'],
+    EX['face-pull'],
+    EX['pallof-press'],
+    EX['jefferson-curl'],
+    EX['windshield-wipers'],
+  ],
+};
+
+const ssCoreFinisherPullSat = {
+  id: 'E', label: 'Core Finisher', rings: 'bar', rounds: 2,
+  restIntra: 45, restRound: 90,
+  exercises: [
+    EX['hanging-leg-raise'],
+    EX['ab-wheel-rollout'],
+    EX['butt-lift'],
+    EX['v-sit-pulse'],
   ],
 };
 
@@ -470,12 +513,11 @@ export const SESSIONS = [
     skills: ['muscle-up', 'back-lever'],
     warmup: WARMUP_PULL_SAT,
     supersets: [
-      ssSkillPowerSat,                             // A — skill tries
-      ssSkillSupportSat,                           // B — skill support
-      ssLegsPosteriorB,                            // C — legs (loaded variant)
-      ssStrengthVolume,                            // D — strength volume
-      ssIsolationPull,                             // E — isolation
-      ssCoreFinisherPull,                          // F — core
+      ssSkillPowerSat,                             // A — skill (muscle up + back lever)
+      ssLegsPosteriorB,                            // B — legs (loaded variant)
+      ssStrengthVolumeSat,                         // C — strength volume
+      ssIsolationPullSat,                          // D — isolation
+      ssCoreFinisherPullSat,                       // E — core
     ],
     cooldown: COOLDOWN_PULL,
   },

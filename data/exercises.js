@@ -322,6 +322,13 @@ export const EX = {
     note: 'Neutral — brachialis',
     muscles: { primary: ['brachialis', 'biceps'], secondary: [] },
   },
+  'one-arm-ring-curl': {
+    id: 'one-arm-ring-curl', name: 'One Arm Ring Curl',
+    category: 'pull', type: 'reps', targetReps: 8,
+    desc: 'Grip one ring with a supinated hand, other hand free or on hip. Lean back to load the working arm, then curl from full extension to full flex. Keep the shoulder packed — no shrugging. Alternate arms each set.',
+    note: 'Unilateral — full bicep isolation',
+    muscles: { primary: ['biceps'], secondary: ['brachialis', 'brachioradialis'] },
+  },
   'ring-y-raise': {
     id: 'ring-y-raise', name: 'Ring Y-raise',
     category: 'pull', type: 'reps', targetReps: 12,
