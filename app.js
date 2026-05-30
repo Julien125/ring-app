@@ -205,10 +205,19 @@ function onTimerTick(secs) {
   const screen = currentScreen();
   if (screen === 's-05') updateRestUI('s05', secs);
   if (screen === 's-06') updateRestUI('s06', secs);
+  if (screen === 's-18' && T) {
+    T.secs = secs;
+    q('#s18-timer').textContent = fmtTabataTime(secs);
+  }
 }
 
 function onTimerDone() {
   const screen = currentScreen();
+  if (screen === 's-18' && T && !T.paused) {
+    cueRestEnd();
+    advanceTabata();
+    return;
+  }
   if (screen === 's-05' || screen === 's-06') {
     const valEl = screen === 's-05' ? q('#s05-val') : q('#s06-val');
     if (valEl) valEl.classList.add('overtime');
@@ -1207,7 +1216,161 @@ function enterSuperset() {
   A.exIdx  = 0;
   A.round  = A.round || 1;
   saveActive();
-  renderExercise();
+  if (ss.mode === 'tabata') {
+    startTabata(ss);
+  } else {
+    renderExercise();
+  }
+}
+
+// ─── S-18 Tabata Interval Timer ───────────────────────────
+let T = null; // tabata state
+
+function startTabata(ss) {
+  T = {
+    ss,
+    phase:     'prepare',
+    cycleIdx:  0,
+    roundIdx:  0,
+    paused:    false,
+    secs:      ss.prepareSecs,
+  };
+  renderTabata();
+  startCountdown(T.secs);
+}
+
+function fmtTabataTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : String(sec);
+}
+
+function tabataCurrentEx() {
+  return T.ss.exercises[T.roundIdx] || null;
+}
+
+function tabataNextEx() {
+  if (T.phase === 'prepare') return T.ss.exercises[0];
+  if (T.phase === 'work')    return T.ss.exercises[T.roundIdx + 1] || null; // next in cycle
+  if (T.phase === 'rest') {
+    const nextRound = T.roundIdx + 1;
+    return nextRound < T.ss.exercises.length ? T.ss.exercises[nextRound] : null;
+  }
+  return null;
+}
+
+function renderTabata() {
+  const { phase, cycleIdx, roundIdx, secs, ss } = T;
+  const totalCycles = ss.cycles;
+  const totalRounds = ss.exercises.length;
+  const ex = tabataCurrentEx();
+
+  const bg    = q('#s18-bg');
+  const lbl   = q('#s18-phase');
+  const timer = q('#s18-timer');
+
+  // Phase colours
+  bg.className    = `tabata-phase-bg ${phase}`;
+  lbl.className   = `tabata-phase-label ${phase}`;
+  lbl.textContent = phase.toUpperCase();
+  timer.className = `tabata-timer ${phase}`;
+  timer.textContent = fmtTabataTime(secs);
+
+  // Exercise name
+  if (phase === 'prepare') {
+    q('#s18-ex-name').textContent = ss.label;
+    q('#s18-ex-note').textContent = `${totalRounds} exercises · ${totalCycles} cycles`;
+  } else if (ex) {
+    q('#s18-ex-name').textContent = ex.name;
+    q('#s18-ex-note').textContent = ex.note || '';
+  }
+
+  // Next exercise
+  const nextEx = tabataNextEx();
+  const nextWrap = q('#s18-next-wrap');
+  if (nextEx && phase !== 'done') {
+    nextWrap.style.display = '';
+    q('#s18-next-name').textContent = nextEx.name;
+  } else {
+    nextWrap.style.display = 'none';
+  }
+
+  // Counters
+  q('#s18-rounds-left').textContent = phase === 'prepare' ? totalRounds : (totalRounds - roundIdx);
+  q('#s18-cycles-left').textContent = phase === 'prepare' ? totalCycles : (totalCycles - cycleIdx);
+
+  // Pause button
+  q('#s18-pause').textContent = T.paused ? '▶' : '⏸';
+  q('#s18-pause').onclick = () => {
+    T.paused = !T.paused;
+    if (T.paused) stopTimer();
+    else          startCountdown(T.secs);
+    q('#s18-pause').textContent = T.paused ? '▶' : '⏸';
+  };
+
+  showScreen('s-18');
+  updateNav('live');
+}
+
+function advanceTabata() {
+  const ss = T.ss;
+  if (T.phase === 'prepare') {
+    T.phase    = 'work';
+    T.roundIdx = 0;
+    T.secs     = ss.workSecs;
+  } else if (T.phase === 'work') {
+    T.phase = 'rest';
+    T.secs  = ss.restSecs;
+  } else if (T.phase === 'rest') {
+    const nextRound = T.roundIdx + 1;
+    if (nextRound < ss.exercises.length) {
+      T.roundIdx = nextRound;
+      T.phase    = 'work';
+      T.secs     = ss.workSecs;
+    } else {
+      // Cycle complete
+      const nextCycle = T.cycleIdx + 1;
+      if (nextCycle < ss.cycles) {
+        T.cycleIdx = nextCycle;
+        T.roundIdx = 0;
+        T.phase    = 'work';
+        T.secs     = ss.workSecs;
+      } else {
+        // All done
+        T.phase = 'done';
+        finishTabata();
+        return;
+      }
+    }
+  }
+  renderTabata();
+  startCountdown(T.secs);
+}
+
+function finishTabata() {
+  stopTimer();
+  // Mark superset complete and advance
+  A.ssIdx++;
+  A.round = 1;
+  A.exIdx = 0;
+  saveActive();
+  // Brief done state before moving on
+  const bg    = q('#s18-bg');
+  const lbl   = q('#s18-phase');
+  const timer = q('#s18-timer');
+  bg.className    = 'tabata-phase-bg done';
+  lbl.className   = 'tabata-phase-label done';
+  lbl.textContent = 'DONE';
+  timer.className = 'tabata-timer';
+  timer.textContent = '✓';
+  q('#s18-next-wrap').style.display = 'none';
+  q('#s18-rounds-left').textContent = '0';
+  q('#s18-cycles-left').textContent = '0';
+  setTimeout(() => {
+    T = null;
+    if (A.ssIdx < A.session.supersets.length) renderOverview();
+    else finishSession();
+  }, 2000);
 }
 
 // ─── S-03/04 Active exercise ──────────────────────────────

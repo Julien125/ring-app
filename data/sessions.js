@@ -109,9 +109,11 @@ const ssLegsPosteriorB = {
 // ─── Superset builders ────────────────────────────────────
 
 // Monday SS A — pure handstand skill, CNS fresh, no strength mixed in
+const TABATA = { mode: 'tabata', prepareSecs: 90, workSecs: 25, restSecs: 30, cycles: 4 };
+
 const ssOverheadSkillMon = {
   id: 'A', label: 'Skill — Handstand', rings: 'none', rounds: 2,
-  restIntra: 30, restRound: 120,
+  restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['wall-kick-up'],
     EX['chest-wall-handstand'],
@@ -137,7 +139,7 @@ const ssOverheadDipsStrength = {
 // Friday SS A — skill + planche overhead, CNS fresh
 const ssOverheadSkillFri = {
   id: 'A', label: 'Overhead & Planche Skill', rings: 'none', rounds: 2,
-  restIntra: 30, restRound: 120,
+  restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['handstand-drills'],
     EX['pseudo-planche-lean'],
@@ -163,7 +165,7 @@ const ssIsolationPushMon = {
 
 const ssSkillSupportWed = {
   id: 'A', label: 'Skill Support — Iron Cross & Back Lever', rings: 'high', rounds: 2,
-  restIntra: 30, restRound: 90,
+  restIntra: 30, restRound: 90, ...TABATA,
   exercises: [
     EX['iron-cross-pull'],
     EX['front-lever-hold'],
@@ -177,7 +179,7 @@ const ssSkillSupportWed = {
 
 const ssSkillSupportFri = {
   id: 'B', label: 'Skill Support', rings: 'high', rounds: 2,
-  restIntra: 30, restRound: 90,
+  restIntra: 30, restRound: 90, ...TABATA,
   exercises: [
     EX['shoulderpress-negative'],
     EX['v-sit-pulse'],
@@ -189,7 +191,7 @@ const ssSkillSupportFri = {
 
 const ssSkillSupportSat = {
   id: 'B', label: 'Skill Support', rings: 'high', rounds: 2,
-  restIntra: 30, restRound: 90,
+  restIntra: 30, restRound: 90, ...TABATA,
   exercises: [
     EX['german-hang'],
     EX['back-lever-negative'],
@@ -231,7 +233,7 @@ const ssIsolationPushFri = {
 // Wednesday SS A — static skill focus: iron cross + back lever (straight-arm, posterior)
 const ssSkillPowerWed = {
   id: 'A', label: 'Skill — Iron Cross & Back Lever', rings: 'high', rounds: 2,
-  restIntra: 30, restRound: 120,
+  restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['skin-the-cat'],
     EX['chest-to-bar'],
@@ -244,7 +246,7 @@ const ssSkillPowerWed = {
 // Saturday SS A — explosive + transition focus: muscle up + back lever
 const ssSkillPowerSat = {
   id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 2,
-  restIntra: 30, restRound: 120,
+  restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['false-grip-dead-hang'],
     EX['chest-to-bar'],

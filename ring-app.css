@@ -860,3 +860,138 @@ body {
 .mt-6 { margin-top: var(--sp-6); }
 
 .mb-nav { margin-bottom: 70px; }  /* clears bottom nav */
+
+/* ─────────────────────────────────────────────────────────
+   TABATA INTERVAL TIMER (S-18)
+───────────────────────────────────────────────────────── */
+.tabata-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #0f0f0f;
+}
+.tabata-phase-bg {
+  position: absolute;
+  inset: 0;
+  transition: background 0.4s ease;
+  opacity: 0.18;
+}
+.tabata-phase-bg.work    { background: #22c55e; opacity: 0.22; }
+.tabata-phase-bg.rest    { background: #ef4444; opacity: 0.22; }
+.tabata-phase-bg.prepare { background: #6C7FD8; opacity: 0.15; }
+.tabata-phase-bg.done    { background: #22c55e; opacity: 0.10; }
+
+.tabata-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 20px 20px;
+}
+.tabata-top {
+  padding-top: 56px;
+  text-align: center;
+}
+.tabata-phase-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  transition: color 0.3s;
+}
+.tabata-phase-label.work    { color: #22c55e; }
+.tabata-phase-label.rest    { color: #ef4444; }
+.tabata-phase-label.prepare { color: #6C7FD8; }
+.tabata-phase-label.done    { color: #22c55e; }
+
+.tabata-ex-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--txt);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.tabata-ex-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--txt-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.tabata-timer-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tabata-timer {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 88px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--txt);
+  line-height: 1;
+  transition: color 0.3s;
+}
+.tabata-timer.work    { color: #22c55e; }
+.tabata-timer.rest    { color: #ef4444; }
+.tabata-timer.prepare { color: #6C7FD8; }
+
+.tabata-next-wrap {
+  text-align: center;
+  min-height: 44px;
+  margin-bottom: 24px;
+}
+.tabata-next-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--txt-3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.tabata-next-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--txt-2);
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+.tabata-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 8px;
+}
+.tabata-stat { text-align: center; }
+.tabata-stat-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--txt);
+  line-height: 1;
+}
+.tabata-stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--txt-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.tabata-pause-btn {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: var(--txt);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
