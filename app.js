@@ -826,8 +826,10 @@ function startSession(session) {
     round:       1,
     log:         {},
     skips:       [],
-    skillsDone:  false,
-    warmupDone:  false,
+    skillsDone:      false,
+    warmupDone:      false,
+    tabataDone:      false,
+    tabataQueueIdx:  0,
     startTime:   Date.now(),
     complete:    false,
     softRemoved: [],   // exerciseIds soft-removed for this session
@@ -845,8 +847,9 @@ function startSession(session) {
 
 // getPainFlagsForSession — find unresolved pain flags for exercises in session
 function getPainFlagsForSession(session) {
+  const allSupersets = [...(session.skillTabata || []), ...session.supersets];
   const exerciseIds = new Set(
-    session.supersets.flatMap(ss => ss.exercises.filter(Boolean).map(e => e.id))
+    allSupersets.flatMap(ss => ss.exercises.filter(Boolean).map(e => e.id))
   );
   return adaptations.flags.filter(f =>
     f.type === 'pain-skip' &&
@@ -1053,7 +1056,14 @@ function renderSkills() {
     if (card) list.appendChild(card);
   });
 
-  q('#s08-cta').onclick = () => { A.skillsDone = true; saveActive(); renderOverview(); };
+  const hasTabata = !!(sess.skillTabata?.length) && !A.tabataDone;
+  if (hasTabata) {
+    q('#s08-cta').textContent = 'Start skill timer →';
+    q('#s08-cta').onclick = () => { A.tabataQueueIdx = 0; saveActive(); startTabataFromSkills(); };
+  } else {
+    q('#s08-cta').textContent = 'Continue to strength →';
+    q('#s08-cta').onclick = () => { A.skillsDone = true; saveActive(); renderOverview(); };
+  }
   showScreen('s-08');
   updateNav('live');
 }
@@ -1226,6 +1236,12 @@ function enterSuperset() {
 // ─── S-18 Tabata Interval Timer ───────────────────────────
 let T = null; // tabata state
 
+function startTabataFromSkills() {
+  const queue = A.session.skillTabata;
+  const ss = queue[A.tabataQueueIdx];
+  startTabata(ss);
+}
+
 function startTabata(ss) {
   T = {
     ss,
@@ -1349,10 +1365,6 @@ function advanceTabata() {
 
 function finishTabata() {
   stopTimer();
-  // Mark superset complete and advance
-  A.ssIdx++;
-  A.round = 1;
-  A.exIdx = 0;
   saveActive();
   // Brief done state before moving on
   const bg    = q('#s18-bg');
@@ -1368,8 +1380,18 @@ function finishTabata() {
   q('#s18-cycles-left').textContent = '0';
   setTimeout(() => {
     T = null;
-    if (A.ssIdx < A.session.supersets.length) renderOverview();
-    else finishSession();
+    const queue = A.session.skillTabata;
+    if (queue && A.tabataQueueIdx < queue.length - 1) {
+      // More skill tabata blocks to go
+      A.tabataQueueIdx++;
+      saveActive();
+      startTabataFromSkills();
+    } else {
+      // All skill tabata done — back to skills screen to show gymnastics progressions
+      A.tabataDone = true;
+      saveActive();
+      renderSkills();
+    }
   }, 2000);
 }
 

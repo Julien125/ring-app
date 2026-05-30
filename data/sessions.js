@@ -473,12 +473,12 @@ export const SESSIONS = [
     focus: 'Anterior legs · Dips & Overhead · Core finisher',
     skills: ['handstand', 'planche'],
     warmup: WARMUP_PUSH,
+    skillTabata: [ssOverheadSkillMon],
     supersets: [
-      ssOverheadSkillMon,                        // A — skill tries
-      ssLegsAnterior,                            // B — legs
-      ssOverheadDipsStrength,                    // C — overhead + dips strength
-      ssIsolationPushMon,                        // D — shoulder health + isolation
-      ssCoreFinisherPush,                        // E — core
+      ssLegsAnterior,                            // A — legs
+      ssOverheadDipsStrength,                    // B — overhead + dips strength
+      ssIsolationPushMon,                        // C — shoulder health + isolation
+      ssCoreFinisherPush,                        // D — core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -489,12 +489,12 @@ export const SESSIONS = [
     focus: 'Posterior legs · Iron Cross · Back Lever',
     skills: ['iron-cross', 'back-lever'],
     warmup: WARMUP_PULL_WED,
+    skillTabata: [ssSkillSupportWed],
     supersets: [
-      ssSkillSupportWed,                          // A — skill support (no separate skill tries block)
-      ssLegsPosterior,                            // B — legs
-      ssStrengthVolume,                           // C — strength volume
-      ssIsolationPull,                            // D — isolation
-      ssCoreFinisherPull,                         // E — core
+      ssLegsPosterior,                            // A — legs
+      ssStrengthVolume,                           // B — strength volume
+      ssIsolationPull,                            // C — isolation
+      ssCoreFinisherPull,                         // D — core
     ],
     cooldown: COOLDOWN_PULL,
   },
@@ -505,13 +505,12 @@ export const SESSIONS = [
     focus: 'Anterior legs · Overhead & Horizontal Push · Core finisher',
     skills: ['handstand', 'muscle-up', 'manna'],
     warmup: WARMUP_PUSH,
+    skillTabata: [ssOverheadSkillFri, ssSkillSupportFri],
     supersets: [
-      ssOverheadSkillFri,                          // A — skill tries
-      ssSkillSupportFri,                           // B — skill support
-      ssLegsAnteriorB,                             // C — legs (loaded variant)
-      ssHorizontalPush,                            // D — horizontal push
-      ssIsolationPushFri,                          // E — isolation
-      ssCoreFinisherPush,                          // F — core
+      ssLegsAnteriorB,                             // A — legs (loaded variant)
+      ssHorizontalPush,                            // B — horizontal push
+      ssIsolationPushFri,                          // C — isolation
+      ssCoreFinisherPush,                          // D — core
     ],
     cooldown: COOLDOWN_PUSH,
   },
@@ -522,12 +521,12 @@ export const SESSIONS = [
     focus: 'Posterior legs · Muscle Up · Back Lever',
     skills: ['muscle-up', 'back-lever'],
     warmup: WARMUP_PULL_SAT,
+    skillTabata: [ssSkillPowerSat],
     supersets: [
-      ssSkillPowerSat,                             // A — skill (muscle up + back lever)
-      ssLegsPosteriorB,                            // B — legs (loaded variant)
-      ssStrengthVolumeSat,                         // C — strength volume
-      ssIsolationPullSat,                          // D — isolation
-      ssCoreFinisherPullSat,                       // E — core
+      ssLegsPosteriorB,                            // A — legs (loaded variant)
+      ssStrengthVolumeSat,                         // B — strength volume
+      ssIsolationPullSat,                          // C — isolation
+      ssCoreFinisherPullSat,                       // D — core
     ],
     cooldown: COOLDOWN_PULL,
   },
