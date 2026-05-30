@@ -1312,7 +1312,6 @@ function renderTabata() {
   }
 
   // Counters
-  q('#s18-rounds-left').textContent = phase === 'prepare' ? totalRounds : (totalRounds - roundIdx);
   q('#s18-cycles-left').textContent = phase === 'prepare' ? totalCycles : (totalCycles - cycleIdx);
 
   // Pause button
@@ -1384,7 +1383,6 @@ function finishTabata() {
   timer.className = 'tabata-timer';
   timer.textContent = '✓';
   q('#s18-next-wrap').style.display = 'none';
-  q('#s18-rounds-left').textContent = '0';
   q('#s18-cycles-left').textContent = '0';
   setTimeout(() => {
     T = null;

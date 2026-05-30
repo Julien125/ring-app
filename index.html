@@ -40,7 +40,7 @@
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./ring-app.css?v=3">
+  <link rel="stylesheet" href="./ring-app.css?v=4">
   <style>
     /* ── Contrast + size overrides for gym readability ─────
        ring-app.css defaults are too dim and small for bright
@@ -1813,17 +1813,13 @@
         <div class="tabata-next-name" id="s18-next-name"></div>
       </div>
       <div class="tabata-bottom">
-        <div class="tabata-stat">
-          <div class="tabata-stat-val" id="s18-rounds-left">—</div>
-          <div class="tabata-stat-label">ROUNDS LEFT</div>
-        </div>
+        <button class="tabata-skip-btn" id="s18-end">Skip</button>
         <button class="tabata-pause-btn" id="s18-pause">⏸</button>
         <div class="tabata-stat">
           <div class="tabata-stat-val" id="s18-cycles-left">—</div>
           <div class="tabata-stat-label">CYCLES LEFT</div>
         </div>
       </div>
-      <button class="tabata-end-btn" id="s18-end">End · go to strength →</button>
     </div>
   </section>
 
@@ -2108,6 +2104,6 @@
     </div>
   </div>
 
-<script type="module" src="./app.js?v=8"></script>
+<script type="module" src="./app.js?v=10"></script>
 </body>
 </html>

@@ -888,7 +888,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 0 20px 80px;
+  padding: 0 20px 20px;
 }
 .tabata-top {
   padding-top: 56px;
@@ -995,15 +995,16 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-.tabata-end-btn {
-  margin: 16px auto 0;
-  display: block;
+.tabata-skip-btn {
   background: none;
   border: none;
   color: rgba(255,255,255,0.35);
   font-size: 13px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 8px;
+  text-align: center;
+  min-width: 64px;
 }
-.tabata-end-btn:active { color: rgba(255,255,255,0.7); }
+.tabata-skip-btn:active { color: rgba(255,255,255,0.75); }
