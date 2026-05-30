@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workout Overview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f0f0f; color: #e0e0e0; padding: 24px; }
+  h1 { font-size: 1.1rem; color: #888; font-weight: 400; margin-bottom: 24px; letter-spacing: .05em; text-transform: uppercase; }
+  .days { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .day { background: #1a1a1a; border-radius: 10px; overflow: hidden; }
+  .day-header { padding: 14px 16px; border-bottom: 1px solid #2a2a2a; }
+  .day-header .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; margin-bottom: 4px; }
+  .day-header .name { font-size: 1rem; font-weight: 600; }
+  .day-header .focus { font-size: .75rem; color: #666; margin-top: 3px; }
+  .pull .day-header .label { color: #5b9cf6; }
+  .push .day-header .label { color: #f97316; }
+  .block { padding: 10px 16px; border-bottom: 1px solid #1f1f1f; }
+  .block:last-child { border-bottom: none; }
+  .block-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .block-id { font-size: .65rem; font-weight: 700; background: #2a2a2a; color: #888; border-radius: 4px; padding: 1px 6px; }
+  .block-label { font-size: .78rem; font-weight: 600; color: #ccc; flex: 1; }
+  .block-meta { font-size: .65rem; color: #555; }
+  .block-tag { font-size: .6rem; background: #6C7FD8; color: #fff; border-radius: 3px; padding: 1px 5px; }
+  .exercises { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .exercises li { font-size: .75rem; color: #aaa; padding: 2px 0 2px 10px; border-left: 2px solid #2a2a2a; }
+  .exercises li.new { border-left-color: #5b9cf6; color: #c0d8ff; }
+  .section-title { font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: #444; margin: 8px 0 4px; }
+  .warmup-items { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .warmup-items li { font-size: .72rem; color: #666; padding: 1px 0; }
+</style>
+</head>
+<body>
+<h1>Weekly Program</h1>
+<div class="days" id="days"></div>
+
+<script type="module">
+const EX = new Proxy({}, { get: (_, id) => ({ id }) });
+
+const SESSIONS = [
+  {
+    id: 'mon-push1', day: 'Monday', type: 'push', label: 'Push 1',
+    focus: 'Anterior legs · Handstand · Overhead & Dips',
+    warmup: ['90/90 breathing', 'Wrist circles + shoulder CARs', 'Lateral band walk', 'Tibialis raise'],
+    skillTabata: [
+      { id:'A', label:'Designer Skill — Handstand', tag:'Tabata', exercises:['wall-kick-up','chest-wall-handstand','back-wall-handstand','toe-pulls','shoulderpress-negative'] },
+    ],
+    supersets: [
+      { id:'A', label:'Legs — Anterior Chain', rounds:2, exercises:['bulgarian-split-squat','pistol-squat','sissy-squat','single-leg-calf-raise','copenhagen-plank'] },
+      { id:'B', label:'Overhead & Dips', rounds:2, exercises:['hspu','straight-bar-dips','bulgarian-dips','korean-dips','ring-dip-deep'] },
+      { id:'C', label:'Shoulder Health & Isolation', rounds:2, exercises:['scapular-push-up-band','cuban-press','lateral-raise','ring-overhead-ext','l-sit','pallof-press'], newExercises:['scapular-push-up-band'] },
+      { id:'D', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','hollow-body-hold','windshield-wipers','dragon-flag','plank','lateral-plank'] },
+    ],
+  },
+  {
+    id: 'wed-pull1', day: 'Wednesday', type: 'pull', label: 'Pull 1',
+    focus: 'Posterior legs · Iron Cross · Back Lever',
+    warmup: ['90/90 breathing','Dead hang','German Hang','Cat-cow + thoracic rotation'],
+    skillTabata: [
+      { id:'A', label:'Designer Skill — Iron Cross & Back Lever', tag:'Tabata', exercises:['iron-cross-pull','front-lever-hold','german-hang','back-lever-negative','hollow-body-hold','false-grip-dead-hang','wide-support-hold'] },
+    ],
+    supersets: [
+      { id:'A', label:'Legs — Posterior Chain', rounds:2, exercises:['nordic-curl','single-leg-deadlift','single-leg-glute-bridge','superman-hold'] },
+      { id:'B', label:'Strength Volume', rounds:2, exercises:['chest-to-bar','wide-pull-up','archer-pull-up','commande','ice-cream-maker','l-sit-pike-press','back-extension','tuck-to-l'] },
+      { id:'C', label:'Isolation + Health', rounds:2, exercises:['row','inverted-deadlift','pelican-curl','ring-hammer-curl','tyi-raise','face-pull','pallof-press','jefferson-curl','windshield-wipers'], newExercises:['inverted-deadlift'] },
+      { id:'D', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','plank','lateral-plank','v-sit-pulse'] },
+    ],
+  },
+  {
+    id: 'fri-push2', day: 'Friday', type: 'push', label: 'Push 2',
+    focus: 'Anterior legs · Overhead & Horizontal Push · Core finisher',
+    warmup: ['90/90 breathing','Wrist circles + shoulder CARs','Lateral band walk','Tibialis raise'],
+    skillTabata: [
+      { id:'A', label:'Designer Skill — Overhead & Planche', tag:'Tabata', exercises:['handstand-drills','pseudo-planche-lean','pseudo-planche-push-up'] },
+      { id:'B', label:'Designer Skill — Skill Support', tag:'Tabata', exercises:['shoulderpress-negative','v-sit-pulse','ring-dip-deep','muscle-up-negative','rto-support-hold'] },
+    ],
+    supersets: [
+      { id:'A', label:'Legs — Anterior Chain', rounds:2, exercises:['bulgarian-split-squat (loaded)','pistol-squat (3s descent)','sissy-squat','single-leg-calf-raise (bent knee)','copenhagen-plank'] },
+      { id:'B', label:'Horizontal Push', rounds:2, exercises:['hspu','archer-push-up','ring-fly','push-up-rto','russian-push-up'] },
+      { id:'C', label:'Shoulder Health & Isolation', rounds:2, exercises:['scapular-push-up-band','bulgarian-push-up','cuban-press','lateral-raise','ring-overhead-ext','l-sit','pallof-press'], newExercises:['scapular-push-up-band'] },
+      { id:'D', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','hollow-body-hold','windshield-wipers','dragon-flag','plank','lateral-plank'] },
+    ],
+  },
+  {
+    id: 'sat-pull2', day: 'Saturday', type: 'pull', label: 'Pull 2',
+    focus: 'Posterior legs · Muscle Up · Back Lever',
+    warmup: ['90/90 breathing','Dead hang','German Hang','Band pull-aparts'],
+    skillTabata: [
+      { id:'A', label:'Designer Skill — Muscle Up & Back Lever', tag:'Tabata', exercises:['false-grip-dead-hang','chest-to-bar','360-pull','typewriter','german-hang','back-lever-negative'] },
+    ],
+    supersets: [
+      { id:'A', label:'Skill — Muscle Up & Back Lever', rounds:2, exercises:['false-grip-dead-hang','chest-to-bar','360-pull','typewriter','german-hang','back-lever-negative'] },
+      { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:['nordic-curl (explosive)','single-leg-deadlift (weighted)','single-leg-glute-bridge (elevated)','superman-hold'] },
+      { id:'C', label:'Strength Volume', rounds:2, exercises:['wide-pull-up','archer-pull-up','commande','ice-cream-maker','l-sit-pike-press','back-extension','tuck-to-l'] },
+      { id:'D', label:'Isolation + Health', rounds:2, exercises:['row','inverted-deadlift','pelican-curl','one-arm-ring-curl','tyi-raise','face-pull','pallof-press','jefferson-curl','windshield-wipers'], newExercises:['inverted-deadlift'] },
+      { id:'E', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','v-sit-pulse','plank','lateral-plank'] },
+    ],
+  },
+];
+
+function fmt(id) {
+  return id.split(/[-\s]/).map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ');
+}
+
+const container = document.getElementById('days');
+
+for (const s of SESSIONS) {
+  const div = document.createElement('div');
+  div.className = `day ${s.type}`;
+
+  const tabataHtml = (s.skillTabata || []).map(ss => `
+    <div class="block" style="border-left:3px solid #6C7FD8;background:#16182a">
+      <div class="block-header">
+        <span class="block-tag">${ss.tag}</span>
+        <span class="block-label" style="color:#9aadff">${ss.label}</span>
+      </div>
+      <ul class="exercises">
+        ${ss.exercises.map(ex => `<li style="border-left-color:#6C7FD8;color:#9aadff">${fmt(ex)}</li>`).join('')}
+      </ul>
+    </div>`).join('');
+
+  const supersetHtml = s.supersets.map(ss => `
+    <div class="block">
+      <div class="block-header">
+        <span class="block-id">${ss.id}</span>
+        <span class="block-label">${ss.label}</span>
+        <span class="block-meta">${ss.rounds}×</span>
+      </div>
+      <ul class="exercises">
+        ${ss.exercises.map(ex => {
+          const isNew = ss.newExercises && ss.newExercises.some(n => ex.startsWith(n));
+          return `<li class="${isNew ? 'new' : ''}">${fmt(ex)}</li>`;
+        }).join('')}
+      </ul>
+    </div>`).join('');
+
+  div.innerHTML = `
+    <div class="day-header">
+      <div class="label">${s.type} · ${s.label}</div>
+      <div class="name">${s.day}</div>
+      <div class="focus">${s.focus}</div>
+    </div>
+    <div class="block">
+      <div class="section-title">Warmup</div>
+      <ul class="warmup-items">${s.warmup.map(w => `<li>${w}</li>`).join('')}</ul>
+    </div>
+    ${tabataHtml}
+    ${supersetHtml}
+  `;
+  container.appendChild(div);
+}
+</script>
+</body>
+</html>

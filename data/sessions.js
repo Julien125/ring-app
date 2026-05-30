@@ -152,11 +152,11 @@ const ssIsolationPushMon = {
   id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
+    EX['scapular-push-up-band'],
     EX['cuban-press'],
     EX['lateral-raise'],
     EX['ring-overhead-ext'],
     EX['l-sit'],
-    EX['side-bend'],
     EX['pallof-press'],
   ],
 };
@@ -220,12 +220,12 @@ const ssIsolationPushFri = {
   id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
+    EX['scapular-push-up-band'],
     EX['bulgarian-push-up'],
     EX['cuban-press'],
     EX['lateral-raise'],
     EX['ring-overhead-ext'],
     EX['l-sit'],
-    EX['side-bend'],
     EX['pallof-press'],
   ],
 };

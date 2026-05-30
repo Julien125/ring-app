@@ -394,6 +394,13 @@ export const EX = {
     note: 'Lateral delt isolation — slow eccentric',
     muscles: { primary: ['lateral-delt'], secondary: ['rear-delt', 'traps'] },
   },
+  'scapular-push-up-band': {
+    id: 'scapular-push-up-band', name: 'Scapular Push Up (Band)',
+    category: 'shoulder', type: 'reps', targetReps: 12,
+    desc: 'Push-up position with a resistance band across your upper back anchored at the hands. Keep arms straight throughout — protract (spread) the scapulas, then retract them. Full scapular range of motion without elbow bend. Band adds load to the protraction phase.',
+    note: 'Serratus anterior + scapular control — arms stay straight',
+    muscles: { primary: ['serratus', 'shoulders'], secondary: ['core'] },
+  },
   'cuban-press': {
     id: 'cuban-press', name: 'Cuban Press',
     category: 'shoulder', type: 'reps', targetReps: 10,
