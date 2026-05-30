@@ -12,6 +12,25 @@ const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
+// ─── Rest-period stretch cues (by primary muscle group) ───
+const MUSCLE_STRETCHES = {
+  'lats':        'Lat reach — arm overhead, lean away · 20s/side',
+  'biceps':      'Wrist flexor stretch — palm down, elbow straight · 15s',
+  'rear-delt':   'Cross-body arm pull · 20s/side',
+  'chest':       'Doorframe chest stretch, arms at 90° · 20s/side',
+  'triceps':     'Overhead tricep stretch · 15s/side',
+  'shoulders':   'Cross-body arm pull · 20s/side',
+  'quads':       'Standing quad stretch · 20s/side',
+  'hamstrings':  'Standing forward fold, soft knees · 20s',
+  'glutes':      'Pigeon or figure-4 stretch · 30s/side',
+  'core':        'Cat-cow · 4 slow breaths',
+  'obliques':    'Seated side stretch, arm overhead · 20s/side',
+  'calves':      'Calf stretch against wall · 20s/side',
+  'serratus':    'Cross-body arm pull · 20s/side',
+  'forearms':    'Wrist flexor + extensor stretch · 15s each',
+  'lowback':     'Child\'s pose · 6 breaths',
+};
+
 // ─── State ────────────────────────────────────────────────
 let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [] };
 
@@ -197,10 +216,14 @@ function onTimerDone() {
     if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
     cueRestEnd();
     // Auto-advance after 1.5 s — user can still tap "Next" early
+    // Exception: don't auto-advance if top-up is still open (user topping up reps)
     setTimeout(() => {
       if (currentScreen() === screen) {
-        stopTimer();
-        renderExercise();
+        const topupOpen = screen === 's-05' && q('#s05-topup')?.style.display !== 'none';
+        if (!topupOpen) {
+          stopTimer();
+          renderExercise();
+        }
       }
     }, 1500);
   }
@@ -464,8 +487,8 @@ function detectPerformanceSignal(sets, target) {
 
   if (detectFading(nums)) return 'fading';
 
-  const aboveCount = nums.filter(v => v >= target + 2).length;
-  const belowCount = nums.filter(v => v <= target - 2).length;
+  const aboveCount = nums.filter(v => v >= target + 1).length;
+  const belowCount = nums.filter(v => v <= target - 1).length;
 
   if (aboveCount >= 2) return 'above';
   if (belowCount >= 2) return 'below';
@@ -778,6 +801,14 @@ function getTodaySession() {
 // ─── Session init ─────────────────────────────────────────
 function startSession(session) {
   clearActive();
+  // Filter out any null exercises (can happen if exercises.js module cache is stale)
+  session = {
+    ...session,
+    supersets: session.supersets.map(ss => ({
+      ...ss,
+      exercises: ss.exercises.filter(Boolean),
+    })),
+  };
   A = {
     sessionId:   session.id,
     session,
@@ -806,7 +837,7 @@ function startSession(session) {
 // getPainFlagsForSession — find unresolved pain flags for exercises in session
 function getPainFlagsForSession(session) {
   const exerciseIds = new Set(
-    session.supersets.flatMap(ss => ss.exercises.map(e => e.id))
+    session.supersets.flatMap(ss => ss.exercises.filter(Boolean).map(e => e.id))
   );
   return adaptations.flags.filter(f =>
     f.type === 'pain-skip' &&
@@ -1120,6 +1151,7 @@ function renderOverview() {
 
     let exRowsHtml = '';
     ss.exercises.forEach((ex, ei) => {
+      if (!ex) return;
       const exDone = isDone || (isCurrent && (A.round > totalRounds));
       const exCur  = isCurrent && ei === A.exIdx && !isDone;
       const cls    = exDone ? 'ss-ex-row is-done' : (exCur ? 'ss-ex-row is-current' : 'ss-ex-row');
@@ -1754,6 +1786,79 @@ function showRest(type, ss, nextEx) {
     renderExercise();
   };
 
+  // Smart rest: top-up (deficit) or stretch cue — intra-rest only, reps exercises
+  if (isIntra) {
+    const topupEl   = q('#s05-topup');
+    const stretchEl = q('#s05-stretch');
+    const deficitLbl = q('#s05-deficit-label');
+    const topupValEl = q('#s05-topup-val');
+    const commitBtn  = q('#s05-commit');
+
+    const prevExForRest = ss.exercises[A.exIdx - 1];
+    const prevRepsLogged = prevSets.length ? prevSets[prevSets.length - 1] : null;
+    const shouldTopUp = prevExForRest?.type === 'reps' && prevRepsLogged !== null;
+
+    if (shouldTopUp) {
+      const target = getEffectiveTarget(prevExForRest);
+      let deficit = target - prevRepsLogged;
+      let topupCount = 0;
+
+      const updateTopupUI = () => {
+        const remaining = Math.max(0, target - (prevRepsLogged + topupCount));
+        deficitLbl.textContent = remaining > 0
+          ? `${prevRepsLogged + topupCount} / ${target} · ${remaining} left`
+          : `${prevRepsLogged + topupCount} / ${target} · done ✓`;
+        topupValEl.textContent = topupCount;
+        commitBtn.disabled = topupCount === 0;
+      };
+
+      if (deficit > 0) {
+        // Show top-up mode
+        topupEl.style.display = '';
+        stretchEl.style.display = 'none';
+        topupCount = 0;
+        updateTopupUI();
+
+        q('#s05-plus').onclick  = () => { topupCount = Math.min(topupCount + 1, deficit + 5); updateTopupUI(); };
+        q('#s05-minus').onclick = () => { topupCount = Math.max(topupCount - 1, 0);           updateTopupUI(); };
+        commitBtn.onclick = () => {
+          if (topupCount === 0) return;
+          // Add reps to last logged set for this exercise
+          const sets = A.log[prevExForRest.id]?.sets;
+          if (sets?.length) sets[sets.length - 1] += topupCount;
+          deficit -= topupCount;
+          topupCount = 0;
+          updateTopupUI();
+          // If deficit cleared, switch to stretch cue
+          if (deficit <= 0) {
+            topupEl.style.display = 'none';
+            const cue = (prevExForRest.muscles?.primary || [])
+              .map(m => MUSCLE_STRETCHES[m]).find(Boolean) || null;
+            if (cue) {
+              q('#s05-stretch-cue').textContent = cue;
+              stretchEl.style.display = '';
+            }
+          }
+        };
+      } else {
+        // Already hit target — show stretch
+        topupEl.style.display = 'none';
+        const cue = (prevExForRest.muscles?.primary || [])
+          .map(m => MUSCLE_STRETCHES[m]).find(Boolean) || null;
+        if (cue) {
+          q('#s05-stretch-cue').textContent = cue;
+          stretchEl.style.display = '';
+        } else {
+          stretchEl.style.display = 'none';
+        }
+      }
+    } else {
+      // Non-reps exercise (hold/duration) or no data — hide both
+      topupEl.style.display   = 'none';
+      stretchEl.style.display = 'none';
+    }
+  }
+
   cueRestStart();
   startCountdown(secs);
   showScreen(screenId);
@@ -2038,12 +2143,11 @@ function evaluateTargetBump(ex) {
     .slice(-2);
   if (relevant.length < 2) return 0;
 
-  const target = ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+  const target = getEffectiveTarget(ex);
   const signals = relevant.map(e => detectPerformanceSignal(e.exercises[ex.id].sets, target));
 
   if (signals.every(s => s === 'above'))   return +1;
-  if (signals.every(s => s === 'below'))   return -1;
-  return 0;
+  return 0; // target never drops — you work up to it
 }
 
 // evaluateRestAdjustment(sessionId, ssId, type) → +15 | 0
@@ -2153,7 +2257,7 @@ function buildSessionSignals(entry) {
       const logged = entry.exercises?.[ex.id];
       if (!logged?.sets?.length) return;
 
-      const target = ex.type === 'hold' ? ex.targetSecs : ex.targetReps;
+      const target = getEffectiveTarget(ex);
       const sig = detectPerformanceSignal(logged.sets, target);
       const unit = ex.type === 'hold' ? 's' : ' reps';
       const vals = logged.sets.map(v => `${v}${unit}`).join('→');

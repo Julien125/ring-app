@@ -749,6 +749,60 @@ body {
 .rest-next-meta  { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--txt-3); text-align: center; letter-spacing: 0.06em; }
 
 .rest-actions { display: flex; gap: var(--sp-2); }
+
+/* Top-up (deficit) + stretch cue */
+.rest-deficit-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #F5A623;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.rest-topup-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.topup-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--txt);
+  min-width: 40px;
+  text-align: center;
+}
+.btn-sm {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  font-size: 18px;
+  border-radius: 8px;
+}
+.btn-commit {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+.stretch-cue {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #6C7FD8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.7;
+  padding: 6px 0;
+}
+.stretch-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--txt-3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
 .rest-adj-note {
   font-family: 'DM Mono', monospace;
   font-size: 9px;

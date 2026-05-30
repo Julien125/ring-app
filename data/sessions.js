@@ -110,7 +110,7 @@ const ssLegsPosteriorB = {
 
 // Monday SS A — pure handstand skill, CNS fresh, no strength mixed in
 const ssOverheadSkillMon = {
-  id: 'A', label: 'Skill — Handstand', rings: 'none', rounds: 3,
+  id: 'A', label: 'Skill — Handstand', rings: 'none', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['wall-kick-up'],
@@ -123,7 +123,7 @@ const ssOverheadSkillMon = {
 
 // Monday SS C — overhead + dips strength block
 const ssOverheadDipsStrength = {
-  id: 'C', label: 'Overhead & Dips', rings: 'mid', rounds: 3,
+  id: 'C', label: 'Overhead & Dips', rings: 'mid', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['hspu'],
@@ -136,7 +136,7 @@ const ssOverheadDipsStrength = {
 
 // Friday SS A — skill + planche overhead, CNS fresh
 const ssOverheadSkillFri = {
-  id: 'A', label: 'Overhead & Planche Skill', rings: 'none', rounds: 3,
+  id: 'A', label: 'Overhead & Planche Skill', rings: 'none', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['handstand-drills'],
@@ -147,7 +147,7 @@ const ssOverheadSkillFri = {
 
 // Monday SS D — shoulder health + isolation, no redundancy with SS C
 const ssIsolationPushMon = {
-  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 3,
+  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
     EX['cuban-press'],
@@ -162,7 +162,7 @@ const ssIsolationPushMon = {
 // ─── Skill support blocks (SS B on each day) ─────────────
 
 const ssSkillSupportWed = {
-  id: 'A', label: 'Skill Support — Iron Cross & Back Lever', rings: 'high', rounds: 3,
+  id: 'A', label: 'Skill Support — Iron Cross & Back Lever', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90,
   exercises: [
     EX['iron-cross-pull'],
@@ -176,7 +176,7 @@ const ssSkillSupportWed = {
 };
 
 const ssSkillSupportFri = {
-  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  id: 'B', label: 'Skill Support', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90,
   exercises: [
     EX['shoulderpress-negative'],
@@ -188,7 +188,7 @@ const ssSkillSupportFri = {
 };
 
 const ssSkillSupportSat = {
-  id: 'B', label: 'Skill Support', rings: 'high', rounds: 3,
+  id: 'B', label: 'Skill Support', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90,
   exercises: [
     EX['german-hang'],
@@ -202,7 +202,7 @@ const ssSkillSupportSat = {
 
 // Friday SS C — horizontal push strength, no overlap with SS A or SS D
 const ssHorizontalPush = {
-  id: 'C', label: 'Horizontal Push', rings: 'mid', rounds: 3,
+  id: 'C', label: 'Horizontal Push', rings: 'mid', rounds: 2,
   restIntra: 25, restRound: 120,
   exercises: [
     EX['hspu'],
@@ -215,7 +215,7 @@ const ssHorizontalPush = {
 
 // Friday SS D — isolation + shoulder health, no overlap with SS A or SS C
 const ssIsolationPushFri = {
-  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 3,
+  id: 'D', label: 'Shoulder Health & Isolation', rings: 'low', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
     EX['bulgarian-push-up'],
@@ -230,7 +230,7 @@ const ssIsolationPushFri = {
 
 // Wednesday SS A — static skill focus: iron cross + back lever (straight-arm, posterior)
 const ssSkillPowerWed = {
-  id: 'A', label: 'Skill — Iron Cross & Back Lever', rings: 'high', rounds: 3,
+  id: 'A', label: 'Skill — Iron Cross & Back Lever', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['skin-the-cat'],
@@ -243,7 +243,7 @@ const ssSkillPowerWed = {
 
 // Saturday SS A — explosive + transition focus: muscle up + back lever
 const ssSkillPowerSat = {
-  id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 3,
+  id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['false-grip-dead-hang'],
@@ -257,7 +257,7 @@ const ssSkillPowerSat = {
 
 // Saturday SS C/D/E — Pull 2-specific variants with correct IDs
 const ssStrengthVolumeSat = {
-  id: 'C', label: 'Strength Volume', rings: 'high', rounds: 3,
+  id: 'C', label: 'Strength Volume', rings: 'high', rounds: 2,
   restIntra: 25, restRound: 90,
   exercises: [
     EX['chest-to-bar'],
@@ -272,10 +272,11 @@ const ssStrengthVolumeSat = {
 };
 
 const ssIsolationPullSat = {
-  id: 'D', label: 'Isolation + Health', rings: 'mid', rounds: 3,
+  id: 'D', label: 'Isolation + Health', rings: 'mid', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
     EX['row'],
+    EX['inverted-deadlift'],
     EX['pelican-curl'],
     EX['one-arm-ring-curl'],
     EX['tyi-raise'],
@@ -294,11 +295,13 @@ const ssCoreFinisherPullSat = {
     EX['ab-wheel-rollout'],
     EX['butt-lift'],
     EX['v-sit-pulse'],
+    EX['plank'],
+    EX['lateral-plank'],
   ],
 };
 
 const ssStrengthVolume = {
-  id: 'D', label: 'Strength Volume', rings: 'high', rounds: 3,
+  id: 'D', label: 'Strength Volume', rings: 'high', rounds: 2,
   restIntra: 25, restRound: 90,
   exercises: [
     EX['chest-to-bar'],
@@ -313,10 +316,11 @@ const ssStrengthVolume = {
 };
 
 const ssIsolationPull = {
-  id: 'E', label: 'Isolation + Health', rings: 'mid', rounds: 3,
+  id: 'E', label: 'Isolation + Health', rings: 'mid', rounds: 2,
   restIntra: 20, restRound: 90,
   exercises: [
     EX['row'],
+    EX['inverted-deadlift'],
     EX['pelican-curl'],
     EX['ring-hammer-curl'],
     EX['tyi-raise'],
@@ -340,6 +344,8 @@ const ssCoreFinisherPush = {
     EX['hollow-body-hold'],
     EX['windshield-wipers'],
     EX['dragon-flag'],
+    EX['plank'],
+    EX['lateral-plank'],
   ],
 };
 
@@ -351,6 +357,8 @@ const ssCoreFinisherPull = {
     EX['hanging-leg-raise'],
     EX['ab-wheel-rollout'],
     EX['butt-lift'],
+    EX['plank'],
+    EX['lateral-plank'],
     EX['v-sit-pulse'],
   ],
 };
