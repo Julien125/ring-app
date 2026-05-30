@@ -257,12 +257,25 @@ const ssSkillPowerSat = {
   ],
 };
 
+// Saturday SS A (strength) — skill exercises done as strength sets (separate from Designer Skill tabata)
+const ssSkillStrengthSat = {
+  id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 2,
+  restIntra: 60, restRound: 120,
+  exercises: [
+    EX['false-grip-dead-hang'],
+    EX['chest-to-bar'],
+    EX['360-pull'],
+    EX['typewriter'],
+    EX['german-hang'],
+    EX['back-lever-negative'],
+  ],
+};
+
 // Saturday SS C/D/E — Pull 2-specific variants with correct IDs
 const ssStrengthVolumeSat = {
   id: 'C', label: 'Strength Volume', rings: 'high', rounds: 2,
   restIntra: 25, restRound: 90,
   exercises: [
-    EX['chest-to-bar'],
     EX['wide-pull-up'],
     EX['archer-pull-up'],
     EX['commande'],
@@ -523,10 +536,11 @@ export const SESSIONS = [
     warmup: WARMUP_PULL_SAT,
     skillTabata: [ssSkillPowerSat],
     supersets: [
-      ssLegsPosteriorB,                            // A — legs (loaded variant)
-      ssStrengthVolumeSat,                         // B — strength volume
-      ssIsolationPullSat,                          // C — isolation
-      ssCoreFinisherPullSat,                       // D — core
+      ssSkillStrengthSat,                          // A — skill strength sets
+      ssLegsPosteriorB,                            // B — legs (loaded variant)
+      ssStrengthVolumeSat,                         // C — strength volume
+      ssIsolationPullSat,                          // D — isolation
+      ssCoreFinisherPullSat,                       // E — core
     ],
     cooldown: COOLDOWN_PULL,
   },
