@@ -995,3 +995,15 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+.tabata-end-btn {
+  margin: 16px auto 0;
+  display: block;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.35);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 8px 16px;
+}
+.tabata-end-btn:active { color: rgba(255,255,255,0.7); }

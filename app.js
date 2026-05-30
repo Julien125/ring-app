@@ -1324,6 +1324,14 @@ function renderTabata() {
     q('#s18-pause').textContent = T.paused ? '▶' : '⏸';
   };
 
+  q('#s18-end').onclick = () => {
+    stopTimer();
+    T = null;
+    A.tabataDone = true;
+    saveActive();
+    renderOverview();
+  };
+
   showScreen('s-18');
   updateNav('live');
 }
