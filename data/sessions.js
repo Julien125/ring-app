@@ -112,7 +112,7 @@ const ssLegsPosteriorB = {
 const TABATA = { mode: 'tabata', prepareSecs: 90, workSecs: 25, restSecs: 30, cycles: 4 };
 
 const ssOverheadSkillMon = {
-  id: 'A', label: 'Skill — Handstand', rings: 'none', rounds: 2,
+  id: 'A', label: 'Designer Skill', rings: 'none', rounds: 2,
   restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['wall-kick-up'],
@@ -138,7 +138,7 @@ const ssOverheadDipsStrength = {
 
 // Friday SS A — skill + planche overhead, CNS fresh
 const ssOverheadSkillFri = {
-  id: 'A', label: 'Overhead & Planche Skill', rings: 'none', rounds: 2,
+  id: 'A', label: 'Designer Skill', rings: 'none', rounds: 2,
   restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['handstand-drills'],
@@ -164,7 +164,7 @@ const ssIsolationPushMon = {
 // ─── Skill support blocks (SS B on each day) ─────────────
 
 const ssSkillSupportWed = {
-  id: 'A', label: 'Skill Support — Iron Cross & Back Lever', rings: 'high', rounds: 2,
+  id: 'A', label: 'Designer Skill', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90, ...TABATA,
   exercises: [
     EX['iron-cross-pull'],
@@ -178,7 +178,7 @@ const ssSkillSupportWed = {
 };
 
 const ssSkillSupportFri = {
-  id: 'B', label: 'Skill Support', rings: 'high', rounds: 2,
+  id: 'B', label: 'Designer Skill', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90, ...TABATA,
   exercises: [
     EX['shoulderpress-negative'],
@@ -245,7 +245,7 @@ const ssSkillPowerWed = {
 
 // Saturday SS A — explosive + transition focus: muscle up + back lever
 const ssSkillPowerSat = {
-  id: 'A', label: 'Skill — Muscle Up & Back Lever', rings: 'high', rounds: 2,
+  id: 'A', label: 'Designer Skill', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 120, ...TABATA,
   exercises: [
     EX['false-grip-dead-hang'],

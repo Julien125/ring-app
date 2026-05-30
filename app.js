@@ -1058,7 +1058,7 @@ function renderSkills() {
 
   const hasTabata = !!(sess.skillTabata?.length) && !A.tabataDone;
   if (hasTabata) {
-    q('#s08-cta').textContent = 'Start skill timer →';
+    q('#s08-cta').textContent = 'Designer Skill →';
     q('#s08-cta').onclick = () => { A.tabataQueueIdx = 0; saveActive(); startTabataFromSkills(); };
   } else {
     q('#s08-cta').textContent = 'Continue to strength →';
