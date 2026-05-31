@@ -67,6 +67,7 @@ const ssLegsAnterior = {
     EX['sissy-squat'],
     EX['single-leg-calf-raise'],
     EX['copenhagen-plank'],
+    EX['single-leg-glute-bridge'],
   ],
 };
 
@@ -91,6 +92,7 @@ const ssLegsAnteriorB = {
     { ...EX['sissy-squat'],            targetReps: 12 },
     { ...EX['single-leg-calf-raise'],  note: 'Bent knee — soleus focus' },
     EX['copenhagen-plank'],
+    { ...EX['single-leg-glute-bridge'], note: 'Foot elevated · posterior pelvic tilt — APT correction' },
   ],
 };
 
@@ -155,6 +157,7 @@ const ssIsolationPushMon = {
     EX['scapular-push-up-band'],
     EX['cuban-press'],
     EX['lateral-raise'],
+    { ...EX['ring-fly'], note: 'Wide grip — slow eccentric, max pec stretch' },
     EX['ring-overhead-ext'],
     EX['l-sit'],
     EX['pallof-press'],
@@ -209,7 +212,7 @@ const ssHorizontalPush = {
   exercises: [
     EX['hspu'],
     EX['archer-push-up'],
-    EX['ring-fly'],
+    { ...EX['ring-fly'], note: 'Wide grip — slow eccentric, max pec stretch' },
     EX['push-up-rto'],
     EX['russian-push-up'],
   ],
@@ -296,6 +299,7 @@ const ssIsolationPullSat = {
     EX['one-arm-ring-curl'],
     EX['tyi-raise'],
     EX['face-pull'],
+    EX['ring-support-shrug'],
     EX['pallof-press'],
     EX['jefferson-curl'],
     EX['windshield-wipers'],
@@ -340,6 +344,7 @@ const ssIsolationPull = {
     EX['ring-hammer-curl'],
     EX['tyi-raise'],
     EX['face-pull'],
+    EX['ring-support-shrug'],
     EX['pallof-press'],
     EX['jefferson-curl'],
     EX['windshield-wipers'],

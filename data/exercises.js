@@ -365,6 +365,13 @@ export const EX = {
     note: 'Rear delt + external rotation',
     muscles: { primary: ['rear-delt', 'lateral-delt'], secondary: ['shoulders'] },
   },
+  'ring-support-shrug': {
+    id: 'ring-support-shrug', name: 'Ring Support Shrug',
+    category: 'pull', type: 'reps', targetReps: 12,
+    desc: 'Support hold on rings, arms fully locked out. Elevate scapulas maximally — shrug shoulders up toward ears, pause 1s at the top, then depress fully. Arms stay straight throughout. Control both directions.',
+    note: 'Upper trap isolation — arms straight',
+    muscles: { primary: ['traps'], secondary: ['shoulders', 'serratus'] },
+  },
   'pallof-press': {
     id: 'pallof-press', name: 'Pallof Press',
     category: 'core', type: 'reps', targetReps: 10,
