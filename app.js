@@ -847,7 +847,7 @@ function startSession(session) {
 
 // getPainFlagsForSession — find unresolved pain flags for exercises in session
 function getPainFlagsForSession(session) {
-  const allSupersets = [...(session.skillTabata || []), ...session.supersets];
+  const allSupersets = [...session.supersets];
   const exerciseIds = new Set(
     allSupersets.flatMap(ss => ss.exercises.filter(Boolean).map(e => e.id))
   );
@@ -1056,10 +1056,10 @@ function renderSkills() {
     if (card) list.appendChild(card);
   });
 
-  const hasTabata = !!(sess.skillTabata?.length) && !A.tabataDone;
+  const hasTabata = !!(sess.skills?.length) && !A.tabataDone;
   if (hasTabata) {
     q('#s08-cta').textContent = 'Designer Skill →';
-    q('#s08-cta').onclick = () => { A.tabataQueueIdx = 0; saveActive(); startTabataFromSkills(); };
+    q('#s08-cta').onclick = () => { saveActive(); startTabataFromSkills(); };
   } else {
     q('#s08-cta').textContent = 'Continue to strength →';
     q('#s08-cta').onclick = () => { A.skillsDone = true; saveActive(); renderOverview(); };
@@ -1237,19 +1237,36 @@ function enterSuperset() {
 let T = null; // tabata state
 
 function startTabataFromSkills() {
-  const queue = A.session.skillTabata;
-  const ss = queue[A.tabataQueueIdx];
-  startTabata(ss);
+  const exercises = (A.session.skills || [])
+    .map(skillId => {
+      const sp = SKILL_PROGRESSIONS[skillId];
+      if (!sp) return null;
+      const level = state.skillLevels[skillId] || 1;
+      const prog = sp.progressions.find(p => p.level === level) || sp.progressions[0];
+      return { id: skillId, name: prog.drill, note: prog.note, targetSecs: prog.targetSecs };
+    })
+    .filter(Boolean);
+
+  startTabata({
+    label:        'Designer Skill',
+    exercises,
+    prepareSecs:  90,
+    workSecs:     25,
+    restSecs:     30,
+    restBetween:  90,
+    cycles:       4,    // outer cycles: Ex1, Ex2, Ex1, Ex2
+    setsPerCycle: 4,    // sets within each cycle
+  });
 }
 
 function startTabata(ss) {
   T = {
     ss,
-    phase:     'prepare',
-    cycleIdx:  0,
-    roundIdx:  0,
-    paused:    false,
-    secs:      ss.prepareSecs,
+    phase:      'prepare',
+    outerIdx:   0,   // which outer cycle (0 → cycles-1); exercise = exercises[outerIdx % exercises.length]
+    setIdx:     0,   // which set within current cycle (0 → setsPerCycle-1)
+    paused:     false,
+    secs:       ss.prepareSecs,
   };
   renderTabata();
   startCountdown(T.secs);
@@ -1262,46 +1279,44 @@ function fmtTabataTime(s) {
 }
 
 function tabataCurrentEx() {
-  return T.ss.exercises[T.roundIdx] || null;
+  return T.ss.exercises[T.outerIdx % T.ss.exercises.length] || null;
 }
 
 function tabataNextEx() {
-  if (T.phase === 'prepare') return T.ss.exercises[0];
-  if (T.phase === 'work')    return T.ss.exercises[T.roundIdx + 1] || null; // next in cycle
-  if (T.phase === 'rest') {
-    const nextRound = T.roundIdx + 1;
-    return nextRound < T.ss.exercises.length ? T.ss.exercises[nextRound] : null;
-  }
+  const { phase, outerIdx, setIdx, ss } = T;
+  if (phase === 'prepare') return ss.exercises[0];
+  // within same cycle, next set is same exercise
+  if ((phase === 'work' || phase === 'rest') && setIdx + 1 < ss.setsPerCycle)
+    return ss.exercises[outerIdx % ss.exercises.length];
+  // moving to next cycle
+  const nextOuter = outerIdx + 1;
+  if (nextOuter < ss.cycles) return ss.exercises[nextOuter % ss.exercises.length];
   return null;
 }
 
 function renderTabata() {
-  const { phase, cycleIdx, roundIdx, secs, ss } = T;
-  const totalCycles = ss.cycles;
-  const totalRounds = ss.exercises.length;
+  const { phase, outerIdx, setIdx, secs, ss } = T;
   const ex = tabataCurrentEx();
 
   const bg    = q('#s18-bg');
   const lbl   = q('#s18-phase');
   const timer = q('#s18-timer');
 
-  // Phase colours
-  bg.className    = `tabata-phase-bg ${phase}`;
-  lbl.className   = `tabata-phase-label ${phase}`;
-  lbl.textContent = phase.toUpperCase();
-  timer.className = `tabata-timer ${phase}`;
+  const displayPhase = phase === 'rest-between' ? 'rest' : phase;
+  bg.className    = `tabata-phase-bg ${displayPhase}`;
+  lbl.className   = `tabata-phase-label ${displayPhase}`;
+  lbl.textContent = displayPhase.toUpperCase();
+  timer.className = `tabata-timer ${displayPhase}`;
   timer.textContent = fmtTabataTime(secs);
 
-  // Exercise name
   if (phase === 'prepare') {
     q('#s18-ex-name').textContent = ss.label;
-    q('#s18-ex-note').textContent = `${totalRounds} exercises · ${totalCycles} cycles`;
+    q('#s18-ex-note').textContent = `${ss.exercises.length} exercises · ${ss.cycles} cycles`;
   } else if (ex) {
     q('#s18-ex-name').textContent = ex.name;
-    q('#s18-ex-note').textContent = ex.note || '';
+    q('#s18-ex-note').textContent = phase === 'rest-between' ? '' : `Set ${setIdx + 1} / ${ss.setsPerCycle}`;
   }
 
-  // Next exercise
   const nextEx = tabataNextEx();
   const nextWrap = q('#s18-next-wrap');
   if (nextEx && phase !== 'done') {
@@ -1311,10 +1326,8 @@ function renderTabata() {
     nextWrap.style.display = 'none';
   }
 
-  // Counters
-  q('#s18-cycles-left').textContent = phase === 'prepare' ? totalCycles : (totalCycles - cycleIdx);
+  q('#s18-cycles-left').textContent = phase === 'prepare' ? ss.cycles : (ss.cycles - outerIdx);
 
-  // Pause button
   q('#s18-pause').textContent = T.paused ? '▶' : '⏸';
   q('#s18-pause').onclick = () => {
     T.paused = !T.paused;
@@ -1337,34 +1350,35 @@ function renderTabata() {
 
 function advanceTabata() {
   const ss = T.ss;
+  const workSecs = () => ss.exercises[T.outerIdx % ss.exercises.length]?.targetSecs || ss.workSecs;
   if (T.phase === 'prepare') {
-    T.phase    = 'work';
-    T.roundIdx = 0;
-    T.secs     = ss.workSecs;
+    T.phase  = 'work';
+    T.setIdx = 0;
+    T.secs   = workSecs();
   } else if (T.phase === 'work') {
     T.phase = 'rest';
     T.secs  = ss.restSecs;
   } else if (T.phase === 'rest') {
-    const nextRound = T.roundIdx + 1;
-    if (nextRound < ss.exercises.length) {
-      T.roundIdx = nextRound;
-      T.phase    = 'work';
-      T.secs     = ss.workSecs;
+    if (T.setIdx + 1 < ss.setsPerCycle) {
+      T.setIdx++;
+      T.phase = 'work';
+      T.secs  = workSecs();
     } else {
-      // Cycle complete
-      const nextCycle = T.cycleIdx + 1;
-      if (nextCycle < ss.cycles) {
-        T.cycleIdx = nextCycle;
-        T.roundIdx = 0;
-        T.phase    = 'work';
-        T.secs     = ss.workSecs;
+      const nextOuter = T.outerIdx + 1;
+      if (nextOuter < ss.cycles) {
+        T.outerIdx = nextOuter;
+        T.setIdx   = 0;
+        T.phase    = 'rest-between';
+        T.secs     = ss.restBetween;
       } else {
-        // All done
         T.phase = 'done';
         finishTabata();
         return;
       }
     }
+  } else if (T.phase === 'rest-between') {
+    T.phase = 'work';
+    T.secs  = workSecs();
   }
   renderTabata();
   startCountdown(T.secs);
@@ -1386,18 +1400,9 @@ function finishTabata() {
   q('#s18-cycles-left').textContent = '0';
   setTimeout(() => {
     T = null;
-    const queue = A.session.skillTabata;
-    if (queue && A.tabataQueueIdx < queue.length - 1) {
-      // More skill tabata blocks to go
-      A.tabataQueueIdx++;
-      saveActive();
-      startTabataFromSkills();
-    } else {
-      // All skill tabata done — back to skills screen to show gymnastics progressions
-      A.tabataDone = true;
-      saveActive();
-      renderSkills();
-    }
+    A.tabataDone = true;
+    saveActive();
+    renderSkills();
   }, 2000);
 }
 
