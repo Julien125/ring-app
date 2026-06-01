@@ -10,4 +10,4 @@
 export { EX }                  from './exercises.js';
 export { SKILL_PROGRESSIONS }  from './skills.js';
 export { VOLUME, PHASES }      from './phases.js';
-export { SESSIONS, FLEX_SESSIONS } from './sessions.js';
+export { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS } from './sessions.js';

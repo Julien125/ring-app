@@ -550,3 +550,89 @@ export const SESSIONS = [
     cooldown: COOLDOWN_PULL,
   },
 ];
+
+// ─── Hypertrophy Sessions (weeks 7–9) ─────────────────────
+// Gemini V2 structure: 3 alternating pairs per day instead of 5–6 supersets.
+// Straight sets / non-competing pairs, slower eccentrics, isolation emphasis,
+// APT correction baked into every session, trap work across all 4 days.
+// The existing superset model maps directly: restIntra = rest between the two
+// exercises in the pair; restRound = rest before repeating the pair.
+
+export const HYPERTROPHY_SESSIONS = [
+  {
+    id: 'mon-push1-hyp', day: 'Monday', weekday: 1,
+    type: 'push', label: 'Push 1', focus: 'APT Correction · Vertical Press · Trap Density',
+    skills: ['handstand', 'planche'],
+    warmup: [
+      { name: '90/90 breathing',         duration: '3 min',  note: 'Ribcage depression — IAP' },
+      { name: 'Banded PPT Glute Bridge', duration: '2×15',   note: '3s hold at top · glute squeeze to turn off hip flexors' },
+      { name: 'Hollow Body Rock',        duration: '2×30s',  note: 'Lower back flat into floor' },
+      { name: 'Scapular Push-Ups',       duration: '2×12',   note: 'Serratus anterior activation' },
+    ],
+    supersets: [
+      { id: 'A', label: 'Pair A — Vertical Press & Legs',     rings: 'none', rounds: 4, restIntra: 75, restRound: 75,
+        exercises: [EX['hspu'], { ...EX['bulgarian-split-squat'], note: 'Glute squeeze on back leg · upright torso · stretch hip flexors' }] },
+      { id: 'B', label: 'Pair B — Pectoral & Trap Density',   rings: 'high', rounds: 4, restIntra: 60, restRound: 60,
+        exercises: [EX['ring-dip-deep'], EX['scapular-pull-up']] },
+      { id: 'C', label: 'Pair C — Anti-Extension & Triceps',  rings: 'none', rounds: 3, restIntra: 60, restRound: 60,
+        exercises: [EX['dragon-flag-tuck'], EX['ring-overhead-ext']] },
+    ],
+    cooldown: COOLDOWN_PUSH,
+  },
+  {
+    id: 'wed-pull1-hyp', day: 'Wednesday', weekday: 3,
+    type: 'pull', label: 'Pull 1', focus: 'Lat Width · Hamstring · Mid-Back Thickness',
+    skills: ['iron-cross', 'back-lever'],
+    warmup: [
+      { name: '90/90 breathing',  duration: '3 min',  note: 'IAP — 3×5 deep exhales' },
+      { name: 'Dead Hang',         duration: '3×30s',  note: 'Grip + shoulder decompression' },
+      { name: 'German Hang',       duration: '2×20s',  note: 'Back lever shoulder prep — rotate slowly, exit with control' },
+      { name: 'Band Pull-Aparts',  duration: '2×20',   note: 'Mid-trap and rhomboid squeeze' },
+    ],
+    supersets: [
+      { id: 'A', label: 'Pair A — Unilateral Lat & Hamstring',  rings: 'high', rounds: 4, restIntra: 75, restRound: 75,
+        exercises: [EX['archer-pull-up'], { ...EX['nordic-curl'], note: '5s eccentric · push off floor to return' }] },
+      { id: 'B', label: 'Pair B — Horizontal Pull & Upper Back', rings: 'mid',  rounds: 4, restIntra: 60, restRound: 60,
+        exercises: [EX['feet-elevated-row'], EX['tyi-raise']] },
+      { id: 'C', label: 'Pair C — Arm Isolation & Core',         rings: 'mid',  rounds: 3, restIntra: 60, restRound: 60,
+        exercises: [EX['pelican-curl'], EX['hanging-leg-raise']] },
+    ],
+    cooldown: COOLDOWN_PULL,
+  },
+  {
+    id: 'fri-push2-hyp', day: 'Friday', weekday: 5,
+    type: 'push', label: 'Push 2', focus: 'Horizontal Levers · RTO Press · Trap Trajectory',
+    skills: ['handstand', 'muscle-up', 'manna'],
+    warmup: [
+      { name: 'Hollow Body Rock',       duration: '2×45s', note: 'Establishes core position needed for push-ups' },
+      { name: 'Scapular Push-Up (Band)', duration: '2×15',  note: 'Serratus anterior — stabilize shoulder blades' },
+    ],
+    supersets: [
+      { id: 'A', label: 'Pair A — Leverage Press & Quad Depth',    rings: 'none', rounds: 4, restIntra: 75, restRound: 75,
+        exercises: [EX['pseudo-planche-push-up'], { ...EX['pistol-squat'], note: '3s descent · full depth · PPT throughout' }] },
+      { id: 'B', label: 'Pair B — Chest Volume & Trap Trajectory', rings: 'mid',  rounds: 4, restIntra: 60, restRound: 60,
+        exercises: [EX['push-up-rto'], { ...EX['face-pull'], note: '2s isometric hold at peak · squeeze upper + mid traps' }] },
+      { id: 'C', label: 'Pair C — Fly Isolation & Anti-Extension', rings: 'mid',  rounds: 3, restIntra: 60, restRound: 60,
+        exercises: [EX['ring-fly'], { ...EX['ab-wheel-rollout'], note: 'Posterior pelvic tilt throughout · stop before back dips' }] },
+    ],
+    cooldown: COOLDOWN_PUSH,
+  },
+  {
+    id: 'sat-pull2-hyp', day: 'Saturday', weekday: 6,
+    type: 'pull', label: 'Pull 2', focus: 'Explosive Width · Upper Arm Thickness',
+    skills: ['muscle-up', 'back-lever'],
+    warmup: [
+      { name: 'Dead Hang + Active Scapular Shrugs',  duration: '3×10',  note: 'Depress fully at bottom, retract at top' },
+      { name: 'Band Pull-Aparts (Overhead Diagonal)', duration: '2×15', note: 'Activates lower and upper traps' },
+    ],
+    supersets: [
+      { id: 'A', label: 'Pair A — Lever Density & Posterior Hinge', rings: 'high', rounds: 4, restIntra: 75, restRound: 75,
+        exercises: [EX['inverted-deadlift'], { ...EX['single-leg-deadlift'], note: 'Band under foot · push hips back — APT counterbalance' }] },
+      { id: 'B', label: 'Pair B — Explosive Width & Direct Trap',   rings: 'high', rounds: 4, restIntra: 60, restRound: 60,
+        exercises: [EX['chest-to-bar'], EX['ring-support-shrug']] },
+      { id: 'C', label: 'Pair C — Arm & Core Integration',          rings: 'bar',  rounds: 3, restIntra: 60, restRound: 60,
+        exercises: [EX['ring-hammer-curl'], { ...EX['windshield-wipers'], note: 'Knees bent 90° — APT safe · rotate under full control' }] },
+    ],
+    cooldown: COOLDOWN_PULL,
+  },
+];

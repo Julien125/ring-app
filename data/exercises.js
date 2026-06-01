@@ -619,4 +619,27 @@ export const EX = {
     note: 'Straight-arm horizontal — static skill',
     muscles: { primary: ['lats', 'rear-delt', 'core'], secondary: ['biceps', 'serratus'] },
   },
+
+  // ── Hypertrophy-phase additions ───────────────────────
+  'scapular-pull-up': {
+    id: 'scapular-pull-up', name: 'Straight-Arm Scapular Pull-Up',
+    category: 'pull', type: 'reps', targetReps: 12,
+    desc: 'Hang from rings or bar with arms completely locked straight. Keeping elbows rigid, depress and retract the shoulder blades to pull the body upward — arms never bend. Hold 2s at the top position.',
+    note: 'Arms locked · depress + retract scapulae · 2s hold at top — lower/mid trap',
+    muscles: { primary: ['traps', 'rear-delt'], secondary: ['serratus', 'lats'] },
+  },
+  'dragon-flag-tuck': {
+    id: 'dragon-flag-tuck', name: 'Tucked Dragon Flag Negative',
+    category: 'core', type: 'reps', targetReps: 6,
+    desc: 'Lie on a bench, grip behind head. Pull knees tight to chest and press hips up to vertical. Lower slowly over 5s with knees tucked — lower back must stay flat throughout. Stop at parallel, return with knees still tucked.',
+    note: 'Knees to chest · 5s eccentric · lower back must not arch — APT safe',
+    muscles: { primary: ['core'], secondary: ['lats', 'hip-flexors'] },
+  },
+  'feet-elevated-row': {
+    id: 'feet-elevated-row', name: 'Feet-Elevated Ring Row',
+    category: 'pull', type: 'reps', targetReps: 10,
+    desc: 'Place feet on a box or bench, body horizontal. Pull rings to lower ribs — not upper chest. Hold a full 1s retraction squeeze at the top of every rep before lowering with control.',
+    note: 'Pull to lower ribs · 1s retraction hold at top',
+    muscles: { primary: ['lats', 'rear-delt', 'traps'], secondary: ['biceps', 'core'] },
+  },
 };

@@ -2,7 +2,7 @@
 //  Ring App — Main Logic
 // ─────────────────────────────────────────────────────────
 
-import { SESSIONS, FLEX_SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
+import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
 
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY  = 'ring-app-state';
@@ -106,7 +106,7 @@ function loadState() {
       // Re-hydrate session reference — deserialized object may be stale if
       // program.js changed since last save. Always use live SESSIONS data.
       if (A) {
-        A.session = SESSIONS.find(s => s.id === A.sessionId) || null;
+        A.session = allSessions().find(s => s.id === A.sessionId) || null;
         if (!A.session) A = null; // sessionId no longer exists — discard
       }
     }
@@ -147,7 +147,7 @@ function getEffectiveRest(sessionId, ssId, type) {
   const key = `${sessionId}:${ssId}:${type}`;
   const adapted = adaptations.rests[key];
   if (adapted) return { value: adapted.value, adjusted: true, reason: adapted.reason };
-  const sess = SESSIONS.find(s => s.id === sessionId);
+  const sess = allSessions().find(s => s.id === sessionId);
   const ss   = sess?.supersets.find(s => s.id === ssId);
   if (!ss) return { value: 25, adjusted: false };
   const base = type === 'intra' ? ss.restIntra : ss.restRound;
@@ -522,7 +522,7 @@ function detectAsymmetry(leftSecs, rightSecs) {
 // entry: { exercises: {id: {sets}}, skips: [], durationSecs }
 // Returns 'light' | 'normal' | 'heavy' | 'long'
 function classifySession(entry) {
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   if (!sess) return 'normal';
 
   const skips = entry.skips || [];
@@ -802,9 +802,16 @@ function renderHome() {
   }
 }
 
+// Returns all workout sessions across all phases — used for ID-based lookups
+// (log replay, history, overview) so hypertrophy session records resolve correctly.
+function allSessions() {
+  return [...SESSIONS, ...HYPERTROPHY_SESSIONS, ...FLEX_SESSIONS];
+}
+
 function getTodaySession() {
   const wd = new Date().getDay(); // 0=Sun,1=Mon,...6=Sat
-  return SESSIONS.find(s => s.weekday === wd) || null;
+  const src = phase().label === 'Hypertrophy' ? HYPERTROPHY_SESSIONS : SESSIONS;
+  return src.find(s => s.weekday === wd) || null;
 }
 
 // ─── Session init ─────────────────────────────────────────
@@ -865,7 +872,7 @@ function renderPainCheckin(flags, onContinue) {
   if (!dialog || !list) { onContinue(); return; }
 
   list.innerHTML = flags.map((f, i) => {
-    const sess = SESSIONS.find(s => s.id === f.sessionId);
+    const sess = allSessions().find(s => s.id === f.sessionId);
     const ex   = sess?.supersets.flatMap(ss => ss.exercises).find(e => e.id === f.exerciseId);
     const name = ex?.name || f.exerciseId;
     return `
@@ -920,7 +927,7 @@ function renderPainCheckin(flags, onContinue) {
 function resumeSession() {
   if (!A) return;
   // Restore session reference from data
-  A.session = SESSIONS.find(s => s.id === A.sessionId);
+  A.session = allSessions().find(s => s.id === A.sessionId);
   if (!A.session) { clearActive(); goHome(); return; }
 
   if (!A.warmupDone) { renderWarmup(); return; }
@@ -2110,7 +2117,7 @@ function finishSession({ partial = false } = {}) {
 }
 
 function renderSummary(entry, { readOnly = false } = {}) {
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   const mins  = Math.round(entry.durationSecs / 60);
 
   q('#s07-date').textContent  = entry.date;
@@ -2190,7 +2197,7 @@ function renderSummary(entry, { readOnly = false } = {}) {
     const prList = Object.entries(entry.prs || {});
     if (prList.length) {
       prEl.innerHTML = prList.map(([exId, val]) => {
-        const sess = SESSIONS.find(s => s.id === entry.sessionId);
+        const sess = allSessions().find(s => s.id === entry.sessionId);
         const ex   = sess?.supersets.flatMap(ss => ss.exercises).find(e => e.id === exId);
         const label = ex ? ex.name : exId;
         return `<div class="pr-row">🔥 <strong>${label}</strong> — new best: ${val}${ex?.type === 'hold' ? 's' : ' reps'}</div>`;
@@ -2284,7 +2291,7 @@ const CAT_META = {
 // Effective sets = pts / 10  →  thresholds: <4 Maintenance, 4-9 Strength, 10-19 Hypertrophy, 20+ High Volume
 const ISOMETRIC_FACTOR = 0.2;
 function buildMuscleTally(entry) {
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   if (!sess) return { primary: {}, secondary: {} };
   const primary = {}, secondary = {};
   sess.supersets.forEach(ss => {
@@ -2378,7 +2385,7 @@ function evaluateRestAdjustment(sessionId, ss, type) {
 // stores results in adaptations.targets and adaptations.rests.
 function applyInterSessionAdaptations(entry) {
   if (!canAdapt()) return;
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   if (!sess) return;
 
   const today = fmtLocal(new Date());
@@ -2441,7 +2448,7 @@ function applyInterSessionAdaptations(entry) {
 // Each signal: { weight: 'quiet'|'flag'|'alert', msg, exerciseId?, type }
 function buildSessionSignals(entry) {
   if (!canAdapt()) return [];
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   if (!sess) return [];
 
   const signals = [];
@@ -2624,7 +2631,7 @@ function detectPhaseReadiness() {
 // Adds at most one new pattern per type to adaptations.patterns
 function runPatternDetectors(entry) {
   if (!canAdapt()) return;
-  const sess = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess = allSessions().find(s => s.id === entry.sessionId);
   if (!sess) return;
 
   const today = fmtLocal(new Date());
@@ -2756,7 +2763,7 @@ function renderMusclesWeek() {
     `W${state.currentWeek} · ${monStr} → ${sunStr}`,
     weekEntries.length > 1
       ? `${weekEntries.length} sessions`
-      : SESSIONS.find(s => s.id === weekEntries[0].sessionId)?.label || '',
+      : allSessions().find(s => s.id === weekEntries[0].sessionId)?.label || '',
     goHome
   );
 
@@ -2844,7 +2851,7 @@ function renderWeeklyChart(container) {
 // ─── S-17 Muscles detail (per session) ───────────────────
 function renderMusclesDetail(entry, backScreen) {
   const _back = backScreen || currentScreen() || 's-07';
-  const sess  = SESSIONS.find(s => s.id === entry.sessionId);
+  const sess  = allSessions().find(s => s.id === entry.sessionId);
   const { primary, secondary } = buildMuscleTally(entry);
   const label = sess ? `${sess.label}` : '';
   const sub   = entry.date;
@@ -3071,7 +3078,7 @@ function renderFlexPicker() {
 
   overlay.querySelectorAll('.flex-pick-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const fs = FLEX_SESSIONS.find(s => s.id === btn.dataset.id);
+      const fs = FLEX_allSessions().find(s => s.id === btn.dataset.id);
       overlay.classList.remove('is-active');
       if (fs) renderFlexSession(fs);
     });
@@ -3244,7 +3251,7 @@ function renderWeekDots() {
     state.log
       .filter(e => new Date(e.date) >= weekStart)
       .map(e => {
-        const sess = SESSIONS.find(s => s.id === e.sessionId);
+        const sess = allSessions().find(s => s.id === e.sessionId);
         return sess ? sess.weekday : null;
       })
       .filter(Boolean)
@@ -3280,7 +3287,7 @@ function renderProgress() {
   const entries = [...state.log].reverse().slice(0, 20);
 
   entries.forEach(entry => {
-    const sess  = SESSIONS.find(s => s.id === entry.sessionId);
+    const sess  = allSessions().find(s => s.id === entry.sessionId);
     const label = sess ? sess.label : entry.sessionId;
     const mins  = Math.round((entry.durationSecs || 0) / 60);
     const allSets = Object.values(entry.exercises || {}).flatMap(e => e.sets || []);
@@ -3504,7 +3511,7 @@ function buildBackupPayload() {
   // Uses same logic as the Muscles tab: reps for dynamic, reps×0.2 for holds.
   // Volumes keyed by primary muscle; secondary muscles get 0.5× weight.
   const logWithMuscles = state.log.map(entry => {
-    const session = [...SESSIONS, ...FLEX_SESSIONS].find(s => s.id === entry.sessionId);
+    const session = allSessions().find(s => s.id === entry.sessionId);
     const primary   = {};
     const secondary = {};
     if (session) {
@@ -3660,7 +3667,7 @@ function exportCSV() {
 
   const header = ['date', 'session', 'week', 'phase', 'duration_min', 'rpe', ...allExIds];
   const rows = state.log.map(entry => {
-    const sess = SESSIONS.find(s => s.id === entry.sessionId);
+    const sess = allSessions().find(s => s.id === entry.sessionId);
     const mins = Math.round((entry.durationSecs || 0) / 60);
     const exCols = allExIds.map(id => {
       const sets = (entry.exercises[id] || { sets: [] }).sets;
