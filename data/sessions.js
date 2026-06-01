@@ -176,7 +176,6 @@ const ssSkillSupportWed = {
     EX['back-lever-negative'],
     EX['hollow-body-hold'],
     EX['false-grip-dead-hang'],
-    EX['wide-support-hold'],
   ],
 };
 
@@ -311,6 +310,7 @@ const ssCoreFinisherPullSat = {
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
+    EX['hanging-oblique-twist'],
     EX['ab-wheel-rollout'],
     EX['butt-lift'],
     EX['v-sit-pulse'],
@@ -327,8 +327,6 @@ const ssStrengthVolume = {
     EX['wide-pull-up'],
     EX['archer-pull-up'],
     EX['commande'],
-    EX['ice-cream-maker'],
-    EX['l-sit-pike-press'],
     EX['back-extension'],
     EX['tuck-to-l'],
   ],
@@ -347,7 +345,6 @@ const ssIsolationPull = {
     EX['ring-support-shrug'],
     EX['pallof-press'],
     EX['jefferson-curl'],
-    EX['windshield-wipers'],
   ],
 };
 
@@ -359,6 +356,7 @@ const ssCoreFinisherPush = {
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
+    EX['hanging-oblique-twist'],
     EX['ab-wheel-rollout'],
     EX['butt-lift'],
     EX['hollow-body-hold'],
@@ -366,6 +364,7 @@ const ssCoreFinisherPush = {
     EX['dragon-flag'],
     EX['plank'],
     EX['lateral-plank'],
+    { ...EX['decline-crunch-band'], note: 'Loaded flexion · posterior pelvic tilt — APT correction' },
   ],
 };
 
@@ -375,6 +374,7 @@ const ssCoreFinisherPull = {
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
+    EX['hanging-oblique-twist'],
     EX['ab-wheel-rollout'],
     EX['butt-lift'],
     EX['plank'],

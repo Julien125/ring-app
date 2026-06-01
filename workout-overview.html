@@ -21,92 +21,246 @@
   .block-id { font-size: .65rem; font-weight: 700; background: #2a2a2a; color: #888; border-radius: 4px; padding: 1px 6px; }
   .block-label { font-size: .78rem; font-weight: 600; color: #ccc; flex: 1; }
   .block-meta { font-size: .65rem; color: #555; }
-  .block-tag { font-size: .6rem; background: #6C7FD8; color: #fff; border-radius: 3px; padding: 1px 5px; }
   .exercises { list-style: none; display: flex; flex-direction: column; gap: 2px; }
   .exercises li { font-size: .75rem; color: #aaa; padding: 2px 0 2px 10px; border-left: 2px solid #2a2a2a; }
-  .exercises li.new { border-left-color: #5b9cf6; color: #c0d8ff; }
+  .exercises li .ex-note { font-size: .65rem; color: #555; display: block; }
   .section-title { font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: #444; margin: 8px 0 4px; }
   .warmup-items { list-style: none; display: flex; flex-direction: column; gap: 2px; }
   .warmup-items li { font-size: .72rem; color: #666; padding: 1px 0; }
+  .warmup-items li span { color: #444; font-size: .65rem; margin-left: 4px; }
 </style>
 </head>
 <body>
 <h1>Weekly Program</h1>
 <div class="days" id="days"></div>
 
-<script type="module">
-import { SKILL_PROGRESSIONS } from './data/skills.js';
+<script>
+// ─── Exercise library ──────────────────────────────────────
+const EX = {
+  'handstand-drills': { id: 'handstand-drills', name: 'Handstand Drills', category: 'shoulder', type: 'reps', targetReps: 5, desc: '5× shrugs · 3 tuck slides · 5× lean forwards · 10× shoulder taps', note: 'Neural — fully fresh CNS' },
+  'hspu': { id: 'hspu', name: 'HSPU', category: 'shoulder', type: 'reps', targetReps: 5, note: 'Max overhead press' },
+  'straight-bar-dips': { id: 'straight-bar-dips', name: 'Straight Bar Dips', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Chest + triceps compound' },
+  'pseudo-planche-lean': { id: 'pseudo-planche-lean', name: 'Pseudo Planche Lean', category: 'straight', type: 'hold', targetSecs: 20, note: 'Serratus + scapular protraction' },
+  'pseudo-planche-push-up': { id: 'pseudo-planche-push-up', name: 'Pseudo Planche Push Up', category: 'straight', type: 'reps', targetReps: 5, note: 'Planche push-up progression — maintain the lean or it becomes a regular push-up' },
+  'dragon-flag': { id: 'dragon-flag', name: 'Dragon Flag', category: 'core', type: 'reps', targetReps: 5, note: 'Anti-extension' },
+  'copenhagen-plank': { id: 'copenhagen-plank', name: 'Copenhagen Plank', category: 'core', type: 'hold', targetSecs: 20, note: 'Anti-lateral — adductor + oblique · each side' },
+  'hollow-body-hold': { id: 'hollow-body-hold', name: 'Hollow Body Hold', category: 'core', type: 'hold', targetSecs: 20, note: 'Anti-extension variation' },
+  'bulgarian-dips': { id: 'bulgarian-dips', name: 'Bulgarian Dips', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Deep pec stretch, rings mid' },
+  'korean-dips': { id: 'korean-dips', name: 'Korean Dips', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Posterior shoulder' },
+  'archer-push-up': { id: 'archer-push-up', name: 'Archer Push Up', category: 'shoulder', type: 'reps', targetReps: 5, note: 'Unilateral load' },
+  'plank': { id: 'plank', name: 'Plank', category: 'core', type: 'duration', targetDuration: 60, note: 'Anti-extension isometric' },
+  'lateral-plank': { id: 'lateral-plank', name: 'Lateral Plank', category: 'core', type: 'duration', targetDuration: 45, note: 'Anti-lateral flexion — each side' },
+  'windshield-wipers': { id: 'windshield-wipers', name: 'Windshield Wipers', category: 'core', type: 'reps', targetReps: 8, note: 'Rotational power — bar' },
+  'ring-dip-deep': { id: 'ring-dip-deep', name: 'Ring Dip — Deep Pause', category: 'shoulder', type: 'reps', targetReps: 5, note: 'MU transition strength — 3s pause at bottom' },
+  'ring-fly': { id: 'ring-fly', name: 'Ring Fly', category: 'shoulder', type: 'reps', targetReps: 10, note: 'Chest isolation' },
+  'push-up-rto': { id: 'push-up-rto', name: 'Push Up RTO', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Rings turned out at lockout' },
+  'bulgarian-push-up': { id: 'bulgarian-push-up', name: 'Bulgarian Push Up', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Deep pec stretch — mirror of Bulgarian dips' },
+  'ring-overhead-ext': { id: 'ring-overhead-ext', name: 'Ring Overhead Extension', category: 'shoulder', type: 'reps', targetReps: 10, note: 'Triceps long head' },
+  'russian-push-up': { id: 'russian-push-up', name: 'Russian Push Up + Lateral Raise', category: 'shoulder', type: 'reps', targetReps: 8, note: 'Shoulder health' },
+  'l-sit': { id: 'l-sit', name: 'L-sit', category: 'core', type: 'hold', targetSecs: 10, note: 'Hip flexor — isometric' },
+  'chest-to-bar': { id: 'chest-to-bar', name: 'Chest to Bar', category: 'pull', type: 'reps', targetReps: 5, note: 'Explosive pull' },
+  '360-pull': { id: '360-pull', name: '360 Pull', category: 'pull', type: 'reps', targetReps: 3, note: 'Dynamic rotational power — bar' },
+  'typewriter': { id: 'typewriter', name: 'Typewriter', category: 'pull', type: 'reps', targetReps: 5, note: 'Lateral unilateral pull' },
+  'false-grip-dead-hang': { id: 'false-grip-dead-hang', name: 'False Grip Dead Hang', category: 'pull', type: 'hold', targetSecs: 20, note: 'MU prerequisite — wrist + grip conditioning' },
+  'tuck-to-l': { id: 'tuck-to-l', name: 'Tuck to L — Dynamic', category: 'core', type: 'reps', targetReps: 8, note: 'Hip flexor through range' },
+  'superman-hold': { id: 'superman-hold', name: 'Superman Hold', category: 'lowback', type: 'hold', targetSecs: 10, note: 'Posterior — active rest' },
+  'wide-pull-up': { id: 'wide-pull-up', name: 'Wide Pull Up', category: 'pull', type: 'reps', targetReps: 8, note: 'Lat width' },
+  'archer-pull-up': { id: 'archer-pull-up', name: 'Archer Pull Up', category: 'pull', type: 'reps', targetReps: 5, note: 'Unilateral lat strength' },
+  'commande': { id: 'commande', name: 'Commando Pull Up', category: 'pull', type: 'reps', targetReps: 8, note: 'Alternating side — brachialis + lats' },
+  'ice-cream-maker': { id: 'ice-cream-maker', name: 'Ice-cream Maker', category: 'pull', type: 'reps', targetReps: 8, note: 'Rotational lat arc' },
+  'dead-bug': { id: 'dead-bug', name: 'Dead Bug', category: 'core', type: 'reps', targetReps: 10, note: 'IAP + contralateral — active rest' },
+  'hanging-oblique-twist': { id: 'hanging-oblique-twist', name: 'Hanging Oblique Twist', category: 'core', type: 'reps', targetReps: 10, note: 'Rotational hanging core — obliques + hip flexors' },
+  'decline-crunch-band': { id: 'decline-crunch-band', name: 'Decline Crunch (Band)', category: 'core', type: 'reps', targetReps: 12, note: 'Loaded flexion + posterior pelvic tilt — APT correction' },
+  'l-sit-pike-press': { id: 'l-sit-pike-press', name: 'L-sit Pike Press', category: 'core', type: 'reps', targetReps: 8, note: 'Compression + hip flexors' },
+  'back-extension': { id: 'back-extension', name: 'Back Extension', category: 'lowback', type: 'reps', targetReps: 10, note: 'Erectors — active rest' },
+  'row': { id: 'row', name: 'Row', category: 'pull', type: 'reps', targetReps: 10, note: 'Mid back, retraction' },
+  'pelican-curl': { id: 'pelican-curl', name: 'Pelican Curl', category: 'pelican', type: 'reps', targetReps: 8, note: 'Bicep isolation' },
+  'ring-hammer-curl': { id: 'ring-hammer-curl', name: 'Ring Hammer Curl', category: 'pull', type: 'reps', targetReps: 10, note: 'Neutral — brachialis' },
+  'one-arm-ring-curl': { id: 'one-arm-ring-curl', name: 'One Arm Ring Curl', category: 'pull', type: 'reps', targetReps: 8, note: 'Unilateral — full bicep isolation' },
+  'tyi-raise': { id: 'tyi-raise', name: 'T-Y-I Raise', category: 'pull', type: 'reps', targetReps: 10, note: 'Full lower trap + rear delt sweep' },
+  'face-pull': { id: 'face-pull', name: 'Face Pull', category: 'pull', type: 'reps', targetReps: 12, note: 'Rear delt + external rotation' },
+  'ring-support-shrug': { id: 'ring-support-shrug', name: 'Ring Support Shrug', category: 'pull', type: 'reps', targetReps: 12, note: 'Upper trap isolation — arms straight' },
+  'pallof-press': { id: 'pallof-press', name: 'Pallof Press', category: 'core', type: 'reps', targetReps: 10, note: 'Anti-rotation — both sides' },
+  'jefferson-curl': { id: 'jefferson-curl', name: 'Jefferson Curl', category: 'lowback', type: 'reps', targetReps: 8, note: 'Loaded spinal flexion' },
+  'lateral-raise': { id: 'lateral-raise', name: 'Lateral Raise', category: 'shoulder', type: 'reps', targetReps: 12, note: 'Lateral delt isolation — slow eccentric' },
+  'scapular-push-up-band': { id: 'scapular-push-up-band', name: 'Scapular Push Up (Band)', category: 'shoulder', type: 'reps', targetReps: 12, note: 'Serratus anterior + scapular control — arms stay straight' },
+  'cuban-press': { id: 'cuban-press', name: 'Cuban Press', category: 'shoulder', type: 'reps', targetReps: 10, note: 'Shoulder health finisher' },
+  'inverted-deadlift': { id: 'inverted-deadlift', name: 'Inverted Deadlift', category: 'pull', type: 'reps', targetReps: 10, note: 'Horizontal pull' },
+  'bulgarian-split-squat': { id: 'bulgarian-split-squat', name: 'Bulgarian Split Squat', category: 'legs', type: 'reps', targetReps: 8, note: 'Quad + glute compound — each leg' },
+  'pistol-squat': { id: 'pistol-squat', name: 'Pistol Squat', category: 'legs', type: 'reps', targetReps: 5, note: 'Quad sweep — each leg, full depth' },
+  'sissy-squat': { id: 'sissy-squat', name: 'Sissy Squat', category: 'legs', type: 'reps', targetReps: 10, note: 'VMO definition — max ROM, controlled' },
+  'single-leg-calf-raise': { id: 'single-leg-calf-raise', name: 'Single Leg Calf Raise', category: 'legs', type: 'reps', targetReps: 15, note: 'Calf shape — full stretch to full extension' },
+  'nordic-curl': { id: 'nordic-curl', name: 'Nordic Curl', category: 'legs', type: 'reps', targetReps: 5, note: 'Hamstring fullness — eccentric focus' },
+  'single-leg-deadlift': { id: 'single-leg-deadlift', name: 'Single Leg Deadlift', category: 'legs', type: 'reps', targetReps: 8, note: 'Posterior line — hinge, hip extension' },
+  'single-leg-glute-bridge': { id: 'single-leg-glute-bridge', name: 'Single Leg Glute Bridge', category: 'legs', type: 'reps', targetReps: 12, note: 'Glute isolation — pause at top' },
+  'hanging-leg-raise': { id: 'hanging-leg-raise', name: 'Hanging Leg Raise', category: 'core', type: 'reps', targetReps: 10, note: 'Posterior tilt is everything — if the low back arches, the abs have switched off' },
+  'v-sit-pulse': { id: 'v-sit-pulse', name: 'V-sit Pulse', category: 'core', type: 'reps', targetReps: 10, note: 'Hip flexor end-range compression — direct manna prerequisite' },
+  'butt-lift': { id: 'butt-lift', name: 'Butt Lift', category: 'core', type: 'reps', targetReps: 8, note: 'L-sit compression lift — manna and L-sit prerequisite' },
+  'ab-wheel-rollout': { id: 'ab-wheel-rollout', name: 'Ab Wheel Rollout', category: 'core', type: 'reps', targetReps: 8, note: 'Full-chain anti-extension — the hardest core move in the program' },
+  'german-hang': { id: 'german-hang', name: 'German Hang', category: 'shoulder', type: 'hold', targetSecs: 20, note: 'Back lever prerequisite — shoulder flexion mobility' },
+  'skin-the-cat': { id: 'skin-the-cat', name: 'Skin the Cat', category: 'straight', type: 'reps', targetReps: 5, note: 'Back lever and shoulder mobility foundation' },
+  'wide-support-hold': { id: 'wide-support-hold', name: 'Wide Support Hold', category: 'straight', type: 'hold', targetSecs: 10, note: 'Iron cross prerequisite — lat adduction at angle' },
+  'iron-cross-pull': { id: 'iron-cross-pull', name: 'Iron Cross Pull', category: 'straight', type: 'reps', targetReps: 5, note: 'Iron cross strength builder — straight arm adduction' },
+  'false-grip-row': { id: 'false-grip-row', name: 'False Grip Ring Row', category: 'pull', type: 'reps', targetReps: 6, note: 'False grip conditioning — builds the wrist position for muscle up' },
+  'muscle-up-negative': { id: 'muscle-up-negative', name: 'Muscle Up Negative', category: 'pull', type: 'reps', targetReps: 3, note: 'Eccentric transition — 5–8s descent, the most specific MU drill' },
+  'rto-support-hold': { id: 'rto-support-hold', name: 'RTO Support Hold', category: 'straight', type: 'hold', targetSecs: 20, note: 'Muscle up top position — ring turn out, arms locked' },
+  'back-lever-negative': { id: 'back-lever-negative', name: 'Back Lever Negative', category: 'straight', type: 'reps', targetReps: 3, note: 'Back lever eccentric — 5–8s descent' },
+  'wall-kick-up': { id: 'wall-kick-up', name: 'Wall Kick-Up', category: 'shoulder', type: 'reps', targetReps: 12, note: 'Handstand entry — build consistent kick-up mechanics' },
+  'chest-wall-handstand': { id: 'chest-wall-handstand', name: 'Chest to Wall Handstand', category: 'shoulder', type: 'hold', targetSecs: 12, note: 'Alignment drill — chest facing wall enforces hollow body' },
+  'back-wall-handstand': { id: 'back-wall-handstand', name: 'Back to Wall Handstand', category: 'shoulder', type: 'hold', targetSecs: 12, note: 'Freestanding bridge — heels barely touching' },
+  'toe-pulls': { id: 'toe-pulls', name: 'Toe Pulls', category: 'shoulder', type: 'reps', targetReps: 12, note: 'Balance correction drill — trains freestanding adjustments' },
+  'shoulderpress-negative': { id: 'shoulderpress-negative', name: 'Shoulderpress Negative', category: 'shoulder', type: 'reps', targetReps: 3, note: 'Handstand press eccentric — 5s controlled descent' },
+  'front-lever-hold': { id: 'front-lever-hold', name: 'Front Lever Hold', category: 'straight', type: 'hold', targetSecs: 5, note: 'Straight-arm horizontal — static skill' },
+};
 
-const EX = new Proxy({}, { get: (_, id) => ({ id }) });
+// ─── Skill progressions ────────────────────────────────────
+const SKILL_PROGRESSIONS = {
+  'planche': {
+    name: 'Planche',
+    progressions: [
+      { level: 1, drill: 'Planche Lean Hold',       type: 'hold', targetSecs: 30, sets: 4 },
+      { level: 2, drill: 'Tuck Planche',             type: 'hold', targetSecs: 20, sets: 4 },
+      { level: 3, drill: 'Advanced Tuck Planche',    type: 'hold', targetSecs: 15, sets: 4 },
+      { level: 4, drill: 'Straddle Planche',         type: 'hold', targetSecs: 10, sets: 4 },
+      { level: 5, drill: 'Full Planche',             type: 'hold', targetSecs: 5,  sets: 4 },
+    ],
+  },
+  'muscle-up': {
+    name: 'Muscle Up',
+    progressions: [
+      { level: 1, drill: 'False Grip Dead Hang + RTO Hold', type: 'hold', targetSecs: 20, sets: 4 },
+      { level: 2, drill: 'False Grip C2B + MU Negative 5s', type: 'reps', targetReps: 4,  sets: 4 },
+      { level: 3, drill: 'Low Transition Drill',      type: 'reps', targetReps: 5,  sets: 3 },
+      { level: 4, drill: 'Clean Muscle Up',           type: 'reps', targetReps: 3,  sets: 3 },
+    ],
+  },
+  'iron-cross': {
+    name: 'Iron Cross',
+    progressions: [
+      { level: 1, drill: 'Cross Lean + Support Hold', type: 'hold', targetSecs: 15, sets: 4 },
+      { level: 2, drill: 'Wide Support Hold',         type: 'hold', targetSecs: 10, sets: 4 },
+      { level: 3, drill: 'Half Cross Hold',           type: 'hold', targetSecs: 8,  sets: 4 },
+      { level: 4, drill: 'Tuck Iron Cross',           type: 'hold', targetSecs: 5,  sets: 4 },
+      { level: 5, drill: 'Full Iron Cross',           type: 'hold', targetSecs: 3,  sets: 3 },
+    ],
+  },
+  'back-lever': {
+    name: 'Back Lever',
+    progressions: [
+      { level: 1, drill: 'Skin the Cat',              type: 'reps', targetReps: 5,  sets: 3 },
+      { level: 2, drill: 'Tuck Back Lever',           type: 'hold', targetSecs: 15, sets: 4 },
+      { level: 3, drill: 'Straddle Back Lever',       type: 'hold', targetSecs: 10, sets: 4 },
+      { level: 4, drill: 'Full Back Lever',           type: 'hold', targetSecs: 10, sets: 4 },
+    ],
+  },
+  'manna': {
+    name: 'Manna',
+    progressions: [
+      { level: 1, drill: 'Seated Hip Compression',   type: 'hold', targetSecs: 20, sets: 4 },
+      { level: 2, drill: 'Manna Lean',               type: 'hold', targetSecs: 15, sets: 4 },
+      { level: 3, drill: 'Pike Compression Hold',    type: 'hold', targetSecs: 10, sets: 4 },
+      { level: 4, drill: 'Full Manna',               type: 'hold', targetSecs: 5,  sets: 3 },
+    ],
+  },
+  'handstand': {
+    name: 'Handstand',
+    progressions: [
+      { level: 1, drill: 'Hollow Body + Wall Walks',             type: 'hold', targetSecs: 20, sets: 4 },
+      { level: 2, drill: 'Decline Push Up + Pike Push Up',       type: 'reps', targetReps: 8,  sets: 3 },
+      { level: 3, drill: 'Wall Handstand CtW + Toe/Heel Pulls',  type: 'hold', targetSecs: 30, sets: 4 },
+      { level: 4, drill: 'One-Leg HS + Shoulder Taps + Mini Holds', type: 'hold', targetSecs: 5, sets: 5 },
+      { level: 5, drill: 'Freestanding Handstand',               type: 'hold', targetSecs: 10, sets: 3 },
+    ],
+  },
+};
 
-const rawState = localStorage.getItem('gymState');
-const skillLevels = rawState ? (JSON.parse(rawState).skillLevels || {}) : {};
+// ─── Sessions ──────────────────────────────────────────────
+const TABATA = { mode: 'tabata', workSecs: 25, restSecs: 30, cycles: 4 };
+
+const WARMUP_PUSH = [
+  { name: '90/90 breathing',               duration: '3 min' },
+  { name: 'Wrist circles + shoulder CARs', duration: '2 min' },
+  { name: 'Lateral band walk',             duration: '2×15'  },
+  { name: 'Tibialis raise',                duration: '2×20'  },
+];
+const WARMUP_PULL_WED = [
+  { name: '90/90 breathing',            duration: '3 min'  },
+  { name: 'Dead hang',                  duration: '3×30s'  },
+  { name: 'German Hang',                duration: '2×20s'  },
+  { name: 'Cat-cow + thoracic rotation', duration: '2 min' },
+];
+const WARMUP_PULL_SAT = [
+  { name: '90/90 breathing', duration: '3 min' },
+  { name: 'Dead hang',        duration: '3×30s' },
+  { name: 'German Hang',      duration: '2×20s' },
+  { name: 'Band pull-aparts', duration: '2×20'  },
+];
+
+const SESSIONS = [
+  {
+    id: 'mon-push1', day: 'Monday', type: 'push', label: 'Push 1',
+    focus: 'Anterior legs · Dips & Overhead · Core finisher',
+    skills: ['handstand', 'planche'],
+    warmup: WARMUP_PUSH,
+    supersets: [
+      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['wall-kick-up'],EX['chest-wall-handstand'],EX['back-wall-handstand'],EX['toe-pulls'],EX['shoulderpress-negative']] },
+      { id:'B', label:'Legs — Anterior Chain', rounds:2, exercises:[EX['bulgarian-split-squat'],EX['pistol-squat'],EX['sissy-squat'],EX['single-leg-calf-raise'],EX['copenhagen-plank'],EX['single-leg-glute-bridge']] },
+      { id:'C', label:'Overhead & Dips', rounds:2, exercises:[EX['hspu'],EX['straight-bar-dips'],EX['bulgarian-dips'],EX['korean-dips'],EX['ring-dip-deep']] },
+      { id:'D', label:'Shoulder Health & Isolation', rounds:2, exercises:[EX['scapular-push-up-band'],EX['cuban-press'],EX['lateral-raise'],{...EX['ring-fly'],note:'Wide grip — slow eccentric, max pec stretch'},EX['ring-overhead-ext'],EX['l-sit'],EX['pallof-press']] },
+      { id:'E', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['hollow-body-hold'],EX['windshield-wipers'],EX['dragon-flag'],EX['plank'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
+    ],
+  },
+  {
+    id: 'wed-pull1', day: 'Wednesday', type: 'pull', label: 'Pull 1',
+    focus: 'Posterior legs · Iron Cross · Back Lever',
+    skills: ['iron-cross', 'back-lever'],
+    warmup: WARMUP_PULL_WED,
+    supersets: [
+      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['iron-cross-pull'],EX['front-lever-hold'],EX['german-hang'],EX['back-lever-negative'],EX['hollow-body-hold'],EX['false-grip-dead-hang']] },
+      { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:[EX['nordic-curl'],EX['single-leg-deadlift'],EX['single-leg-glute-bridge'],EX['superman-hold']] },
+      { id:'C', label:'Strength Volume', rounds:2, exercises:[EX['chest-to-bar'],EX['wide-pull-up'],EX['archer-pull-up'],EX['commande'],EX['back-extension'],EX['tuck-to-l']] },
+      { id:'D', label:'Isolation + Health', rounds:2, exercises:[EX['row'],EX['inverted-deadlift'],EX['pelican-curl'],EX['ring-hammer-curl'],EX['tyi-raise'],EX['face-pull'],EX['ring-support-shrug'],EX['pallof-press'],EX['jefferson-curl']] },
+      { id:'E', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['plank'],EX['lateral-plank'],EX['v-sit-pulse']] },
+    ],
+  },
+  {
+    id: 'fri-push2', day: 'Friday', type: 'push', label: 'Push 2',
+    focus: 'Anterior legs · Overhead & Horizontal Push · Core finisher',
+    skills: ['handstand', 'muscle-up', 'manna'],
+    warmup: WARMUP_PUSH,
+    supersets: [
+      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['handstand-drills'],EX['pseudo-planche-lean'],EX['pseudo-planche-push-up']] },
+      { id:'B', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['shoulderpress-negative'],EX['v-sit-pulse'],EX['ring-dip-deep'],EX['muscle-up-negative'],EX['rto-support-hold']] },
+      { id:'C', label:'Legs — Anterior Chain', rounds:2, exercises:[{...EX['bulgarian-split-squat'],note:'Add KB/DB — load it'},{...EX['pistol-squat'],note:'3s descent · eyes closed — proprioception challenge'},{...EX['sissy-squat'],targetReps:12},{...EX['single-leg-calf-raise'],note:'Bent knee — soleus focus'},EX['copenhagen-plank'],{...EX['single-leg-glute-bridge'],note:'Foot elevated · posterior pelvic tilt — APT correction'}] },
+      { id:'D', label:'Horizontal Push', rounds:2, exercises:[EX['hspu'],EX['archer-push-up'],{...EX['ring-fly'],note:'Wide grip — slow eccentric, max pec stretch'},EX['push-up-rto'],EX['russian-push-up']] },
+      { id:'E', label:'Shoulder Health & Isolation', rounds:2, exercises:[EX['scapular-push-up-band'],EX['bulgarian-push-up'],EX['cuban-press'],EX['lateral-raise'],EX['ring-overhead-ext'],EX['l-sit'],EX['pallof-press']] },
+      { id:'F', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['hollow-body-hold'],EX['windshield-wipers'],EX['dragon-flag'],EX['plank'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
+    ],
+  },
+  {
+    id: 'sat-pull2', day: 'Saturday', type: 'pull', label: 'Pull 2',
+    focus: 'Posterior legs · Muscle Up · Back Lever',
+    skills: ['muscle-up', 'back-lever'],
+    warmup: WARMUP_PULL_SAT,
+    supersets: [
+      { id:'A', label:'Skill — Muscle Up & Back Lever', rounds:2, exercises:[EX['false-grip-dead-hang'],EX['chest-to-bar'],EX['360-pull'],EX['typewriter'],EX['german-hang'],EX['back-lever-negative']] },
+      { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:[{...EX['nordic-curl'],targetReps:6,note:'Explosive descent — use hands to push back up if needed'},{...EX['single-leg-deadlift'],note:'Weighted KB · 3s pause at bottom — eccentric emphasis'},{...EX['single-leg-glute-bridge'],targetReps:10,note:'Foot elevated · weighted KB on hip — full glute stretch'},EX['superman-hold']] },
+      { id:'C', label:'Strength Volume', rounds:2, exercises:[EX['wide-pull-up'],EX['archer-pull-up'],EX['commande'],EX['ice-cream-maker'],EX['l-sit-pike-press'],EX['back-extension'],EX['tuck-to-l']] },
+      { id:'D', label:'Isolation + Health', rounds:2, exercises:[EX['row'],EX['inverted-deadlift'],EX['pelican-curl'],EX['one-arm-ring-curl'],EX['tyi-raise'],EX['face-pull'],EX['ring-support-shrug'],EX['pallof-press'],EX['jefferson-curl'],EX['windshield-wipers']] },
+      { id:'E', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['v-sit-pulse'],EX['plank'],EX['lateral-plank']] },
+    ],
+  },
+];
+
+// ─── Render ────────────────────────────────────────────────
+let skillLevels = {};
+try { skillLevels = JSON.parse(localStorage.getItem('gymState') || '{}').skillLevels || {}; } catch(e) {}
 
 function currentDrill(skillId) {
   const sp = SKILL_PROGRESSIONS[skillId];
   if (!sp) return null;
   const level = skillLevels[skillId] || 1;
   return sp.progressions.find(p => p.level === level) || sp.progressions[0];
-}
-
-const SESSIONS = [
-  {
-    id: 'mon-push1', day: 'Monday', type: 'push', label: 'Push 1',
-    focus: 'Anterior legs · Handstand · Overhead & Dips',
-    warmup: ['90/90 breathing', 'Wrist circles + shoulder CARs', 'Lateral band walk', 'Tibialis raise'],
-    skills: ['handstand', 'planche'],
-    supersets: [
-      { id:'A', label:'Handstand Support', rounds:2, exercises:['wall-kick-up','chest-wall-handstand','back-wall-handstand','toe-pulls','shoulderpress-negative'] },
-      { id:'B', label:'Legs — Anterior Chain', rounds:2, exercises:['bulgarian-split-squat','pistol-squat','sissy-squat','single-leg-calf-raise','copenhagen-plank','single-leg-glute-bridge'] },
-      { id:'C', label:'Overhead & Dips', rounds:2, exercises:['hspu','straight-bar-dips','bulgarian-dips','korean-dips','ring-dip-deep'] },
-      { id:'D', label:'Shoulder Health & Isolation', rounds:2, exercises:['scapular-push-up-band','cuban-press','lateral-raise','ring-fly','ring-overhead-ext','l-sit','pallof-press'], newExercises:['scapular-push-up-band'] },
-      { id:'E', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','hollow-body-hold','windshield-wipers','dragon-flag','plank','lateral-plank'] },
-    ],
-  },
-  {
-    id: 'wed-pull1', day: 'Wednesday', type: 'pull', label: 'Pull 1',
-    focus: 'Posterior legs · Iron Cross · Back Lever',
-    warmup: ['90/90 breathing','Dead hang','German Hang','Cat-cow + thoracic rotation'],
-    skills: ['iron-cross', 'back-lever'],
-    supersets: [
-      { id:'A', label:'Iron Cross & Back Lever Support', rounds:2, exercises:['iron-cross-pull','front-lever-hold','german-hang','back-lever-negative','hollow-body-hold','false-grip-dead-hang','wide-support-hold'] },
-      { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:['nordic-curl','single-leg-deadlift','single-leg-glute-bridge','superman-hold'] },
-      { id:'C', label:'Strength Volume', rounds:2, exercises:['chest-to-bar','wide-pull-up','archer-pull-up','commande','ice-cream-maker','l-sit-pike-press','back-extension','tuck-to-l'] },
-      { id:'D', label:'Isolation + Health', rounds:2, exercises:['row','inverted-deadlift','pelican-curl','ring-hammer-curl','tyi-raise','face-pull','ring-support-shrug','pallof-press','jefferson-curl','windshield-wipers'], newExercises:['inverted-deadlift'] },
-      { id:'E', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','plank','lateral-plank','v-sit-pulse'] },
-    ],
-  },
-  {
-    id: 'fri-push2', day: 'Friday', type: 'push', label: 'Push 2',
-    focus: 'Anterior legs · Overhead & Horizontal Push · Core finisher',
-    warmup: ['90/90 breathing','Wrist circles + shoulder CARs','Lateral band walk','Tibialis raise'],
-    skills: ['handstand', 'muscle-up', 'manna'],
-    supersets: [
-      { id:'A', label:'Overhead & Planche Support', rounds:2, exercises:['handstand-drills','pseudo-planche-lean','pseudo-planche-push-up'] },
-      { id:'B', label:'Skill Support', rounds:2, exercises:['shoulderpress-negative','v-sit-pulse','ring-dip-deep','muscle-up-negative','rto-support-hold'] },
-      { id:'C', label:'Legs — Anterior Chain', rounds:2, exercises:['bulgarian-split-squat (loaded)','pistol-squat (3s descent)','sissy-squat','single-leg-calf-raise (bent knee)','copenhagen-plank','single-leg-glute-bridge (foot elevated)'] },
-      { id:'D', label:'Horizontal Push', rounds:2, exercises:['hspu','archer-push-up','ring-fly','push-up-rto','russian-push-up'] },
-      { id:'E', label:'Shoulder Health & Isolation', rounds:2, exercises:['scapular-push-up-band','bulgarian-push-up','cuban-press','lateral-raise','ring-overhead-ext','l-sit','pallof-press'], newExercises:['scapular-push-up-band'] },
-      { id:'F', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','hollow-body-hold','windshield-wipers','dragon-flag','plank','lateral-plank'] },
-    ],
-  },
-  {
-    id: 'sat-pull2', day: 'Saturday', type: 'pull', label: 'Pull 2',
-    focus: 'Posterior legs · Muscle Up · Back Lever',
-    warmup: ['90/90 breathing','Dead hang','German Hang','Band pull-aparts'],
-    skills: ['muscle-up', 'back-lever'],
-    supersets: [
-      { id:'A', label:'Skill — Muscle Up & Back Lever', rounds:2, exercises:['false-grip-dead-hang','chest-to-bar','360-pull','typewriter','german-hang','back-lever-negative'] },
-      { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:['nordic-curl (explosive)','single-leg-deadlift (weighted)','single-leg-glute-bridge (elevated)','superman-hold'] },
-      { id:'C', label:'Strength Volume', rounds:2, exercises:['wide-pull-up','archer-pull-up','commande','ice-cream-maker','l-sit-pike-press','back-extension','tuck-to-l'] },
-      { id:'D', label:'Isolation + Health', rounds:2, exercises:['row','inverted-deadlift','pelican-curl','one-arm-ring-curl','tyi-raise','face-pull','ring-support-shrug','pallof-press','jefferson-curl','windshield-wipers'], newExercises:['inverted-deadlift'] },
-      { id:'E', label:'Core Finisher', rounds:2, exercises:['hanging-leg-raise','ab-wheel-rollout','butt-lift','v-sit-pulse','plank','lateral-plank'] },
-    ],
-  },
-];
-
-function fmt(id) {
-  return id.split(/[-\s]/).map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ');
 }
 
 const container = document.getElementById('days');
@@ -134,30 +288,23 @@ for (const s of SESSIONS) {
       }).join('')}
     </div>` : '';
 
-  const tabataHtml = (s.skillTabata || []).map(ss => `
-    <div class="block" style="border-left:3px solid #6C7FD8;background:#16182a">
-      <div class="block-header">
-        <span class="block-label" style="color:#9aadff">${ss.label}</span>
-      </div>
-      <ul class="exercises">
-        ${ss.exercises.map(ex => `<li style="border-left-color:#6C7FD8;color:#9aadff">${fmt(ex)}</li>`).join('')}
-      </ul>
-    </div>`).join('');
-
-  const supersetHtml = s.supersets.map(ss => `
+  const supersetHtml = s.supersets.map(ss => {
+    const isTabata = !!ss.workSecs;
+    return `
     <div class="block">
       <div class="block-header">
         <span class="block-id">${ss.id}</span>
         <span class="block-label">${ss.label}</span>
-        <span class="block-meta">${ss.rounds}×</span>
+        <span class="block-meta">${ss.rounds}×${isTabata ? ' · tabata' : ''}</span>
       </div>
       <ul class="exercises">
         ${ss.exercises.map(ex => {
-          const isNew = ss.newExercises && ss.newExercises.some(n => ex.startsWith(n));
-          return `<li class="${isNew ? 'new' : ''}">${fmt(ex)}</li>`;
+          const note = ex.note || '';
+          return `<li>${ex.name}${note ? `<span class="ex-note">${note}</span>` : ''}</li>`;
         }).join('')}
       </ul>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   div.innerHTML = `
     <div class="day-header">
@@ -167,10 +314,9 @@ for (const s of SESSIONS) {
     </div>
     <div class="block">
       <div class="section-title">Warmup</div>
-      <ul class="warmup-items">${s.warmup.map(w => `<li>${w}</li>`).join('')}</ul>
+      <ul class="warmup-items">${s.warmup.map(w => `<li>${w.name}<span>${w.duration}</span></li>`).join('')}</ul>
     </div>
     ${skillBlockHtml}
-    ${tabataHtml}
     ${supersetHtml}
   `;
   container.appendChild(div);

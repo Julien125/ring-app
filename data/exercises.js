@@ -271,6 +271,20 @@ export const EX = {
     note: 'IAP + contralateral — active rest',
     muscles: { primary: ['core'], secondary: ['lower-back'] },
   },
+  'hanging-oblique-twist': {
+    id: 'hanging-oblique-twist', name: 'Hanging Oblique Twist',
+    category: 'core', type: 'reps', targetReps: 10, sets: 3,
+    desc: 'Hang from a pull-up bar, hands slightly wider than shoulder-width, legs fully extended and knees together. Flex hips and knees, drawing legs up, then rotate them to one side past 90° hip flexion. Squeeze obliques and abs at the top, then lower with control. Alternate sides each rep.',
+    note: 'Rotational hanging core — obliques + hip flexors',
+    muscles: { primary: ['obliques'], secondary: ['rectus-abdominis', 'hip-flexors', 'lats'] },
+  },
+  'decline-crunch-band': {
+    id: 'decline-crunch-band', name: 'Decline Crunch (Band)',
+    category: 'core', type: 'reps', targetReps: 12, sets: 3,
+    desc: 'Anchor a band above and behind you. Lie on a decline bench (or hook feet under a low anchor and lean back ~30°), band held at chest or behind the neck. Curl the chest toward the hips, posteriorly tilting the pelvis at the top — exhale hard and hold for 1s. Lower with control; do not let the lower back hyperextend at the bottom.',
+    note: 'Loaded flexion + posterior pelvic tilt — APT correction',
+    muscles: { primary: ['rectus-abdominis'], secondary: ['obliques'] },
+  },
   'windmill': {
     id: 'windmill', name: 'Windmill',
     category: 'core', type: 'reps', targetReps: 8,
