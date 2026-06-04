@@ -763,21 +763,36 @@ function renderHome() {
   }
 
   if (!today) {
-    // Rest day
+    // Rest day — check flex schedule
     q('#s01-phase').textContent = ph.label;
-    q('#s01-label').textContent = 'Rest day';
-    q('#s01-focus').textContent = 'Recovery · mobility · sleep';
-    const nextFlex  = getNextFlexSession();
-    const otherFlex = FLEX_SESSIONS.find(fs => fs.id !== nextFlex.id);
-    q('#s01-cta').textContent = `${nextFlex.label} →`;
-    q('#s01-cta').disabled = false;
-    q('#s01-cta').onclick = () => renderFlexSession(nextFlex);
-    q('#s01-secondary').style.display = otherFlex ? '' : 'none';
-    q('#s01-secondary').textContent = otherFlex ? `Switch: ${otherFlex.label} →` : '';
-    q('#s01-secondary').onclick = otherFlex ? () => renderFlexSession(otherFlex) : null;
-    q('#s01-pick').style.display = '';
-    q('#s01-pick').textContent = 'Train anyway →';
-    q('#s01-pick').onclick = showSessionPicker;
+    const wd = new Date().getDay();
+    const flexSessions = getFlexSessionsForDay(wd);
+
+    if (!flexSessions) {
+      // Sunday — pure rest, no flex
+      q('#s01-label').textContent = 'Rest day';
+      q('#s01-focus').textContent = 'Recovery · sleep · no training today';
+      q('#s01-cta').textContent = 'Rest day';
+      q('#s01-cta').disabled = true;
+      q('#s01-secondary').style.display = 'none';
+      q('#s01-pick').style.display = '';
+      q('#s01-pick').textContent = 'Train anyway →';
+      q('#s01-pick').onclick = showSessionPicker;
+    } else {
+      // Tuesday or Thursday — flex day
+      const [primary, secondary] = flexSessions;
+      q('#s01-label').textContent = 'Flexibility';
+      q('#s01-focus').textContent = [primary, secondary].filter(Boolean).map(f => f.label).join(' · ');
+      q('#s01-cta').textContent = `${primary.label} →`;
+      q('#s01-cta').disabled = false;
+      q('#s01-cta').onclick = () => renderFlexSession(primary);
+      q('#s01-secondary').style.display = secondary ? '' : 'none';
+      q('#s01-secondary').textContent = secondary ? `Switch: ${secondary.label} →` : '';
+      q('#s01-secondary').onclick = secondary ? () => renderFlexSession(secondary) : null;
+      q('#s01-pick').style.display = '';
+      q('#s01-pick').textContent = 'Train anyway →';
+      q('#s01-pick').onclick = showSessionPicker;
+    }
     return;
   }
 
@@ -3086,6 +3101,20 @@ function renderFlexPicker() {
     });
   });
   q('#dialog-flex-cancel').onclick = () => overlay.classList.remove('is-active');
+}
+
+// Flex schedule: fixed sessions per weekday.
+// Tuesday (2) = lower body focus · Thursday (4) = deep + pelvic floor
+// Sunday (0) = pure rest — no flex offered
+const FLEX_SCHEDULE = {
+  2: ['flex-lower', 'flex-knee'],
+  4: ['flex-deep',  'flex-bridge'],
+};
+
+function getFlexSessionsForDay(wd) {
+  const ids = FLEX_SCHEDULE[wd];
+  if (!ids) return null;
+  return ids.map(id => FLEX_SESSIONS.find(fs => fs.id === id)).filter(Boolean);
 }
 
 function getNextFlexSession() {
