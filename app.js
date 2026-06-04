@@ -8,6 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PR
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
+const APP_VERSION  = 'v62 · 2026-06-04';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -731,6 +732,7 @@ function renderHome() {
   const now = new Date();
   q('#s01-date').textContent = now.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' });
   q('#s01-week').textContent = `W${state.currentWeek}/10 · ${ph.label} (${ph.phaseWeek}/${ph.phaseTotalWeeks})`;
+  q('#s01-version').textContent = APP_VERSION;
 
   // Week progress dots — Mon / Wed / Thu / Sat
   renderWeekDots();
