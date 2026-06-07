@@ -180,13 +180,11 @@ const ssSkillSupportWed = {
 };
 
 const ssSkillSupportFri = {
-  id: 'B', label: 'Skill Support — Handstand & Planche', rings: 'high', rounds: 2,
+  id: 'B', label: 'Skill Support — Rings & Dips', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90,
   exercises: [
     EX['shoulderpress-negative'],
-    EX['v-sit-pulse'],
     EX['ring-dip-deep'],
-    EX['muscle-up-negative'],
     EX['rto-support-hold'],
   ],
 };
@@ -206,7 +204,7 @@ const ssSkillSupportSat = {
 
 // Friday SS C — horizontal push strength, no overlap with SS A or SS D
 const ssHorizontalPush = {
-  id: 'C', label: 'Horizontal Push', rings: 'mid', rounds: 2,
+  id: 'C', label: 'Push Strength', rings: 'mid', rounds: 2,
   restIntra: 25, restRound: 120,
   exercises: [
     EX['hspu'],
@@ -356,13 +354,10 @@ const ssCoreFinisherPush = {
   restIntra: 45, restRound: 90,
   exercises: [
     EX['hanging-leg-raise'],
-    EX['hanging-oblique-twist'],
     EX['ab-wheel-rollout'],
-    EX['butt-lift'],
     EX['hollow-body-hold'],
-    EX['windshield-wipers'],
     EX['dragon-flag'],
-    EX['plank'],
+    EX['windshield-wipers'],
     EX['lateral-plank'],
     { ...EX['decline-crunch-band'], note: 'Loaded flexion · posterior pelvic tilt — APT correction' },
   ],
@@ -526,9 +521,9 @@ export const SESSIONS = [
     supersets: [
       ssOverheadSkillFri,                          // A — handstand + planche support drills
       ssSkillSupportFri,                           // B — skill support drills
-      ssLegsAnteriorB,                             // C — legs (loaded variant)
-      ssHorizontalPush,                            // D — horizontal push
-      ssIsolationPushFri,                          // E — isolation
+      { ...ssLegsAnteriorB,   id: 'C' },           // C — legs (loaded variant)
+      { ...ssHorizontalPush,  id: 'D' },           // D — horizontal push
+      { ...ssIsolationPushFri, id: 'E' },          // E — isolation
       ssCoreFinisherPush,                          // F — core
     ],
     cooldown: COOLDOWN_PUSH,
