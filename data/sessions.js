@@ -110,7 +110,7 @@ const ssLegsPosteriorB = {
 
 // ─── Superset builders ────────────────────────────────────
 
-// Monday SS A — pure handstand skill, CNS fresh, no strength mixed in
+// Monday SS A — handstand + planche skill, CNS fresh, no strength mixed in
 const TABATA = { mode: 'tabata', prepareSecs: 90, workSecs: 25, restSecs: 30, cycles: 4 };
 
 const ssOverheadSkillMon = {
@@ -118,10 +118,11 @@ const ssOverheadSkillMon = {
   restIntra: 30, restRound: 120,
   exercises: [
     EX['wall-kick-up'],
-    EX['chest-wall-handstand'],
     EX['back-wall-handstand'],
     EX['toe-pulls'],
     EX['shoulderpress-negative'],
+    EX['planche-lean'],
+    EX['tuck-planche'],
   ],
 };
 
@@ -138,14 +139,15 @@ const ssOverheadDipsStrength = {
   ],
 };
 
-// Friday SS A — skill + planche overhead, CNS fresh
+// Friday SS A — handstand + manna skill, CNS fresh
 const ssOverheadSkillFri = {
-  id: 'A', label: 'Skill Support — Handstand & Planche', rings: 'none', rounds: 2,
+  id: 'A', label: 'Skill Support — Handstand & Manna', rings: 'none', rounds: 2,
   restIntra: 30, restRound: 120,
   exercises: [
     EX['handstand-drills'],
-    EX['pseudo-planche-lean'],
-    EX['pseudo-planche-push-up'],
+    EX['back-wall-handstand'],
+    EX['v-sit-pulse'],
+    EX['butt-lift'],
   ],
 };
 
@@ -172,19 +174,20 @@ const ssSkillSupportWed = {
   exercises: [
     EX['iron-cross-pull'],
     EX['front-lever-hold'],
+    EX['wide-support-hold'],
     EX['german-hang'],
     EX['back-lever-negative'],
-    EX['hollow-body-hold'],
-    EX['false-grip-dead-hang'],
+    EX['360-pull'],
   ],
 };
 
 const ssSkillSupportFri = {
-  id: 'B', label: 'Skill Support — Rings & Dips', rings: 'high', rounds: 2,
+  id: 'B', label: 'Skill Support — Muscle Up', rings: 'high', rounds: 2,
   restIntra: 30, restRound: 90,
   exercises: [
-    EX['shoulderpress-negative'],
+    EX['false-grip-row'],
     EX['ring-dip-deep'],
+    EX['muscle-up-negative'],
     EX['rto-support-hold'],
   ],
 };
@@ -264,8 +267,8 @@ const ssSkillStrengthSat = {
   exercises: [
     EX['false-grip-dead-hang'],
     EX['chest-to-bar'],
+    EX['muscle-up-negative'],
     EX['360-pull'],
-    EX['typewriter'],
     EX['german-hang'],
     EX['back-lever-negative'],
   ],

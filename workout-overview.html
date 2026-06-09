@@ -111,6 +111,8 @@ const EX = {
   'toe-pulls': { id: 'toe-pulls', name: 'Toe Pulls', category: 'shoulder', type: 'reps', targetReps: 12, note: 'Balance correction drill — trains freestanding adjustments' },
   'shoulderpress-negative': { id: 'shoulderpress-negative', name: 'Shoulderpress Negative', category: 'shoulder', type: 'reps', targetReps: 3, note: 'Handstand press eccentric — 5s controlled descent' },
   'front-lever-hold': { id: 'front-lever-hold', name: 'Front Lever Hold', category: 'straight', type: 'hold', targetSecs: 5, note: 'Straight-arm horizontal — static skill' },
+  'planche-lean': { id: 'planche-lean', name: 'Planche Lean', category: 'straight', type: 'hold', targetSecs: 15, note: 'Serratus — motor pattern' },
+  'tuck-planche': { id: 'tuck-planche', name: 'Tuck Planche', category: 'straight', type: 'hold', targetSecs: 5, note: 'First true planche — straight arms, body off the floor' },
 };
 
 // ─── Skill progressions ────────────────────────────────────
@@ -203,11 +205,11 @@ const SESSIONS = [
     skills: ['handstand', 'planche'],
     warmup: WARMUP_PUSH,
     supersets: [
-      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['wall-kick-up'],EX['chest-wall-handstand'],EX['back-wall-handstand'],EX['toe-pulls'],EX['shoulderpress-negative']] },
+      { id:'A', label:'Skill Support — Handstand & Planche', rounds:2, exercises:[EX['wall-kick-up'],EX['back-wall-handstand'],EX['toe-pulls'],EX['shoulderpress-negative'],EX['planche-lean'],EX['tuck-planche']] },
       { id:'B', label:'Legs — Anterior Chain', rounds:2, exercises:[EX['bulgarian-split-squat'],EX['pistol-squat'],EX['sissy-squat'],EX['single-leg-calf-raise'],EX['copenhagen-plank'],EX['single-leg-glute-bridge']] },
       { id:'C', label:'Overhead & Dips', rounds:2, exercises:[EX['hspu'],EX['straight-bar-dips'],EX['bulgarian-dips'],EX['korean-dips'],EX['ring-dip-deep']] },
       { id:'D', label:'Shoulder Health & Isolation', rounds:2, exercises:[EX['scapular-push-up-band'],EX['cuban-press'],EX['lateral-raise'],{...EX['ring-fly'],note:'Wide grip — slow eccentric, max pec stretch'},EX['ring-overhead-ext'],EX['l-sit'],EX['pallof-press']] },
-      { id:'E', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['hollow-body-hold'],EX['windshield-wipers'],EX['dragon-flag'],EX['plank'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
+      { id:'F', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['ab-wheel-rollout'],EX['hollow-body-hold'],EX['dragon-flag'],EX['windshield-wipers'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
     ],
   },
   {
@@ -216,11 +218,11 @@ const SESSIONS = [
     skills: ['iron-cross', 'back-lever'],
     warmup: WARMUP_PULL_WED,
     supersets: [
-      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['iron-cross-pull'],EX['front-lever-hold'],EX['german-hang'],EX['back-lever-negative'],EX['hollow-body-hold'],EX['false-grip-dead-hang']] },
+      { id:'A', label:'Skill Support — Iron Cross & Back Lever', rounds:2, exercises:[EX['iron-cross-pull'],EX['front-lever-hold'],EX['wide-support-hold'],EX['german-hang'],EX['back-lever-negative'],EX['360-pull']] },
       { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:[EX['nordic-curl'],EX['single-leg-deadlift'],EX['single-leg-glute-bridge'],EX['superman-hold']] },
-      { id:'C', label:'Strength Volume', rounds:2, exercises:[EX['chest-to-bar'],EX['wide-pull-up'],EX['archer-pull-up'],EX['commande'],EX['back-extension'],EX['tuck-to-l']] },
-      { id:'D', label:'Isolation + Health', rounds:2, exercises:[EX['row'],EX['inverted-deadlift'],EX['pelican-curl'],EX['ring-hammer-curl'],EX['tyi-raise'],EX['face-pull'],EX['ring-support-shrug'],EX['pallof-press'],EX['jefferson-curl']] },
-      { id:'E', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['plank'],EX['lateral-plank'],EX['v-sit-pulse']] },
+      { id:'D', label:'Strength Volume', rounds:2, exercises:[EX['chest-to-bar'],EX['wide-pull-up'],EX['archer-pull-up'],EX['commande'],EX['back-extension'],EX['tuck-to-l']] },
+      { id:'E', label:'Isolation + Health', rounds:2, exercises:[EX['row'],EX['inverted-deadlift'],EX['pelican-curl'],EX['ring-hammer-curl'],EX['tyi-raise'],EX['face-pull'],EX['ring-support-shrug'],EX['pallof-press'],EX['jefferson-curl']] },
+      { id:'F', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['plank'],EX['lateral-plank'],EX['v-sit-pulse']] },
     ],
   },
   {
@@ -229,12 +231,12 @@ const SESSIONS = [
     skills: ['handstand', 'muscle-up', 'manna'],
     warmup: WARMUP_PUSH,
     supersets: [
-      { id:'A', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['handstand-drills'],EX['pseudo-planche-lean'],EX['pseudo-planche-push-up']] },
-      { id:'B', label:'Designer Skill', rounds:2, ...TABATA, exercises:[EX['shoulderpress-negative'],EX['v-sit-pulse'],EX['ring-dip-deep'],EX['muscle-up-negative'],EX['rto-support-hold']] },
+      { id:'A', label:'Skill Support — Handstand & Manna', rounds:2, exercises:[EX['handstand-drills'],EX['back-wall-handstand'],EX['v-sit-pulse'],EX['butt-lift']] },
+      { id:'B', label:'Skill Support — Muscle Up', rounds:2, exercises:[EX['false-grip-row'],EX['ring-dip-deep'],EX['muscle-up-negative'],EX['rto-support-hold']] },
       { id:'C', label:'Legs — Anterior Chain', rounds:2, exercises:[{...EX['bulgarian-split-squat'],note:'Add KB/DB — load it'},{...EX['pistol-squat'],note:'3s descent · eyes closed — proprioception challenge'},{...EX['sissy-squat'],targetReps:12},{...EX['single-leg-calf-raise'],note:'Bent knee — soleus focus'},EX['copenhagen-plank'],{...EX['single-leg-glute-bridge'],note:'Foot elevated · posterior pelvic tilt — APT correction'}] },
-      { id:'D', label:'Horizontal Push', rounds:2, exercises:[EX['hspu'],EX['archer-push-up'],{...EX['ring-fly'],note:'Wide grip — slow eccentric, max pec stretch'},EX['push-up-rto'],EX['russian-push-up']] },
+      { id:'D', label:'Push Strength', rounds:2, exercises:[EX['hspu'],EX['archer-push-up'],{...EX['ring-fly'],note:'Wide grip — slow eccentric, max pec stretch'},EX['push-up-rto'],EX['russian-push-up']] },
       { id:'E', label:'Shoulder Health & Isolation', rounds:2, exercises:[EX['scapular-push-up-band'],EX['bulgarian-push-up'],EX['cuban-press'],EX['lateral-raise'],EX['ring-overhead-ext'],EX['l-sit'],EX['pallof-press']] },
-      { id:'F', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['hanging-oblique-twist'],EX['ab-wheel-rollout'],EX['butt-lift'],EX['hollow-body-hold'],EX['windshield-wipers'],EX['dragon-flag'],EX['plank'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
+      { id:'F', label:'Core Finisher', rounds:2, exercises:[EX['hanging-leg-raise'],EX['ab-wheel-rollout'],EX['hollow-body-hold'],EX['dragon-flag'],EX['windshield-wipers'],EX['lateral-plank'],{...EX['decline-crunch-band'],note:'Loaded flexion · posterior pelvic tilt — APT correction'}] },
     ],
   },
   {
@@ -243,7 +245,7 @@ const SESSIONS = [
     skills: ['muscle-up', 'back-lever'],
     warmup: WARMUP_PULL_SAT,
     supersets: [
-      { id:'A', label:'Skill — Muscle Up & Back Lever', rounds:2, exercises:[EX['false-grip-dead-hang'],EX['chest-to-bar'],EX['360-pull'],EX['typewriter'],EX['german-hang'],EX['back-lever-negative']] },
+      { id:'A', label:'Skill — Muscle Up & Back Lever', rounds:2, exercises:[EX['false-grip-dead-hang'],EX['chest-to-bar'],EX['muscle-up-negative'],EX['360-pull'],EX['german-hang'],EX['back-lever-negative']] },
       { id:'B', label:'Legs — Posterior Chain', rounds:2, exercises:[{...EX['nordic-curl'],targetReps:6,note:'Explosive descent — use hands to push back up if needed'},{...EX['single-leg-deadlift'],note:'Weighted KB · 3s pause at bottom — eccentric emphasis'},{...EX['single-leg-glute-bridge'],targetReps:10,note:'Foot elevated · weighted KB on hip — full glute stretch'},EX['superman-hold']] },
       { id:'C', label:'Strength Volume', rounds:2, exercises:[EX['wide-pull-up'],EX['archer-pull-up'],EX['commande'],EX['ice-cream-maker'],EX['l-sit-pike-press'],EX['back-extension'],EX['tuck-to-l']] },
       { id:'D', label:'Isolation + Health', rounds:2, exercises:[EX['row'],EX['inverted-deadlift'],EX['pelican-curl'],EX['one-arm-ring-curl'],EX['tyi-raise'],EX['face-pull'],EX['ring-support-shrug'],EX['pallof-press'],EX['jefferson-curl'],EX['windshield-wipers']] },

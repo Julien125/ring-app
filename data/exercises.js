@@ -89,14 +89,14 @@ export const EX = {
   },
   'plank': {
     id: 'plank', name: 'Plank',
-    category: 'core', type: 'duration', targetDuration: 60,
+    category: 'core', type: 'hold', targetSecs: 60,
     desc: 'Forearms on the floor, body straight from head to heels. Squeeze glutes, brace core, neutral spine. No hip sag or pike.',
     note: 'Anti-extension isometric',
     muscles: { primary: ['core'], secondary: ['glutes', 'shoulders'] },
   },
   'lateral-plank': {
     id: 'lateral-plank', name: 'Lateral Plank',
-    category: 'core', type: 'duration', targetDuration: 45,
+    category: 'core', type: 'hold', targetSecs: 45,
     unilateral: true,
     desc: 'Side plank on forearm, body straight, hips stacked. Hold — no hip drop. Switch sides.',
     note: 'Anti-lateral flexion — each side',

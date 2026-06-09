@@ -1672,46 +1672,40 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-stop').style.display  = 'none';
     q('#s04-stop').textContent    = 'Stop left';
 
-    q('#s04-start').onclick = () => {
-      q('#s04-start').style.display = 'none';
-      q('#s04-stop').style.display  = 'none';
-      startHoldCountdown(() => {
-        startStopwatch();
-        q('#s04-stop').style.display = '';
-        q('#s04-stop').textContent   = swSide === 1 ? 'Stop left' : 'Stop right & log';
-      });
-    };
-
-    q('#s04-stop').onclick = () => {
-      const elapsed = stopStopwatch();
+    const holdTgt = getEffectiveTarget(ex);
+    const finishSide = (elapsed) => {
       if (swSide === 1) {
-        // Left done — store it, flip to right
         swLeft = elapsed;
         swSide = 2;
-        q('#s04-sw-left').textContent  = elapsed;
-        q('#s04-sw-right').textContent = '0';
+        q('#s04-sw-left').textContent    = elapsed;
+        q('#s04-sw-right').textContent   = '0';
         q('#s04-side-label').textContent = 'RIGHT SIDE';
-        resetStopwatch();
-        // Brief haptic cue
         if (navigator.vibrate) navigator.vibrate(80);
-        // Show start for right side
         q('#s04-start').textContent   = 'Start — right';
         q('#s04-start').style.display = '';
         q('#s04-stop').style.display  = 'none';
         q('#s04-stop').textContent    = 'Stop right & log';
       } else {
-        // Right done — log min(left, right)
         q('#s04-sw-right').textContent = elapsed;
         if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
         logSet(Math.min(swLeft, elapsed));
       }
     };
 
-    // Live update for unilateral — update active side display
-    const origStart = q('#s04-start').onclick;
-    const _startOrig = startStopwatch;
-    // Override updateSwDisplay to also update the correct side cell
-    // (handled by swSide flag — see updateSwDisplay override below)
+    q('#s04-start').onclick = () => {
+      q('#s04-start').style.display = 'none';
+      q('#s04-stop').style.display  = 'none';
+      startHoldCountdown(() => {
+        q('#s04-stop').textContent   = swSide === 1 ? 'Stop left' : 'Stop right & log';
+        startCountdown(holdTgt);
+        q('#s04-stop').style.display = '';
+      });
+    };
+
+    q('#s04-stop').onclick = () => {
+      const elapsed = stopStopwatch();
+      finishSide(elapsed);
+    };
 
   } else {
     // ── Bilateral: single timer ───────────────────────────
@@ -1719,11 +1713,12 @@ function renderHold(ex, ss, totalRounds) {
     q('#s04-start').style.display = '';
     q('#s04-stop').style.display  = 'none';
 
+    const holdTgt = getEffectiveTarget(ex);
     q('#s04-start').onclick = () => {
       q('#s04-start').style.display = 'none';
       q('#s04-stop').style.display  = 'none';
       startHoldCountdown(() => {
-        startStopwatch();
+        startCountdown(holdTgt);
         q('#s04-stop').style.display = '';
       });
     };
@@ -1777,6 +1772,24 @@ function startStopwatch() {
   swInterval = setInterval(() => {
     swSecs++;
     updateSwDisplay(swSecs);
+  }, 1000);
+}
+
+function startCountdown(targetSecs, onGoalReached) {
+  swSecs = 0;
+  swRunning = true;
+  updateSwDisplay(targetSecs);
+  let goalSignaled = false;
+  swInterval = setInterval(() => {
+    swSecs++;
+    const remaining = targetSecs - swSecs;
+    updateSwDisplay(remaining);
+    if (remaining <= 0 && !goalSignaled) {
+      goalSignaled = true;
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      beep(660, 250);
+      if (onGoalReached) onGoalReached();
+    }
   }, 1000);
 }
 
