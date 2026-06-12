@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PR
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v62 · 2026-06-04';
+const APP_VERSION  = 'v64 · 2026-06-12';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1697,7 +1697,7 @@ function renderHold(ex, ss, totalRounds) {
       q('#s04-stop').style.display  = 'none';
       startHoldCountdown(() => {
         q('#s04-stop').textContent   = swSide === 1 ? 'Stop left' : 'Stop right & log';
-        startCountdown(holdTgt);
+        startHoldTargetCountdown(holdTgt);
         q('#s04-stop').style.display = '';
       });
     };
@@ -1718,7 +1718,7 @@ function renderHold(ex, ss, totalRounds) {
       q('#s04-start').style.display = 'none';
       q('#s04-stop').style.display  = 'none';
       startHoldCountdown(() => {
-        startCountdown(holdTgt);
+        startHoldTargetCountdown(holdTgt);
         q('#s04-stop').style.display = '';
       });
     };
@@ -1775,7 +1775,7 @@ function startStopwatch() {
   }, 1000);
 }
 
-function startCountdown(targetSecs, onGoalReached) {
+function startHoldTargetCountdown(targetSecs, onGoalReached) {
   swSecs = 0;
   swRunning = true;
   updateSwDisplay(targetSecs);
