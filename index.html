@@ -1460,6 +1460,8 @@
       <button id="s01-cta" class="btn-primary"></button>
       <button id="s01-secondary" class="btn-text mt-3" style="display:none"></button>
       <button id="s01-pick" class="btn-text mt-2" style="display:none"></button>
+      <button id="s01-log-activity" class="btn-text mt-3">＋ Log activity · steps</button>
+      <div id="s01-activity-summary" class="t-label mt-2" style="display:none;opacity:0.75"></div>
       <!-- Pattern card — one at a time, dismissible -->
       <div id="s01-pattern-card" class="pattern-card mt-5" style="display:none">
         <div class="pattern-card__msg" id="s01-pattern-msg"></div>
@@ -2105,6 +2107,62 @@
     </div>
   </div>
 
-<script type="module" src="./app.js?v=17"></script>
+  <!-- ── Log activity + steps (Body OS cross-training) ─────── -->
+  <style>
+    #dialog-activity .act-field { margin-top: 14px; }
+    #dialog-activity .act-label { display:block; font-size:0.78rem; letter-spacing:0.05em; text-transform:uppercase; opacity:0.65; margin-bottom:6px; }
+    #dialog-activity .act-input { width:100%; box-sizing:border-box; padding:12px 14px; font-size:1.05rem; border-radius:12px;
+      border:1.5px solid var(--bg-3); background:var(--bg-2); color:var(--accent); -webkit-appearance:none; }
+    #dialog-activity .act-input:focus { outline:none; border-color:var(--accent); }
+    #dialog-activity .act-input::placeholder { color:var(--accent); opacity:0.35; }
+    #dialog-activity .act-divider { margin:22px 0 10px; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.6; }
+    #dialog-activity .act-divider span { text-transform:none; letter-spacing:0; opacity:0.7; }
+  </style>
+  <div class="dialog-overlay" id="dialog-activity">
+    <div class="dialog-sheet" style="padding-bottom:40px">
+      <div class="dialog-title mb-2">Log activity</div>
+
+      <div class="act-field">
+        <label class="act-label" for="da-steps">👣 Steps today</label>
+        <input id="da-steps" class="act-input" type="number" inputmode="numeric" min="0" placeholder="e.g. 8200">
+      </div>
+
+      <div class="act-divider">Cross-training <span>(optional)</span></div>
+
+      <div class="skip-reason-grid" id="da-types">
+        <button class="skip-reason-btn act-type-btn" data-type="bike">🚴 Bike</button>
+        <button class="skip-reason-btn act-type-btn" data-type="run">🏃 Run</button>
+        <button class="skip-reason-btn act-type-btn" data-type="swim">🏊 Swim</button>
+        <button class="skip-reason-btn act-type-btn" data-type="yoga">🧘 Yoga</button>
+        <button class="skip-reason-btn act-type-btn" data-type="walk">🚶 Walk</button>
+        <button class="skip-reason-btn act-type-btn" data-type="other">🤸 Other</button>
+      </div>
+
+      <div class="act-field">
+        <label class="act-label" for="da-minutes">Minutes</label>
+        <input id="da-minutes" class="act-input" type="number" inputmode="numeric" min="0" placeholder="35">
+      </div>
+
+      <div class="act-field">
+        <label class="act-label">Intensity</label>
+        <div class="skip-reason-grid" id="da-intensity" style="grid-template-columns:repeat(3,1fr)">
+          <button class="skip-reason-btn act-int-btn" data-int="easy">🟢 Easy</button>
+          <button class="skip-reason-btn act-int-btn" data-int="moderate">🟡 Moderate</button>
+          <button class="skip-reason-btn act-int-btn" data-int="hard">🔴 Hard</button>
+        </div>
+      </div>
+
+      <div class="act-field">
+        <input id="da-note" class="act-input" type="text" maxlength="120" placeholder="Note (optional)">
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn-primary" id="da-save">Save</button>
+        <button class="btn-ghost" id="da-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script type="module" src="./app.js?v=18"></script>
 </body>
 </html>

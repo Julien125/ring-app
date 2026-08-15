@@ -33,7 +33,7 @@ const MUSCLE_STRETCHES = {
 };
 
 // ─── State ────────────────────────────────────────────────
-let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [] };
+let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [], otherActivities: [], steps: [] };
 
 // ─── Adaptations (separate store — never mutates log) ─────
 const ADAPT_KEY = 'ring-app-adaptations';
@@ -405,6 +405,24 @@ function bindGlobalUI() {
     doSkipExercise(reason);
   });
 
+  // Activity + steps dialog (Body OS cross-training)
+  q('#s01-log-activity')?.addEventListener('click', openActivityDialog);
+  q('#dialog-activity')?.addEventListener('click', e => {
+    if (e.target === q('#dialog-activity')) hideDialog('dialog-activity');
+  });
+  q('#da-types')?.addEventListener('click', e => {
+    const btn = e.target.closest('.act-type-btn'); if (!btn) return;
+    _actType = btn.dataset.type;
+    q('#da-types').querySelectorAll('.act-type-btn').forEach(b => b.classList.toggle('is-selected', b === btn));
+  });
+  q('#da-intensity')?.addEventListener('click', e => {
+    const btn = e.target.closest('.act-int-btn'); if (!btn) return;
+    _actIntensity = btn.dataset.int;
+    q('#da-intensity').querySelectorAll('.act-int-btn').forEach(b => b.classList.toggle('is-selected', b === btn));
+  });
+  q('#da-cancel')?.addEventListener('click', () => hideDialog('dialog-activity'));
+  q('#da-save')?.addEventListener('click', saveActivityDialog);
+
   // Adaptation badge popover on exercise screens
   bindAdaptBadgePopover('s-03');
   bindAdaptBadgePopover('s-04');
@@ -453,6 +471,61 @@ function showDialog(id) {
 function hideDialog(id) {
   const el = q(`#${id}`);
   if (el) el.classList.remove('is-active');
+}
+
+// ─── Cross-training + steps (Body OS) ─────────────────────
+// Non-lifting activity (bike/run/swim/yoga…) + daily steps. Stored in state,
+// synced via buildBackupPayload → Gist → ring_app_export.json → monthly_metrics.py.
+const ACT_EMOJI = { bike:'🚴', run:'🏃', swim:'🏊', yoga:'🧘', walk:'🚶', other:'🤸' };
+let _actType = null, _actIntensity = 'moderate';
+function _todayKey() { return new Date().toISOString().slice(0, 10); }
+
+function openActivityDialog() {
+  _actType = null; _actIntensity = 'moderate';
+  const today = _todayKey();
+  const s = (state.steps || []).filter(x => x.date === today).slice(-1)[0];
+  q('#da-steps').value   = s ? s.count : '';
+  q('#da-minutes').value = '';
+  q('#da-note').value    = '';
+  q('#da-types').querySelectorAll('.act-type-btn').forEach(b => b.classList.remove('is-selected'));
+  q('#da-intensity').querySelectorAll('.act-int-btn').forEach(b => b.classList.toggle('is-selected', b.dataset.int === 'moderate'));
+  showDialog('dialog-activity');
+}
+
+function saveActivityDialog() {
+  const date = _todayKey();
+  // Steps — one value per day, latest wins
+  const stepsVal = parseInt(q('#da-steps').value, 10);
+  if (!isNaN(stepsVal) && stepsVal >= 0) {
+    state.steps = (state.steps || []).filter(x => x.date !== date);
+    state.steps.push({ date, count: stepsVal });
+  }
+  // Activity — only if a type + minutes are given (both optional; steps can be logged alone)
+  const mins = parseInt(q('#da-minutes').value, 10);
+  if (_actType && !isNaN(mins) && mins > 0) {
+    state.otherActivities = state.otherActivities || [];
+    state.otherActivities.push({
+      date, type: _actType, durationMin: mins,
+      intensity: _actIntensity || 'moderate',
+      note: (q('#da-note').value || '').trim(),
+      loggedAt: new Date().toISOString(),
+    });
+  }
+  saveState();
+  hideDialog('dialog-activity');
+  renderActivitySummary();
+}
+
+function renderActivitySummary() {
+  const el = q('#s01-activity-summary'); if (!el) return;
+  const date = _todayKey();
+  const s = (state.steps || []).filter(x => x.date === date).slice(-1)[0];
+  const acts = (state.otherActivities || []).filter(a => a.date === date);
+  const parts = [];
+  if (s) parts.push(`👣 ${(s.count || 0).toLocaleString()}`);
+  acts.forEach(a => parts.push(`${ACT_EMOJI[a.type] || '🏃'} ${a.durationMin}m`));
+  el.textContent = parts.join('  ·  ');
+  el.style.display = parts.length ? '' : 'none';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -727,6 +800,7 @@ function renderPatternCard() {
 function renderHome() {
   const today = getTodaySession();
   const ph    = phase();
+  renderActivitySummary();
 
   // Date + week
   const now = new Date();
@@ -3585,6 +3659,8 @@ function buildBackupPayload() {
     skillLevels:  state.skillLevels,
     exercises:    exerciseLibrary,
     log:          logWithMuscles,
+    otherActivities: state.otherActivities || [],   // cross-training: bike/run/swim/yoga…
+    steps:           state.steps || [],             // daily step counts
   };
 }
 
