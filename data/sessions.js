@@ -99,7 +99,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 90,
         exercises: [
           { ...EX['dragon-flag'], note: 'Reclaim — best_ever 9, current 5' },
-          { ...EX['hollow-body-hold'], note: 'Added core volume — anti-extension base' },
+          { ...EX['hanging-oblique-twist'], note: 'V-ab emphasis — obliques / lower V-lines' },
         ],
       },
     ],
@@ -141,7 +141,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 90,
         exercises: [
           { ...EX['windshield-wipers'], note: 'Reclaim — best_ever 12, current 8' },
-          { ...EX['hanging-leg-raise'], note: 'Added core volume — hip flexion + grip' },
+          { ...EX['hanging-leg-raise'], note: 'V-ab emphasis — lower rectus + grip' },
         ],
       },
     ],
@@ -183,7 +183,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 90,
         exercises: [
           { ...EX['dragon-flag'], note: 'Second weekly exposure — reclaim best_ever 9, current 5' },
-          { ...EX['ab-wheel-rollout'], note: 'Added core volume — anti-extension overload' },
+          { ...EX['v-sit-pulse'], note: 'V-ab emphasis — lower rectus, builds the V' },
         ],
       },
     ],
@@ -225,7 +225,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 90,
         exercises: [
           { ...EX['windshield-wipers'], note: 'Second weekly exposure — reclaim best_ever 12, current 8' },
-          { ...EX['l-sit'], note: 'Added core volume — compression + hip flexor' },
+          { ...EX['l-sit'], note: 'V-ab emphasis — lower rectus compression' },
         ],
       },
     ],
