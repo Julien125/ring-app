@@ -24,12 +24,17 @@ const MUSCLE_STRETCHES = {
   'quads':       'Standing quad stretch · 20s/side',
   'hamstrings':  'Standing forward fold, soft knees · 20s',
   'glutes':      'Pigeon or figure-4 stretch · 30s/side',
-  'core':        'Cat-cow · 4 slow breaths',
   'obliques':    'Seated side stretch, arm overhead · 20s/side',
   'calves':      'Calf stretch against wall · 20s/side',
   'serratus':    'Cross-body arm pull · 20s/side',
   'forearms':    'Wrist flexor + extensor stretch · 15s each',
-  'lowback':     'Child\'s pose · 6 breaths',
+  // Trunk slugs (the old 'core' and the never-matching 'lowback' key both retired 2026-09-08)
+  'rectus-abdominis':     'Cobra or standing backbend · 20s',
+  'transverse-abdominis': 'Cat-cow · 4 slow breaths',
+  'hip-flexors':          'Half-kneeling hip flexor stretch · 30s/side',
+  'erector-spinae':       'Child\'s pose · 6 breaths',
+  'traps':                'Ear-to-shoulder neck stretch · 20s/side',
+  'lower-trap':           'Cross-body arm pull · 20s/side',
 };
 
 // ─── State ────────────────────────────────────────────────
@@ -2374,13 +2379,25 @@ const MUSCLE_LABEL = {
   'core':'Core','lower-back':'Lower Back','glutes':'Glutes','hamstrings':'Hamstrings',
   'quads':'Quads','calves':'Calves','serratus':'Serratus','brachialis':'Brachialis',
   'forearms':'Forearms',
+  // Anatomical trunk slugs — replaced the generic 'core' 2026-09-08
+  'rectus-abdominis':'Rectus Abdominis','obliques':'Obliques',
+  'transverse-abdominis':'Transverse Abdominis','hip-flexors':'Hip Flexors',
+  'erector-spinae':'Erector Spinae',
+  // Previously unmapped (were silently defaulting to the push category)
+  'traps':'Traps','lower-trap':'Lower Trap','rhomboids':'Rhomboids',
+  'brachioradialis':'Brachioradialis',
 };
 // Map each muscle to its training category for colour coding
 const MUSCLE_CAT = {
   'chest':'push','triceps':'push','front-delt':'push','serratus':'push',
   'shoulders':'push','lateral-delt':'push',
   'lats':'pull','biceps':'pull','brachialis':'pull','rear-delt':'pull','forearms':'pull',
-  'core':'core','lower-back':'core',
+  'traps':'pull','lower-trap':'pull','rhomboids':'pull','brachioradialis':'pull',
+  // Trunk — hip-flexors sits under core, NOT legs: in calisthenics hip flexion is
+  // compression work (L-sit, V-sit, leg raise), not a leg-building movement. Filing it
+  // under legs would inflate lower-body volume every time a compression skill is trained.
+  'rectus-abdominis':'core','obliques':'core','transverse-abdominis':'core',
+  'hip-flexors':'core','erector-spinae':'core',
   'glutes':'legs','hamstrings':'legs','quads':'legs','calves':'legs',
 };
 const CAT_META = {
