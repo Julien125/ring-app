@@ -535,6 +535,27 @@ export const EX = {
     note: 'Back lever and shoulder mobility foundation',
     muscles: { primary: ['lats', 'shoulders', 'core'], secondary: ['biceps', 'rear-delt'] },
   },
+  'candlestick-to-neg-fl': {
+    id: 'candlestick-to-neg-fl', name: 'Candlestick to Negative Front Lever',
+    category: 'straight', type: 'reps', targetReps: 3,
+    desc: 'From a candlestick (inverted/shoulderstand) on the rings or bar, lower slowly with completely straight arms into a front lever position and continue the negative toward a dead hang, staying rigid and horizontal as long as possible. 5–8s descent.',
+    note: 'Straight-arm eccentric — front lever builder',
+    muscles: { primary: ['lats', 'core', 'rear-delt'], secondary: ['biceps', 'serratus'] },
+  },
+  'ring-mid-pull-up-hold': {
+    id: 'ring-mid-pull-up-hold', name: 'Mid Pull-Up Hold (Rings)',
+    category: 'pull', type: 'hold', targetSecs: 10,
+    desc: 'On rings, pull to the mid-point of a pull-up — elbows ~90°, rings at chest, shoulders down and back, rings turned slightly out — and hold isometrically. Builds the sticking-point strength for pull-ups and the muscle-up transition.',
+    note: 'Bent-arm isometric — pulling sticking point / muscle-up base',
+    muscles: { primary: ['lats', 'biceps'], secondary: ['rear-delt', 'core', 'forearms'] },
+  },
+  'inv-deadlift-to-skin-the-cat': {
+    id: 'inv-deadlift-to-skin-the-cat', name: 'Inverted Deadlift to Skin the Cat',
+    category: 'straight', type: 'reps', targetReps: 5,
+    desc: 'From a hang, pull to an inverted hang with straight arms (the inverted deadlift — scapular pull to inversion), then continue into a skin the cat (rotate through to a German hang) and return the same way. Controlled throughout — straight-arm scapular strength + shoulder mobility.',
+    note: 'Straight-arm scapular pull + shoulder mobility — inversion / back-lever base',
+    muscles: { primary: ['lats', 'shoulders', 'core'], secondary: ['biceps', 'rear-delt', 'serratus'] },
+  },
   'wide-support-hold': {
     id: 'wide-support-hold', name: 'Wide Support Hold',
     category: 'straight', type: 'hold', targetSecs: 10,

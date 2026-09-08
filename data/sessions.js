@@ -55,51 +55,52 @@ const COOLDOWN_PULL = [
   { name: 'Savasana',                breaths: '2 min',           note: 'Full integration — let the session settle',         cue: null },
 ];
 
-// ─── Sessions — Monthly Designer Program (2026-09-06) ──────
-// Priority order: (a) reclaim below_best benchmark lifts, (b) zero-volume
-// groups [none this month], (c) lowest-completion gymnastic skills
-// (shoulderstand-press; forward-roll/backward-roll have no matching EX and
-// are skipped — practice separately as floor tumbling), (d) shoulder width
-// for the shoulder:waist gap (1.40 vs 1.618 goal).
+// ─── Sessions — Monthly Designer Program (2026-09-08) ──────
+// 4-track model: Skill (fresh, first) -> Strength (chosen to feed the pushed
+// skill) -> Hypertrophy (circumference laggards: arm/shoulder/serratus + legs)
+// -> Core Finisher (2-move V-ab). Skill focus: Handstand (push) + Muscle-up
+// (pull) + Manna (core); Front Lever maintained; Shoulderstand-Press (Fri) is
+// Julian's add. Overload = Last Set to Failure (per-exercise schemes in notes).
 
 export const SESSIONS = [
   {
     id: 'mon-push-designer',
     day: 'Monday', weekday: 1,
-    type: 'push', label: 'Push — Reclaim & Width',
-    focus: 'HSPU/Ring Dip reclaim · Shoulderstand Press skill · Shoulder width · Core reclaim',
-    skills: ['shoulderstand-press'],
+    type: 'push', label: 'Push — Handstand & Width',
+    focus: 'Handstand skill · HSPU/Ring-Dip press (LSTF) · Delt/arm width + serratus · V-ab core',
+    skills: ['handstand'],
     warmup: WARMUP_PUSH,
     supersets: [
       {
-        id: 'A', label: 'Skill — Shoulderstand Press', rings: 'none', rounds: 3,
-        restIntra: 45, restRound: 120,
+        id: 'A', label: 'Skill — Handstand (fresh)', rings: 'none', rounds: 6,
+        restIntra: 60, restRound: 90,
         exercises: [
-          { ...EX['shoulderpress-negative'], note: 'Shoulderstand Press skill, lowest-completion (1/4) — 5s controlled descent' },
+          { ...EX['chest-wall-handstand'], note: 'Handstand focus (Wall->Free). 60s-method: holds summing ~60s at ~50% max hold. Advance toward free HS when easy.' },
         ],
       },
       {
-        id: 'B', label: 'Push Strength — Benchmark Reclaim', rings: 'mid', rounds: 4,
+        id: 'B', label: 'Push Strength — feeds handstand/MU (LSTF)', rings: 'mid', rounds: 4,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['hspu'], note: 'Reclaim — best_ever 7, current 5' },
-          { ...EX['ring-dip-deep'], note: 'Reclaim — best_ever 7, current 5' },
+          { ...EX['hspu'], note: 'LSTF 4-4-4-X (max 5 -> reps 4). Last set to failure; advance if last >= first+2.' },
+          { ...EX['ring-dip-deep'], note: 'LSTF 4-4-4-X (max 5 -> reps 4). Pressing base for the muscle-up dip.' },
         ],
       },
       {
-        id: 'C', label: 'Shoulder Width', rings: 'low', rounds: 3,
+        id: 'C', label: 'Width — delt / arm / serratus', rings: 'low', rounds: 3,
         restIntra: 30, restRound: 90,
         exercises: [
-          { ...EX['lateral-raise'], note: 'Shoulder:waist 1.40 vs 1.618 goal — priority isolation' },
-          EX['korean-dips'],
+          { ...EX['lateral-raise'], note: 'Shoulder laggard -13.5% (Sh:W). 12-15, last sets to failure.' },
+          { ...EX['ring-overhead-ext'], note: 'Arm laggard -24% — triceps long head. 10-12 to failure.' },
+          { ...EX['scapular-push-up-band'], note: 'SERRATUS (standing priority) — full protraction each rep.' },
         ],
       },
       {
-        id: 'D', label: 'Core Finisher — Reclaim', rings: 'bar', rounds: 4,
+        id: 'D', label: 'Core Finisher — V-ab', rings: 'bar', rounds: 3,
         restIntra: 45, restRound: 90,
         exercises: [
-          { ...EX['dragon-flag'], note: 'Reclaim — best_ever 9, current 5' },
-          { ...EX['hanging-oblique-twist'], note: 'V-ab emphasis — obliques / lower V-lines' },
+          { ...EX['hanging-leg-raise'], note: 'Lower rectus (V-abs), to failure.' },
+          { ...EX['windshield-wipers'], note: 'Oblique — LSTF 7-7-X (max 8 -> reps 7).' },
         ],
       },
     ],
@@ -108,40 +109,40 @@ export const SESSIONS = [
   {
     id: 'wed-pull-designer',
     day: 'Wednesday', weekday: 3,
-    type: 'pull', label: 'Pull — Reclaim & Width',
-    focus: 'Chest to Bar/Row reclaim · Shoulder width · Core reclaim',
-    skills: [],
+    type: 'pull', label: 'Pull — Muscle-up & Manna',
+    focus: 'Muscle-up skill · C2B/Row pull (LSTF) · Arm/rear-delt · Manna V-sit (core)',
+    skills: ['muscle-up', 'manna'],
     warmup: WARMUP_PULL_WED,
     supersets: [
       {
-        id: 'A', label: 'Strength Volume — Benchmark Reclaim', rings: 'high', rounds: 4,
+        id: 'A', label: 'Skill — Muscle-Up (fresh)', rings: 'high', rounds: 4,
+        restIntra: 60, restRound: 120,
+        exercises: [
+          { ...EX['muscle-up-negative'], note: 'Muscle-up focus (Negatives->MU). 3-5 controlled 5s negatives — own the transition.' },
+          { ...EX['false-grip-dead-hang'], note: 'False-grip is the MU gate. 60s-method hold.' },
+        ],
+      },
+      {
+        id: 'B', label: 'Pull Strength — feeds muscle-up (LSTF)', rings: 'high', rounds: 3,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['chest-to-bar'], note: 'Reclaim — best_ever 8, current 7' },
-          { ...EX['row'], note: 'Reclaim — best_ever 10, current 9' },
+          { ...EX['chest-to-bar'], note: 'LSTF 6-6-X (max 7 -> reps 6). The explosive pull that feeds the MU.' },
+          { ...EX['row'], note: 'LSTF 8-8-X (max 9 -> reps 8). Horizontal pull base.' },
         ],
       },
       {
-        id: 'B', label: 'Isolation — Benchmark Reclaim', rings: 'mid', rounds: 3,
+        id: 'C', label: 'Arm / rear-delt', rings: 'mid', rounds: 3,
         restIntra: 30, restRound: 90,
         exercises: [
-          { ...EX['pelican-curl'], note: 'Reclaim — best_ever 10, current 8' },
+          { ...EX['ring-hammer-curl'], note: 'Arm laggard -24% — brachialis/biceps. 10-12 to failure.' },
+          { ...EX['face-pull'], note: 'Rear delt (shoulder laggard) + external rotation. 12-15.' },
         ],
       },
       {
-        id: 'C', label: 'Shoulder Width', rings: 'mid', rounds: 3,
-        restIntra: 30, restRound: 90,
-        exercises: [
-          { ...EX['tyi-raise'], note: 'Shoulder:waist 1.40 vs 1.618 goal — lower trap + rear delt' },
-          EX['face-pull'],
-        ],
-      },
-      {
-        id: 'D', label: 'Core Finisher — Reclaim', rings: 'bar', rounds: 3,
+        id: 'D', label: 'Manna — V-sit (counts as core)', rings: 'none', rounds: 5,
         restIntra: 45, restRound: 90,
         exercises: [
-          { ...EX['windshield-wipers'], note: 'Reclaim — best_ever 12, current 8' },
-          { ...EX['hanging-leg-raise'], note: 'V-ab emphasis — lower rectus + grip' },
+          { ...EX['v-sit-pulse'], note: 'Manna focus (45deg->75deg V). 60s-method compression hold — this IS the core work today.' },
         ],
       },
     ],
@@ -150,40 +151,41 @@ export const SESSIONS = [
   {
     id: 'fri-push-designer',
     day: 'Friday', weekday: 5,
-    type: 'push', label: 'Push — Reclaim, Legs & Width',
-    focus: 'Ring Dip reclaim · Pistol Squat reclaim · Shoulder width · Core reclaim',
-    skills: [],
+    type: 'push', label: 'Push — Handstand/Press, Legs & Serratus',
+    focus: 'Handstand + Shoulderstand-press skill · Pistol (LSTF) · Delt/serratus · V-ab core',
+    skills: ['handstand', 'shoulderstand-press'],
     warmup: WARMUP_PUSH,
     supersets: [
       {
-        id: 'A', label: 'Push Strength — Benchmark Reclaim', rings: 'mid', rounds: 4,
-        restIntra: 45, restRound: 120,
-        exercises: [
-          { ...EX['ring-dip-deep'], note: 'Second weekly exposure — reclaim best_ever 7, current 5' },
-        ],
-      },
-      {
-        id: 'B', label: 'Legs — Benchmark Reclaim', rings: 'none', rounds: 4,
+        id: 'A', label: 'Skill — Handstand & Shoulderstand Press (fresh)', rings: 'none', rounds: 5,
         restIntra: 60, restRound: 90,
         exercises: [
-          { ...EX['pistol-squat'], note: 'Reclaim — best_ever 30, current 10, largest gap of all benchmarks. Rebuild volume progressively' },
-          { ...EX['bulgarian-split-squat'], note: 'Quad volume support for pistol squat reclaim' },
+          { ...EX['wall-kick-up'], note: 'Handstand 2nd exposure — kick-up + toe-pull balance toward free HS.' },
+          { ...EX['shoulderpress-negative'], note: 'Shoulderstand-press (Julian add) — 3-5 controlled 5s negatives.' },
         ],
       },
       {
-        id: 'C', label: 'Shoulder Width', rings: 'low', rounds: 3,
+        id: 'B', label: 'Legs (LSTF)', rings: 'none', rounds: 3,
+        restIntra: 60, restRound: 90,
+        exercises: [
+          { ...EX['pistol-squat'], note: 'LSTF 9-9-X (max 10 vs best 30). Rebuild leg volume + hits hips laggard.' },
+          { ...EX['bulgarian-split-squat'], note: 'Hips/leg laggard -11% — quad + glute. 10-12/side.' },
+        ],
+      },
+      {
+        id: 'C', label: 'Width — delt / serratus', rings: 'low', rounds: 3,
         restIntra: 30, restRound: 90,
         exercises: [
-          EX['russian-push-up'],
-          { ...EX['ring-y-raise'], note: 'Shoulder:waist 1.40 vs 1.618 goal — lower trap, slow and controlled' },
+          { ...EX['ring-y-raise'], note: 'Shoulder laggard — lower trap + rear delt. 12-15 slow.' },
+          { ...EX['planche-protraction'], note: 'SERRATUS (standing priority) — max protraction; also feeds handstand/planche.' },
         ],
       },
       {
-        id: 'D', label: 'Core Finisher — Reclaim', rings: 'bar', rounds: 3,
+        id: 'D', label: 'Core Finisher — V-ab', rings: 'bar', rounds: 3,
         restIntra: 45, restRound: 90,
         exercises: [
-          { ...EX['dragon-flag'], note: 'Second weekly exposure — reclaim best_ever 9, current 5' },
-          { ...EX['v-sit-pulse'], note: 'V-ab emphasis — lower rectus, builds the V' },
+          { ...EX['l-sit'], note: 'Lower rectus / compression (also feeds Manna).' },
+          { ...EX['side-bend'], note: 'Oblique — 12-15/side.' },
         ],
       },
     ],
@@ -192,40 +194,41 @@ export const SESSIONS = [
   {
     id: 'sat-pull-designer',
     day: 'Saturday', weekday: 6,
-    type: 'pull', label: 'Pull — Reclaim, Legs & Width',
-    focus: 'Commande/Row reclaim · Nordic maintain · Shoulder width · Core reclaim',
-    skills: [],
+    type: 'pull', label: 'Pull — Muscle-up 2nd, FL maintain',
+    focus: 'Muscle-up skill + FL maintain · Commando/Pelican pull (LSTF) · Arm/traps · V-ab core',
+    skills: ['muscle-up', 'front-lever'],
     warmup: WARMUP_PULL_SAT,
     supersets: [
       {
-        id: 'A', label: 'Strength Volume — Benchmark Reclaim', rings: 'high', rounds: 4,
+        id: 'A', label: 'Skill — Muscle-Up + Front Lever (maintain)', rings: 'high', rounds: 4,
+        restIntra: 60, restRound: 120,
+        exercises: [
+          { ...EX['muscle-up-negative'], note: 'Muscle-up 2nd exposure — 3-5 controlled negatives.' },
+          { ...EX['front-lever-hold'], note: 'MAINTAIN Full FL (L9). 60s-method hold — not pushed this cycle.' },
+        ],
+      },
+      {
+        id: 'B', label: 'Pull Strength — feeds levers (LSTF)', rings: 'high', rounds: 3,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['commande'], note: 'Reclaim — best_ever 8, current 7. Most overdue benchmark, last logged 2026-06-03' },
-          { ...EX['row'], note: 'Second weekly exposure — reclaim best_ever 10, current 9' },
+          { ...EX['commande'], note: 'LSTF 6-6-X (max 7). Most overdue benchmark — brachialis/oblique pull.' },
+          { ...EX['pelican-curl'], note: 'LSTF 7-7-X (max 8). Straight-arm biceps (feeds levers) + arm size.' },
         ],
       },
       {
-        id: 'B', label: 'Legs — Maintain', rings: 'none', rounds: 3,
-        restIntra: 60, restRound: 90,
-        exercises: [
-          { ...EX['nordic-curl'], note: 'At best_ever (8) — maintain' },
-        ],
-      },
-      {
-        id: 'C', label: 'Shoulder Width & Isolation', rings: 'mid', rounds: 3,
+        id: 'C', label: 'Arm / traps', rings: 'mid', rounds: 3,
         restIntra: 30, restRound: 90,
         exercises: [
-          { ...EX['ring-support-shrug'], note: 'Shoulder:waist 1.40 vs 1.618 goal — upper trap, arms straight' },
-          { ...EX['one-arm-ring-curl'], note: 'Complements Pelican Curl reclaim without duplicating it' },
+          { ...EX['ring-support-shrug'], note: 'Neck/trap laggard -11% — upper-trap shelf, arms straight.' },
+          { ...EX['one-arm-ring-curl'], note: 'Arm laggard -24% — unilateral biceps. 8-10/side.' },
         ],
       },
       {
-        id: 'D', label: 'Core Finisher — Reclaim', rings: 'bar', rounds: 3,
+        id: 'D', label: 'Core Finisher — V-ab', rings: 'bar', rounds: 4,
         restIntra: 45, restRound: 90,
         exercises: [
-          { ...EX['windshield-wipers'], note: 'Second weekly exposure — reclaim best_ever 12, current 8' },
-          { ...EX['l-sit'], note: 'V-ab emphasis — lower rectus compression' },
+          { ...EX['dragon-flag'], note: 'LSTF 4-4-4-X (max 5 -> reps 4). Anti-extension / lower rectus.' },
+          { ...EX['hanging-oblique-twist'], note: 'Oblique — pairs with Dragon Flag for the 2-move V-ab finisher.' },
         ],
       },
     ],
