@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PR
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v66 · 2026-09-09';
+const APP_VERSION  = 'v67 · 2026-09-09';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
