@@ -346,8 +346,19 @@ function nextPhaseName() {
   return PHASES[1].label;
 }
 
+// The Designer program sets its own volume, so the Hypertrophy phase no longer
+// inflates it (+25% rounds / +40% reps). Deload still scales down.
+function phaseRoundMult() {
+  const ph = phase();
+  return ph.label === 'Hypertrophy' ? 1 : ph.roundMult;
+}
+function phaseRepMult() {
+  const ph = phase();
+  return ph.label === 'Hypertrophy' ? 1 : ph.repMult;
+}
+
 function getTargetReps(ex) {
-  const mult = phase().repMult;
+  const mult = phaseRepMult();
   if (ex.type === 'hold') return ex.targetSecs;
   return Math.round((ex.targetReps || 5) * mult);
 }
@@ -966,8 +977,9 @@ function normalizeRepRanges(sessions) {
 
 function getTodaySession() {
   const wd = new Date().getDay(); // 0=Sun,1=Mon,...6=Sat
-  const src = phase().label === 'Hypertrophy' ? HYPERTROPHY_SESSIONS : SESSIONS;
-  return src.find(s => s.weekday === wd) || null;
+  // Designer program only. HYPERTROPHY_SESSIONS stays in allSessions() so old
+  // log entries still resolve, but it is never offered for a new session.
+  return SESSIONS.find(s => s.weekday === wd) || null;
 }
 
 // ─── Session init ─────────────────────────────────────────
@@ -1324,7 +1336,7 @@ function renderOverview() {
     col.className = 'ss-col' + (isDone ? ' is-done' : '') + (isCurrent ? ' is-current' : '');
 
     // Header
-    const totalRounds = Math.round(ss.rounds * phase().roundMult);
+    const totalRounds = Math.round(ss.rounds * phaseRoundMult());
     let dotsHtml = '';
     for (let r = 1; r <= totalRounds; r++) {
       const cls = isDone ? 'round-dot--done' : (isCurrent && r < A.round ? 'round-dot--done' : (isCurrent && r === A.round ? 'round-dot--active' : 'round-dot'));
@@ -1573,7 +1585,7 @@ function finishTabata() {
 function renderExercise() {
   const ss  = A.session.supersets[A.ssIdx];
   const ex  = ss.exercises[A.exIdx];
-  const totalRounds = Math.round(ss.rounds * phase().roundMult);
+  const totalRounds = Math.round(ss.rounds * phaseRoundMult());
 
   // Skip soft-removed exercises silently
   if (A.softRemoved?.includes(ex.id)) {
@@ -1598,7 +1610,7 @@ function buildExDots(ss) {
 }
 
 function buildSetPills(ex, ss) {
-  const totalRounds = Math.round(ss.rounds * phase().roundMult);
+  const totalRounds = Math.round(ss.rounds * phaseRoundMult());
   const logged = (A.log[ex.id] || { sets: [] }).sets;
   let html = '';
   for (let r = 1; r <= totalRounds; r++) {
@@ -1964,10 +1976,9 @@ function updateSwDisplay(secs) {
 // ─── Session progress ─────────────────────────────────────
 function sessionProgress() {
   if (!A || !A.session) return 0;
-  const ph = phase();
   let total = 0, done = 0;
   A.session.supersets.forEach((ss, si) => {
-    const rounds = Math.round(ss.rounds * ph.roundMult);
+    const rounds = Math.round(ss.rounds * phaseRoundMult());
     total += ss.exercises.length * rounds;
     if (si < A.ssIdx) {
       done += ss.exercises.length * rounds;
@@ -2018,7 +2029,7 @@ function getStreak() {
 function logSet(value) {
   const ss  = A.session.supersets[A.ssIdx];
   const ex  = ss.exercises[A.exIdx];
-  const totalRounds = Math.round(ss.rounds * phase().roundMult);
+  const totalRounds = Math.round(ss.rounds * phaseRoundMult());
 
   if (!A.log[ex.id]) A.log[ex.id] = { sets: [] };
   A.log[ex.id].sets.push(value);
@@ -2046,7 +2057,7 @@ function doSkipExercise(reason = 'other') {
     date:   fmtLocal(new Date()),
   });
   saveActive();
-  const totalRounds = Math.round(ss.rounds * phase().roundMult);
+  const totalRounds = Math.round(ss.rounds * phaseRoundMult());
   advance(ss, totalRounds);
 }
 
@@ -2087,7 +2098,7 @@ function showRest(type, ss, nextEx) {
   const isIntra   = type === 'intra';
   const pfx       = isIntra ? 's05' : 's06';
   const screenId  = isIntra ? 's-05' : 's-06';
-  const totalRounds = Math.round(ss.rounds * phase().roundMult);
+  const totalRounds = Math.round(ss.rounds * phaseRoundMult());
 
   // Use adapted rest if available, otherwise program default
   const restInfo  = getEffectiveRest(A.sessionId, ss.id, isIntra ? 'intra' : 'round');
