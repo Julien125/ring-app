@@ -106,6 +106,7 @@ function loadState() {
     if (s) state = { ...state, ...JSON.parse(s) };
     // Merge skill levels: preserve saved, fill missing with defaults
     state.skillLevels = { ...DEFAULT_SKILL_LEVELS, ...(state.skillLevels || {}) };
+    mergeSep13Entries(); // before the scrub, which would drop the '12-15' sets
     // Scrub sets poisoned by the string rep-range bug ('12-15', '12-151', NaN→null)
     (state.log || []).forEach(entry => scrubSets(entry.exercises));
     const a = localStorage.getItem(ACTIVE_KEY);
@@ -120,6 +121,37 @@ function loadState() {
       if (A) scrubSets(A.log);
     }
   } catch (_) {}
+}
+
+// One-off (2026-09-13): Friday's session was logged three times while the
+// rep-range bug was live — a 29s pike push-up partial, the real session with
+// '12-15' strings, and a 1-min duplicate. Collapse them into one clean entry.
+function mergeSep13Entries() {
+  const FLAG = 'ring-app-merge-2026-09-13';
+  if (localStorage.getItem(FLAG) || !Array.isArray(state.log)) return;
+  const KEEP = '0d9cef05-e004-4206-990a-10f22db66c46';
+  const DROP = ['605bfdf2-48bf-4673-92f1-8f0e18cfa4c3', '4f3f0c90-88e5-40b5-a8af-4fbe5202f4ee'];
+  const keep = state.log.find(e => e.id === KEEP);
+  if (!keep) return;
+  const dropped = state.log.filter(e => DROP.includes(e.id)).length;
+  Object.assign(keep, {
+    durationSecs: 29 + 692,
+    complete: true,
+    exercises: {
+      'pike-push-up':       { sets: [8, 8, 8, 8, 8] },
+      'ring-support-shrug': { sets: [15, 15, 15, 15] },
+      'tyi-raise':          { sets: [9, 9, 9, 9] },
+      'pistol-squat':       { sets: [10, 10, 10, 10] },
+      'dragon-flag':        { sets: [5, 5, 5, 5, 5] },
+      'side-bend':          { sets: [15, 15, 15, 15, 15] },
+    },
+  });
+  state.log = state.log.filter(e => !DROP.includes(e.id));
+  state.sessionCount = Math.max(0, state.sessionCount - dropped);
+  localStorage.setItem(FLAG, '1');
+  saveState();
+  // Push the clean log to the Gist once the module has finished loading
+  setTimeout(() => { if (getGistToken()) gistBackup(); }, 3000);
 }
 
 function scrubSets(exLog) {
