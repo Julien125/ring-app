@@ -233,6 +233,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['feet-elevated-row'], note: '3 x 10, 1s retraction hold — traps primary — neck laggard; more horizontal-pull volume', targetReps: 10 },
           { ...EX['single-leg-glute-bridge'], note: '3 x 12, pause at top — hips -11% laggard, glute isolation', targetReps: 12 },
+          { ...EX['pelican-curl'], note: '3 x 8, slow controlled stretch, no bouncing — arm -24% laggard, second weekly arm exposure (Wed hammer curl). tissue_load high: stop if the elbow/biceps tendon complains', targetReps: 8 },
         ],
       },
       {
