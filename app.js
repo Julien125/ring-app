@@ -106,6 +106,8 @@ function loadState() {
     if (s) state = { ...state, ...JSON.parse(s) };
     // Merge skill levels: preserve saved, fill missing with defaults
     state.skillLevels = { ...DEFAULT_SKILL_LEVELS, ...(state.skillLevels || {}) };
+    // Scrub sets poisoned by the string rep-range bug ('12-15', '12-151', NaN→null)
+    (state.log || []).forEach(entry => scrubSets(entry.exercises));
     const a = localStorage.getItem(ACTIVE_KEY);
     if (a) {
       A = JSON.parse(a);
@@ -115,8 +117,18 @@ function loadState() {
         A.session = allSessions().find(s => s.id === A.sessionId) || null;
         if (!A.session) A = null; // sessionId no longer exists — discard
       }
+      if (A) scrubSets(A.log);
     }
   } catch (_) {}
+}
+
+function scrubSets(exLog) {
+  Object.values(exLog || {}).forEach(l => {
+    if (!Array.isArray(l?.sets)) return;
+    l.sets = l.sets
+      .filter(v => v !== null && (typeof v !== 'string' || Number.isFinite(Number(v))))
+      .map(v => typeof v === 'string' ? Number(v) : v);
+  });
 }
 
 function saveState() {
@@ -127,6 +139,10 @@ function loadAdaptations() {
   try {
     const a = localStorage.getItem(ADAPT_KEY);
     if (a) adaptations = { ...adaptations, ...JSON.parse(a) };
+    // Drop targets poisoned by the string rep-range bug (value NaN / '12-15')
+    Object.keys(adaptations.targets || {}).forEach(id => {
+      if (!Number.isFinite(adaptations.targets[id]?.value)) delete adaptations.targets[id];
+    });
   } catch (_) {}
 }
 
@@ -904,6 +920,18 @@ function allSessions() {
   return [...SESSIONS, ...HYPERTROPHY_SESSIONS, ...FLEX_SESSIONS];
 }
 
+// The Designer writes rep ranges as strings ('12-15'). The engine does math on
+// targetReps, so keep the bottom of the range there and the range on repRange.
+function normalizeRepRanges(sessions) {
+  sessions.forEach(s => s.supersets?.forEach(ss => ss.exercises?.forEach(ex => {
+    if (!ex || typeof ex.targetReps !== 'string') return;
+    const [lo, hi] = ex.targetReps.split(/[-–]/).map(n => parseInt(n, 10));
+    ex.targetReps = Number.isFinite(lo) ? lo : undefined;
+    if (Number.isFinite(hi)) ex.repRange = `${lo}–${hi}`;
+  })));
+}
+[SESSIONS, HYPERTROPHY_SESSIONS, FLEX_SESSIONS].forEach(normalizeRepRanges);
+
 function getTodaySession() {
   const wd = new Date().getDay(); // 0=Sun,1=Mon,...6=Sat
   const src = phase().label === 'Hypertrophy' ? HYPERTROPHY_SESSIONS : SESSIONS;
@@ -1277,7 +1305,7 @@ function renderOverview() {
       const exDone = isDone || (isCurrent && (A.round > totalRounds));
       const exCur  = isCurrent && ei === A.exIdx && !isDone;
       const cls    = exDone ? 'ss-ex-row is-done' : (exCur ? 'ss-ex-row is-current' : 'ss-ex-row');
-      const target = ex.type === 'hold' ? `${ex.targetSecs}s` : `${ex.targetReps}r`;
+      const target = ex.type === 'hold' ? `${ex.targetSecs}s` : `${ex.repRange || ex.targetReps}r`;
       // Show logged sets if any
       const loggedSets = (A.log[ex.id] || { sets: [] }).sets;
       const setsStr = loggedSets.length
@@ -2070,7 +2098,7 @@ function showRest(type, ss, nextEx) {
   q(`#${pfx}-next-name`).textContent = nextEx.name;
   q(`#${pfx}-next-meta`).textContent = nextEx.type === 'hold'
     ? `hold · ${nextEx.targetSecs}s target`
-    : `${getTargetReps(nextEx)} reps`;
+    : `${nextEx.repRange || getTargetReps(nextEx)} reps`;
 
   // Ring reset
   const ring = q(`#${pfx}-ring`);

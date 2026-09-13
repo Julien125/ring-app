@@ -150,7 +150,7 @@ export const SESSIONS = [
         id: 'D', label: 'Core / compression', rings: 'none', rounds: 5,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['v-sit-pulse'], note: '60s-method at end range — L6 45-deg V-Sit — the manna cell. counts_as_core', targetReps: 'hold' },
+          { ...EX['v-sit-pulse'], note: '60s-method at end range — L6 45-deg V-Sit — the manna cell. counts_as_core', type: 'hold', targetSecs: 60 },
           { ...EX['butt-lift'], note: '5 x 8, 1-2s hold at top — manna support — L-sit compression lift. counts_as_core, so NO separate Core Finisher today', targetReps: 8 },
         ],
       },
