@@ -1462,6 +1462,15 @@
       <button id="s01-pick" class="btn-text mt-2" style="display:none"></button>
       <button id="s01-log-activity" class="btn-text mt-3">＋ Log activity · steps</button>
       <div id="s01-activity-summary" class="t-label mt-2" style="display:none;opacity:0.75"></div>
+      <!-- Body OS lead measures (2026-09-15): protein yes/no + home handstand block -->
+      <div id="s01-protein" class="home-tap mt-4">
+        <span class="home-tap__label">🥩 Protein 160 g today?</span>
+        <div class="home-tap__btns">
+          <button class="skip-reason-btn" data-protein="yes">Yes</button>
+          <button class="skip-reason-btn" data-protein="no">No</button>
+        </div>
+      </div>
+      <button id="s01-home-skill" class="btn-text mt-3" style="display:none">🏠 Handstand block · at home</button>
       <!-- Pattern card — one at a time, dismissible -->
       <div id="s01-pattern-card" class="pattern-card mt-5" style="display:none">
         <div class="pattern-card__msg" id="s01-pattern-msg"></div>
@@ -1504,6 +1513,8 @@
     <div id="s08-list"></div>
     <div style="flex:1"></div>
     <div class="px-screen" style="padding-bottom:24px">
+      <div id="s08-home-note" class="t-label mb-2" style="display:none;text-align:center;color:var(--progress)"></div>
+      <button id="s08-home" class="btn-text mb-2" style="display:none">🏠 Handstand block at home today →</button>
       <button id="s08-cta" class="btn-primary mb-nav">Continue to strength →</button>
     </div>
   </section>
@@ -1767,6 +1778,7 @@
     </div>
     <div class="px-screen mt-4" id="s07-prs" style="display:none"></div>
     <div class="px-screen mt-4" id="s07-rpe"></div>
+    <div class="px-screen mt-4" id="s07-pain"></div>
     <div class="px-screen mt-5">
       <div class="section-label mb-2">Exercises</div>
       <div id="s07-log"></div>
@@ -2117,6 +2129,13 @@
     #dialog-activity .act-input::placeholder { color:var(--accent); opacity:0.35; }
     #dialog-activity .act-divider { margin:22px 0 10px; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; opacity:0.6; }
     #dialog-activity .act-divider span { text-transform:none; letter-spacing:0; opacity:0.7; }
+    /* Body OS lead measures (2026-09-15) */
+    .home-tap { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .home-tap__label { font-family:'DM Mono',monospace; font-size:12px; color:var(--txt-2); text-align:left; }
+    .home-tap__btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; min-width:150px; }
+    .home-skill-row { display:flex; flex-direction:column; gap:3px; padding:10px 0; border-bottom:1px solid var(--line); }
+    .home-skill-row b { font-size:14px; color:var(--txt); }
+    .home-skill-row span { font-family:'DM Mono',monospace; font-size:11px; color:var(--txt-3); }
   </style>
   <div class="dialog-overlay" id="dialog-activity">
     <div class="dialog-sheet" style="padding-bottom:40px">
@@ -2163,6 +2182,19 @@
     </div>
   </div>
 
-<script type="module" src="./app.js?v=24"></script>
+  <!-- Home handstand block (Body OS 2026-09-15 — temporary, until the handstand is good) -->
+  <div class="dialog-overlay" id="dialog-home-skill">
+    <div class="dialog-sheet" style="padding-bottom:40px">
+      <div class="dialog-title mb-2">🏠 Handstand block — at home</div>
+      <div id="dh-session" class="t-label mb-2" style="opacity:0.7"></div>
+      <div id="dh-list"></div>
+      <div class="dialog-actions">
+        <button class="btn-primary" id="dh-done">✓ Block done</button>
+        <button class="btn-ghost" id="dh-cancel">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script type="module" src="./app.js?v=25"></script>
 </body>
 </html>

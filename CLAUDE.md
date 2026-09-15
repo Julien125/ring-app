@@ -40,7 +40,13 @@ Changes under `data/` need no query bump, but the SW cache name should still mov
 - Keep `targetReps` parseable — string ranges like `'12-15'` produced NaN (fixed `3b6627b`).
 
 ## Data flow
-`state` (`log`, `skillLevels`, `otherActivities[]`, `steps[]`) → `buildBackupPayload()` → GitHub Gist → Body_Analysis `data/ring_app_export.json`.
+`state` (`log`, `skillLevels`, `otherActivities[]`, `steps[]`, `protein[]`, `homeSkills[]`) → `buildBackupPayload()` → GitHub Gist → Body_Analysis `data/ring_app_export.json`.
+
+## Body OS lead-measure capture (v68, 2026-09-15)
+- **Protein** — home-screen yes/no, `state.protein = [{date, hit, loggedAt}]`, one per local day, latest wins (160 g target).
+- **Pain tap** — summary screen after every session: `entry.pain = {level: 'none'|'niggle'|'stop', sites: [...]}`. Read-only history shows it.
+- **Handstand at home** (temporary, until the handstand is good) — on sessions whose `skills` include `handstand`, the skill screen offers "Handstand block at home today": sets `A.skillsAtHome`, skips superset A (only if `rings: 'none'`). The home-screen "🏠 Handstand block" dialog lists the block and logs `state.homeSkills = [{date, sessionId, skills}]`, which marks that day's session `skillsDone: true`. Log entries carry `skillsAtHome` + `skillsWhere: 'home'|'park'`.
+- Dates use `fmtLocal()` (local day). Note: the older steps/activity dialog uses `_todayKey()` = UTC date, so a step log between 00:00 and 02:00 local lands on the previous day.
 
 ## Git
 - The **unattended** monthly pass auto-applies `sessions.js` and pushes when its gate passes.

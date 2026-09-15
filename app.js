@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PR
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v67 · 2026-09-09';
+const APP_VERSION  = 'v68 · 2026-09-15';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -38,7 +38,7 @@ const MUSCLE_STRETCHES = {
 };
 
 // ─── State ────────────────────────────────────────────────
-let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [], otherActivities: [], steps: [] };
+let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [], otherActivities: [], steps: [], protein: [], homeSkills: [] };
 
 // ─── Adaptations (separate store — never mutates log) ─────
 const ADAPT_KEY = 'ring-app-adaptations';
@@ -487,6 +487,18 @@ function bindGlobalUI() {
   q('#da-cancel')?.addEventListener('click', () => hideDialog('dialog-activity'));
   q('#da-save')?.addEventListener('click', saveActivityDialog);
 
+  // Protein tap + home handstand block (Body OS lead measures, 2026-09-15)
+  q('#s01-protein')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-protein]'); if (!b) return;
+    setProtein(b.dataset.protein === 'yes');
+  });
+  q('#s01-home-skill')?.addEventListener('click', openHomeSkillDialog);
+  q('#dialog-home-skill')?.addEventListener('click', e => {
+    if (e.target === q('#dialog-home-skill')) hideDialog('dialog-home-skill');
+  });
+  q('#dh-cancel')?.addEventListener('click', () => hideDialog('dialog-home-skill'));
+  q('#dh-done')?.addEventListener('click', saveHomeSkill);
+
   // Adaptation badge popover on exercise screens
   bindAdaptBadgePopover('s-03');
   bindAdaptBadgePopover('s-04');
@@ -590,6 +602,103 @@ function renderActivitySummary() {
   acts.forEach(a => parts.push(`${ACT_EMOJI[a.type] || '🏃'} ${a.durationMin}m`));
   el.textContent = parts.join('  ·  ');
   el.style.display = parts.length ? '' : 'none';
+}
+
+// ─── Protein + home handstand block (Body OS lead measures) ─
+// protein: one yes/no per local day (160 g target), latest wins.
+// homeSkills: the handstand block done at the wall at home on push days —
+// temporary, until the handstand is good (Julian, 2026-09-15). The park session
+// can move its skill block home; logging the home block then counts it as done.
+const HOME_SKILL = 'handstand';
+
+function renderProteinTap() {
+  const wrap = q('#s01-protein'); if (!wrap) return;
+  const p = (state.protein || []).find(x => x.date === fmtLocal(new Date()));
+  wrap.querySelectorAll('[data-protein]').forEach(b =>
+    b.classList.toggle('is-selected', !!p && (b.dataset.protein === 'yes') === p.hit));
+}
+
+function setProtein(hit) {
+  const date = fmtLocal(new Date());
+  state.protein = (state.protein || []).filter(x => x.date !== date);
+  state.protein.push({ date, hit, loggedAt: new Date().toISOString() });
+  saveState();
+  renderProteinTap();
+}
+
+function homeSkillDoneToday() {
+  const today = fmtLocal(new Date());
+  return (state.homeSkills || []).some(h => h.date === today);
+}
+
+// The session whose handstand block is (or can be) done at home today
+function homeSkillSessionForToday() {
+  const today = fmtLocal(new Date());
+  const moved = [...(state.log || [])].reverse().find(e => e.date === today && e.skillsAtHome);
+  if (moved) return allSessions().find(s => s.id === moved.sessionId) || null;
+  if (A && A.skillsAtHome && A.session) return A.session;
+  const t = getTodaySession();
+  return t && (t.skills || []).includes(HOME_SKILL) ? t : null;
+}
+
+// Superset A is the Designer's skill block; it goes home only if it needs no rings
+function homeSkillBlock(sess) {
+  const ss = (sess?.supersets || [])[0];
+  return ss && ss.id === 'A' && ss.rings === 'none' ? ss : null;
+}
+
+function renderHomeSkillButton() {
+  const btn = q('#s01-home-skill'); if (!btn) return;
+  btn.style.display = homeSkillSessionForToday() ? '' : 'none';
+  btn.textContent = homeSkillDoneToday() ? '🏠 Handstand block done at home ✓' : '🏠 Handstand block · at home';
+}
+
+function openHomeSkillDialog() {
+  const sess = homeSkillSessionForToday(); if (!sess) return;
+  const prog  = SKILL_PROGRESSIONS[HOME_SKILL];
+  const level = state.skillLevels[HOME_SKILL] || 1;
+  const cur   = prog?.progressions.find(p => p.level === level) || prog?.progressions[0];
+  const block = homeSkillBlock(sess);
+  const short = note => (note || '').split(' — ')[0];
+  const rows = [];
+  if (cur) {
+    const dose = cur.targetSecs ? `${cur.targetSecs}s` : (cur.targetReps ? `${cur.targetReps} reps` : '');
+    rows.push(`<div class="home-skill-row"><b>${cur.drill}</b><span>Skill L${level}${cur.sets ? ` · ${cur.sets} sets` : ''}${dose ? ` · ${dose}` : ''}</span></div>`);
+  }
+  (block?.exercises || []).filter(Boolean).forEach(ex => {
+    rows.push(`<div class="home-skill-row"><b>${ex.name}</b><span>${block.rounds} rounds${ex.note ? ` · ${short(ex.note)}` : ''}</span></div>`);
+  });
+  q('#dh-session').textContent = sess.label;
+  q('#dh-list').innerHTML = rows.join('');
+  const done = homeSkillDoneToday();
+  q('#dh-done').textContent = done ? '✓ Logged today' : '✓ Block done';
+  q('#dh-done').disabled = done;
+  showDialog('dialog-home-skill');
+}
+
+function saveHomeSkill() {
+  const sess = homeSkillSessionForToday(); if (!sess) return;
+  const date = fmtLocal(new Date());
+  if (!homeSkillDoneToday()) {
+    state.homeSkills = state.homeSkills || [];
+    state.homeSkills.push({ date, sessionId: sess.id, skills: [HOME_SKILL], loggedAt: new Date().toISOString() });
+  }
+  // Park session already finished with the block moved home → it now counts
+  const entry = [...state.log].reverse().find(e => e.date === date && e.sessionId === sess.id && e.skillsAtHome);
+  if (entry) { entry.skillsDone = true; entry.skillsWhere = 'home'; }
+  // Park session still running with the block moved home
+  if (A && A.skillsAtHome) { A.skillsDone = true; saveActive(); }
+  saveState();
+  hideDialog('dialog-home-skill');
+  renderHomeSkillButton();
+}
+
+function moveSkillBlockHome(sess, { done = false } = {}) {
+  A.skillsAtHome = true;
+  if (done) A.skillsDone = true;
+  if (homeSkillBlock(sess) && A.ssIdx === 0) { A.ssIdx = 1; A.round = 1; A.exIdx = 0; }
+  saveActive();
+  renderOverview();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -865,6 +974,8 @@ function renderHome() {
   const today = getTodaySession();
   const ph    = phase();
   renderActivitySummary();
+  renderProteinTap();
+  renderHomeSkillButton();
 
   // Date + week
   const now = new Date();
@@ -1099,7 +1210,7 @@ function resumeSession() {
   if (!A.session) { clearActive(); goHome(); return; }
 
   if (!A.warmupDone) { renderWarmup(); return; }
-  if (!A.skillsDone) { renderSkills(); return; }
+  if (!A.skillsDone && !A.skillsAtHome) { renderSkills(); return; }
   renderOverview();
 }
 
@@ -1231,8 +1342,25 @@ function renderSkills() {
     if (card) list.appendChild(card);
   });
 
+  // Body OS 2026-09-15: on handstand days the skill block can be done at home
+  const canHome   = (sess.skills || []).includes(HOME_SKILL);
+  const doneHome  = canHome && homeSkillDoneToday();
+  const homeBtn   = q('#s08-home');
+  const homeNote  = q('#s08-home-note');
+  if (homeNote) {
+    homeNote.textContent   = '✓ Handstand block done at home today';
+    homeNote.style.display = doneHome ? '' : 'none';
+  }
+  if (homeBtn) {
+    homeBtn.style.display = canHome && !doneHome ? '' : 'none';
+    homeBtn.onclick = () => moveSkillBlockHome(sess);
+  }
+
   const hasTabata = !!(sess.skills?.length) && !A.tabataDone;
-  if (hasTabata) {
+  if (doneHome) {
+    q('#s08-cta').textContent = 'Continue to strength →';
+    q('#s08-cta').onclick = () => moveSkillBlockHome(sess, { done: true });
+  } else if (hasTabata) {
     q('#s08-cta').textContent = 'Designer Skill →';
     q('#s08-cta').onclick = () => { saveActive(); startTabataFromSkills(); };
   } else {
@@ -2264,7 +2392,9 @@ function finishSession({ partial = false } = {}) {
     phase:      phase().label,
     durationSecs: Math.round((A.endTime - A.startTime) / 1000),
     complete:   !partial,
-    skillsDone: A.skillsDone,
+    skillsDone: !!A.skillsDone || (!!A.skillsAtHome && homeSkillDoneToday()),
+    skillsAtHome: !!A.skillsAtHome,   // Body OS: skill block moved to the wall at home
+    skillsWhere:  A.skillsAtHome ? 'home' : 'park',
     exercises:  A.log,
     skips:      A.skips || [],
     prs:        A.prs || {},
@@ -2415,6 +2545,10 @@ function renderSummary(entry, { readOnly = false } = {}) {
     });
     } // end else (not readOnly)
   }
+
+  // Pain tap — Body OS lead measure: every Ring session, "none" included
+  const painEl = q('#s07-pain');
+  if (painEl) renderPainTap(painEl, entry, readOnly);
 
   // Muscles teaser (taps to S-17)
   renderMusclesSummary(entry);
@@ -3701,6 +3835,56 @@ function silentDownload(filename, content, mime) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
+// ─── Pain tap (Body OS, 2026-09-15) ───────────────────────
+// entry.pain = { level: 'none'|'niggle'|'stop', sites: [...] }. The monthly
+// Designer reads it: same site twice in a row → less straight-arm load there;
+// 'stop' → that exercise pulled until a clean session. No diagnosis.
+const PAIN_LEVELS = [['none', '✅ None'], ['niggle', '🟡 Niggle'], ['stop', '🛑 Stop']];
+const PAIN_SITES  = [['wrist', 'Wrist'], ['elbow', 'Elbow'], ['shoulder', 'Shoulder'], ['other', 'Other']];
+
+function renderPainTap(el, entry, readOnly) {
+  const logged = () => state.log.find(e => e.id === entry.id);
+  const cur = logged()?.pain || entry.pain || null;
+  if (readOnly) {
+    el.innerHTML = cur
+      ? `<div class="rpe-label">Pain: ${cur.level}${cur.sites?.length ? ' · ' + cur.sites.join(', ') : ''}</div>`
+      : '';
+    return;
+  }
+  el.innerHTML = `
+    <div class="rpe-label">Any pain?</div>
+    <div class="skip-reason-grid" style="grid-template-columns:repeat(3,1fr)">
+      ${PAIN_LEVELS.map(([v, l]) => `<button class="skip-reason-btn" data-pain="${v}">${l}</button>`).join('')}
+    </div>
+    <div class="skip-reason-grid mt-2" data-pain-sites style="grid-template-columns:repeat(4,1fr);display:none">
+      ${PAIN_SITES.map(([v, l]) => `<button class="skip-reason-btn" data-site="${v}">${l}</button>`).join('')}
+    </div>`;
+  const sitesEl = el.querySelector('[data-pain-sites]');
+  const paint = p => {
+    el.querySelectorAll('[data-pain]').forEach(b => b.classList.toggle('is-selected', !!p && b.dataset.pain === p.level));
+    el.querySelectorAll('[data-site]').forEach(b => b.classList.toggle('is-selected', !!p && (p.sites || []).includes(b.dataset.site)));
+    sitesEl.style.display = p && p.level !== 'none' ? '' : 'none';
+  };
+  const save = p => {
+    const e = logged(); if (!e) return;
+    e.pain = p;
+    saveState();
+    paint(p);
+  };
+  el.querySelectorAll('[data-pain]').forEach(b => b.addEventListener('click', () => {
+    const level = b.dataset.pain;
+    save({ level, sites: level === 'none' ? [] : (logged()?.pain?.sites || []) });
+  }));
+  el.querySelectorAll('[data-site]').forEach(b => b.addEventListener('click', () => {
+    const prev = logged()?.pain;
+    if (!prev || prev.level === 'none') return;
+    const s = new Set(prev.sites || []);
+    s.has(b.dataset.site) ? s.delete(b.dataset.site) : s.add(b.dataset.site);
+    save({ ...prev, sites: [...s] });
+  }));
+  paint(cur);
+}
+
 function buildBackupPayload() {
   // ── Exercise library snapshot (muscles map) ────────────────────────────
   const exerciseLibrary = {};
@@ -3749,6 +3933,8 @@ function buildBackupPayload() {
     log:          logWithMuscles,
     otherActivities: state.otherActivities || [],   // cross-training: bike/run/swim/yoga…
     steps:           state.steps || [],             // daily step counts
+    protein:         state.protein || [],           // daily yes/no, 160 g target (Body OS)
+    homeSkills:      state.homeSkills || [],        // handstand block done at home (Body OS)
   };
 }
 
