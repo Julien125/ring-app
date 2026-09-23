@@ -92,6 +92,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['hspu'], note: '4-4-4-4-X (last to failure) — current max 5 -> m-1 = 4; feeds handstand + shoulderstand-press; advance if last >= first+2', targetReps: 4 },
           { ...EX['ring-dip-deep'], note: '4-4-4-4-X (last to failure) — current max 5 -> 4; feeds muscle-up (the dip out of the transition)', targetReps: 4 },
+          { ...EX['bulgarian-dips'], note: '5 x 6 on rings, controlled depth — HIGH tissue_load: stay short of failure the first two weeks. Added by Julian 2026-09-23 — over the one-shoulder-stretch-per-session rule by his call', targetReps: 6 },
         ],
       },
       {
@@ -100,6 +101,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['lateral-raise'], note: '4 x 12-15, last sets to failure — shoulder -13.5% laggard; lateral-delt is NOT in the skill-overlap set', targetReps: '12-15' },
           { ...EX['bulgarian-split-squat'], note: '4 x 10-12, last set to failure — hips -11% laggard; legs uncovered by ring skills', targetReps: '10-12' },
+          { ...EX['bulgarian-push-up'], note: '4 x 8 on rings, deep stretch at the bottom — HIGH tissue_load: stay short of failure the first two weeks. Added by Julian 2026-09-23 — over the one-shoulder-stretch-per-session rule by his call', targetReps: 8 },
         ],
       },
       {
@@ -183,6 +185,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['pike-push-up'], note: '8-8-8-X (last to failure) — overhead-press pattern feeding handstand + shoulderstand-press', targetReps: 8 },
           { ...EX['korean-dips'], note: '4 x 6, elbows track back, controlled depth — rear delt + long-head triceps. HIGH tissue_load (end-range posterior shoulder): stay short of failure the first two weeks. Added by Julian 2026-09-23', targetReps: 6 },
+          { ...EX['pseudo-planche-push-up'], note: '4 x 5, lean past the hands — HIGH tissue_load: stay short of failure the first two weeks. Added by Julian 2026-09-23 — over the one-shoulder-stretch-per-session rule by his call', targetReps: 5 },
         ],
       },
       {
@@ -200,6 +203,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['dragon-flag'], note: '4-4-4-X (last to failure) — current max 5 -> 4; Core Finisher lower-rectus AND feeds manna + front-lever', targetReps: 4 },
           { ...EX['side-bend'], note: '4 x 12-15 per side — Core Finisher — oblique. 4 sets to match Dragon Flag so the finisher stays ONE superset block (the two-core-move contract is per block, not per day)', targetReps: '12-15' },
+          { ...EX['l-sit'], note: '4 x 10s on rings, rings turned out, legs locked — compression. Added by Julian 2026-09-23', targetSecs: 10 },
         ],
       },
     ],
