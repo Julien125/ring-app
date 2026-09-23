@@ -26,7 +26,7 @@ Regenerated from the live `.js` after review round 4. The `.js` is the source of
 | `hspu` | HSPU | bent | strength | moderate | handstand, shoulderstand-press | shoulders, front-delt, triceps |
 | `straight-bar-dips` | Straight Bar Dips | bent | strength | moderate | muscle-up | chest, triceps |
 | `bulgarian-dips` | Bulgarian Dips | bent | strength | **high** | muscle-up | chest, front-delt |
-| `korean-dips` | Korean Dips | bent | strength | **high** | muscle-up | rear-delt, triceps |
+| `korean-dips` | Korean Dips | straight | strength | **high** | muscle-up | rear-delt, triceps |
 | `ring-dip-deep` | Ring Dip — Deep Pause | bent | strength | moderate | muscle-up, planche, shoulderstand-press | chest, triceps |
 | `ring-overhead-ext` | Ring Overhead Extension | bent | hypertrophy | moderate | — | triceps |
 | `pike-push-up` | Pike Push Up | bent | strength | low | handstand, shoulderstand-press | shoulders, front-delt |
@@ -189,7 +189,7 @@ Regenerated from the live `.js` after review round 4. The `.js` is the source of
 ### muscle-up — 16 feeders
 
 - **skill** (4): 360 Pull *(bent-arm, vertical_pull, high)* · False Grip Dead Hang *(straight-arm, static, high)* · Muscle Up Negative *(bent-arm, vertical_pull, moderate)* · RTO Support Hold *(straight-arm, static, moderate)*
-- **strength** (11): Straight Bar Dips *(bent-arm, vertical_push, moderate)* · Bulgarian Dips *(bent-arm, vertical_push, high)* · Korean Dips *(bent-arm, vertical_push, high)* · Ring Dip — Deep Pause *(bent-arm, vertical_push, moderate)* · Chest to Bar *(bent-arm, vertical_pull, moderate)* · Wide Pull Up *(bent-arm, vertical_pull, moderate)* · Archer Pull Up *(bent-arm, vertical_pull, moderate)* · Row *(bent-arm, horizontal_pull, low)* · Mid Pull-Up Hold (Rings) *(bent-arm, vertical_pull, moderate)* · False Grip Ring Row *(bent-arm, horizontal_pull, moderate)* · Straight-Arm Scapular Pull-Up *(straight-arm, vertical_pull, low)*
+- **strength** (11): Straight Bar Dips *(bent-arm, vertical_push, moderate)* · Bulgarian Dips *(bent-arm, vertical_push, high)* · Korean Dips *(straight-arm, vertical_push, high)* · Ring Dip — Deep Pause *(bent-arm, vertical_push, moderate)* · Chest to Bar *(bent-arm, vertical_pull, moderate)* · Wide Pull Up *(bent-arm, vertical_pull, moderate)* · Archer Pull Up *(bent-arm, vertical_pull, moderate)* · Row *(bent-arm, horizontal_pull, low)* · Mid Pull-Up Hold (Rings) *(bent-arm, vertical_pull, moderate)* · False Grip Ring Row *(bent-arm, horizontal_pull, moderate)* · Straight-Arm Scapular Pull-Up *(straight-arm, vertical_pull, low)*
 - **hypertrophy** (1): Feet-Elevated Ring Row *(bent-arm, horizontal_pull, low)*
 
 ### back-lever — 6 feeders
@@ -257,7 +257,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 ## Tissue load
 
-### `high` + `straight` arm — 15 · THE CAPPED SET
+### `high` + `straight` arm — 16 · THE CAPPED SET
 
 | name | pattern | track | feeds |
 |---|---|---|---|
@@ -276,14 +276,14 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 | Iron Cross Pull | horizontal_pull | strength | iron-cross |
 | Back Lever Negative | static | skill | back-lever |
 | Front Lever Hold | static | skill | front-lever |
+| Korean Dips | vertical_push | strength | muscle-up |
 
-### `high`, not straight-arm — 9 · uncapped, never two on one joint per session
+### `high`, not straight-arm — 8 · uncapped, never two on one joint per session
 
 | name | pattern | why high |
 |---|---|---|
 | Pseudo Planche Push Up | horizontal_push | straight-arm lean held through a bent-arm press |
 | Bulgarian Dips | vertical_push | extreme end-range pec / anterior shoulder stretch |
-| Korean Dips | vertical_push | extreme end-range posterior shoulder |
 | Bulgarian Push Up | horizontal_push | extreme end-range pec / anterior delt stretch |
 | 360 Pull | vertical_pull | dynamic rotational load on shoulder + grip |
 | Ice-cream Maker | vertical_pull | lever-to-pull-up arc, elbow under changing leverage |
@@ -313,8 +313,8 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 | value | n |
 |---|---|
-| `straight` | 41 |
-| `bent` | 33 |
+| `straight` | 42 |
+| `bent` | 32 |
 | `n/a` | 17 |
 
 **track**
