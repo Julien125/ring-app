@@ -127,6 +127,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['muscle-up-negative'], note: '5 x 3, 5-8s descent — L2 MU Negatives — the current cell. Control the elbow-past-chest moment', targetReps: 3 },
           { ...EX['false-grip-dead-hang'], note: '60s-method — wrist conditioning for the MU. HIGH tissue_load + straight arm — 1 of the 3 weekly slots' },
+          { ...EX['front-lever-raise'], note: '5 x 5, no swing, elbows locked — front-lever strength. HIGH tissue_load + straight arm — a 4th weekly slot, over the cap by Julian\'s call (2026-09-23)', targetReps: 5 },
         ],
       },
       {
@@ -142,6 +143,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 120,
         exercises: [
           { ...EX['ring-hammer-curl'], note: '3 x 10-12, last set to failure — arm -24%, the WORST laggard. Chosen over a supinated curl because brachialis is NOT in the skill-overlap set while biceps is', targetReps: '10-12' },
+          { ...EX['commande'], note: '3 x 8, alternate head side each rep — second brachialis hit next to the hammer curl (arm -24% laggard)', targetReps: 8 },
           { ...EX['face-pull'], note: '3 x 12-15 — shoulder laggard via lateral/rear delt + pressing health', targetReps: '12-15' },
           { ...EX['nordic-curl'], note: '3 x 7, slow eccentric — hips -11%; at_best benchmark, hold it. HIGH tissue (eccentric) but not straight-arm', targetReps: 7 },
         ],
