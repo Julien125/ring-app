@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PR
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v68 · 2026-09-15';
+const APP_VERSION  = 'v69 · 2026-09-23';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -107,6 +107,7 @@ function loadState() {
     // Merge skill levels: preserve saved, fill missing with defaults
     state.skillLevels = { ...DEFAULT_SKILL_LEVELS, ...(state.skillLevels || {}) };
     mergeSep13Entries(); // before the scrub, which would drop the '12-15' sets
+    fixSep23VSitPulse();
     // Scrub sets poisoned by the string rep-range bug ('12-15', '12-151', NaN→null)
     (state.log || []).forEach(entry => scrubSets(entry.exercises));
     const a = localStorage.getItem(ACTIVE_KEY);
@@ -151,6 +152,19 @@ function mergeSep13Entries() {
   localStorage.setItem(FLAG, '1');
   saveState();
   // Push the clean log to the Gist once the module has finished loading
+  setTimeout(() => { if (getGistToken()) gistBackup(); }, 3000);
+}
+
+// One-off (2026-09-23): V-sit Pulse was prescribed as a 60s hold, so the
+// timer logged junk seconds (0,0,0,0,1). Julian did 5 x 12 reps.
+function fixSep23VSitPulse() {
+  const FLAG = 'ring-app-fix-2026-09-23-vsit';
+  if (localStorage.getItem(FLAG) || !Array.isArray(state.log)) return;
+  const entry = state.log.find(e => e.id === '087ae465-f670-48a4-9058-d5cb8e4d3006');
+  if (!entry) return;
+  entry.exercises = { ...entry.exercises, 'v-sit-pulse': { sets: [12, 12, 12, 12, 12] } };
+  localStorage.setItem(FLAG, '1');
+  saveState();
   setTimeout(() => { if (getGistToken()) gistBackup(); }, 3000);
 }
 
