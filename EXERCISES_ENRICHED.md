@@ -7,7 +7,7 @@
 > session and superset — *what is programmed*. This file is the taxonomy view — *what each
 > exercise is*, and how the Body OS Designer selects it.
 
-`~/Documents/Gym/data/exercises.js` · 90 exercises. Fields added 2026-09-08: `pattern`, `arm`, `track`, `feeds`, `tissue_load`. `muscles` migrated to anatomical slugs the same day.
+`~/Documents/Gym/data/exercises.js` · 91 exercises. Fields added 2026-09-08: `pattern`, `arm`, `track`, `feeds`, `tissue_load`. `muscles` migrated to anatomical slugs the same day.
 Regenerated from the live `.js` after review round 4. The `.js` is the source of truth.
 
 `feeds` vocabulary (`og2_ladders.json`): `planche` · `handstand` · `ring-handstand` · `shoulderstand-press` · `manna` · `muscle-up` · `back-lever` · `front-lever` · `iron-cross`
@@ -63,7 +63,7 @@ Regenerated from the live `.js` after review round 4. The `.js` is the source of
 | `muscle-up-negative` | Muscle Up Negative | bent | skill | moderate | muscle-up | lats, biceps, chest |
 | `scapular-pull-up` | Straight-Arm Scapular Pull-Up | straight | strength | low | front-lever, muscle-up | traps, lats, rear-delt |
 
-### `horizontal_pull` — 14
+### `horizontal_pull` — 15
 
 | id | name | arm | track | tissue | feeds | primary muscles |
 |---|---|---|---|---|---|---|
@@ -77,6 +77,7 @@ Regenerated from the live `.js` after review round 4. The `.js` is the source of
 | `cross-body-band-hold` | Cross Body Band Hold | straight | strength | **high** | iron-cross | lats, chest |
 | `inverted-deadlift` | Inverted Deadlift | bent | strength | low | front-lever | lats, rear-delt |
 | `candlestick-to-neg-fl` | Candlestick to Negative Front Lever | straight | skill | **high** | front-lever | lats, rectus-abdominis, rear-delt |
+| `front-lever-raise` | Front Lever Raise | straight | skill | **high** | front-lever | lats, rear-delt, rectus-abdominis, biceps |
 | `inv-deadlift-to-skin-the-cat` | Inverted Deadlift to Skin the Cat | straight | skill | **high** | back-lever, front-lever | lats, shoulders, rectus-abdominis |
 | `iron-cross-pull` | Iron Cross Pull | straight | strength | **high** | iron-cross | lats, rear-delt |
 | `false-grip-row` | False Grip Ring Row | bent | strength | moderate | muscle-up | lats, biceps, rear-delt |
@@ -196,9 +197,9 @@ Regenerated from the live `.js` after review round 4. The `.js` is the source of
 - **skill** (4): German Hang *(straight-arm, mobility, high)* · Skin the Cat *(straight-arm, mobility, high)* · Inverted Deadlift to Skin the Cat *(straight-arm, horizontal_pull, high)* · Back Lever Negative *(straight-arm, static, high)*
 - **hypertrophy** (2): Superman Hold *(straight-arm, core, low)* · Pelican Curl *(bent-arm, horizontal_pull, high)*
 
-### front-lever — 15 feeders
+### front-lever — 16 feeders
 
-- **skill** (3): Candlestick to Negative Front Lever *(straight-arm, horizontal_pull, high)* · Inverted Deadlift to Skin the Cat *(straight-arm, horizontal_pull, high)* · Front Lever Hold *(straight-arm, static, high)*
+- **skill** (4): Candlestick to Negative Front Lever *(straight-arm, horizontal_pull, high)* · Front Lever Raise *(straight-arm, horizontal_pull, high)* · Inverted Deadlift to Skin the Cat *(straight-arm, horizontal_pull, high)* · Front Lever Hold *(straight-arm, static, high)*
 - **strength** (6): Dragon Flag *(bent-arm, core, moderate)* · Wide Pull Up *(bent-arm, vertical_pull, moderate)* · Ice-cream Maker *(bent-arm, vertical_pull, high)* · Row *(bent-arm, horizontal_pull, low)* · Inverted Deadlift *(bent-arm, horizontal_pull, low)* · Straight-Arm Scapular Pull-Up *(straight-arm, vertical_pull, low)*
 - **hypertrophy** (6): Hollow Body Hold *(n/a-arm, core, low)* · Windshield Wipers *(straight-arm, core, moderate)* · Pelican Curl *(bent-arm, horizontal_pull, high)* · Hanging Leg Raise *(straight-arm, core, low)* · Ab Wheel Rollout *(straight-arm, core, moderate)* · Tucked Dragon Flag Negative *(bent-arm, core, moderate)*
 
@@ -256,7 +257,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 ## Tissue load
 
-### `high` + `straight` arm — 14 · THE CAPPED SET
+### `high` + `straight` arm — 15 · THE CAPPED SET
 
 | name | pattern | track | feeds |
 |---|---|---|---|
@@ -269,6 +270,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 | German Hang | mobility | skill | back-lever |
 | Skin the Cat | mobility | skill | back-lever |
 | Candlestick to Negative Front Lever | horizontal_pull | skill | front-lever |
+| Front Lever Raise | horizontal_pull | skill | front-lever |
 | Inverted Deadlift to Skin the Cat | horizontal_pull | skill | back-lever, front-lever |
 | Wide Support Hold | static | skill | iron-cross |
 | Iron Cross Pull | horizontal_pull | strength | iron-cross |
@@ -300,7 +302,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 | `vertical_push` | 11 |
 | `horizontal_push` | 9 |
 | `vertical_pull` | 10 |
-| `horizontal_pull` | 14 |
+| `horizontal_pull` | 15 |
 | `static` | 12 |
 | `core` | 22 |
 | `hinge` | 5 |
@@ -311,7 +313,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 | value | n |
 |---|---|
-| `straight` | 40 |
+| `straight` | 41 |
 | `bent` | 33 |
 | `n/a` | 17 |
 
@@ -319,7 +321,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 | value | n |
 |---|---|
-| `skill` | 27 |
+| `skill` | 28 |
 | `strength` | 23 |
 | `hypertrophy` | 40 |
 
@@ -327,7 +329,7 @@ The generic `core` (56 uses) and `lower-back` (13) were split into anatomical sl
 
 | value | n |
 |---|---|
-| `high` | 23 |
+| `high` | 24 |
 | `moderate` | 30 |
 | `low` | 37 |
 

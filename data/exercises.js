@@ -915,6 +915,16 @@ export const EX = {
     feeds: ['front-lever'],
     tissue_load: 'high',
   },
+  'front-lever-raise': {
+    id: 'front-lever-raise', name: 'Front Lever Raise',
+    category: 'straight', type: 'reps', targetReps: 5,
+    desc: 'Hang from the bar. Raise trunk and legs together until the body is parallel to the ground, body straight, without bending the elbows or hips — only the back does the work. Lower under control. No swinging for momentum, elbows stay locked.',
+    note: 'Straight-arm dynamic front lever — no kip, no elbow bend',
+    muscles: { primary: ['lats', 'rear-delt', 'rectus-abdominis', 'biceps'], secondary: [] },
+    pattern: 'horizontal_pull', arm: 'straight', track: 'skill',
+    feeds: ['front-lever'],
+    tissue_load: 'high',
+  },
 
   // ── Hypertrophy-phase additions ───────────────────────
   'scapular-pull-up': {
