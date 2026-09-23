@@ -119,7 +119,7 @@ export const EX = {
     desc: 'Rings or bar behind you at hip height, grip overhand. Lower into a posterior dip — elbows track back, not out. Targets rear delt and long-head triceps.',
     note: 'Posterior shoulder',
     muscles: { primary: ['rear-delt', 'triceps'], secondary: ['shoulders', 'chest'] },
-    pattern: 'vertical_push', arm: 'straight', track: 'strength',
+    pattern: 'vertical_push', arm: 'bent', track: 'strength',
     feeds: ['muscle-up'],
     tissue_load: 'high',
   },
