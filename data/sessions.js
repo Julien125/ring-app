@@ -182,6 +182,7 @@ export const SESSIONS = [
         restIntra: 45, restRound: 120,
         exercises: [
           { ...EX['pike-push-up'], note: '8-8-8-X (last to failure) — overhead-press pattern feeding handstand + shoulderstand-press', targetReps: 8 },
+          { ...EX['korean-dips'], note: '4 x 6, elbows track back, controlled depth — rear delt + long-head triceps. HIGH tissue_load (end-range posterior shoulder): stay short of failure the first two weeks. Added by Julian 2026-09-23', targetReps: 6 },
         ],
       },
       {
