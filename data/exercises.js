@@ -957,4 +957,48 @@ export const EX = {
     feeds: ['muscle-up'],
     tissue_load: 'low',
   },
+
+  // ─── Ladder rungs (added 2026-09-24) — the NEXT OG2 cell above an exercise already in the
+  //     program, so the Designer can progress by difficulty instead of reps. Ladders:
+  //     Body_Analysis/data/og2_ladders.json → strength_lines.
+  'wall-hspu-deficit': {
+    id: 'wall-hspu-deficit', name: 'Deficit Wall HSPU',
+    category: 'shoulder', type: 'reps', targetReps: 3,
+    desc: 'Wall handstand with hands on parallettes or blocks. Lower until your head passes below hand level (full range), 3s descent, then press back to full lockout. OG2 Wall HSPU — the rung above head-to-floor HSPU.',
+    note: 'OG2 HSPU line L5 — full-range overhead press',
+    muscles: { primary: ['shoulders', 'front-delt', 'triceps'], secondary: ['serratus', 'transverse-abdominis'] },
+    pattern: 'vertical_push', arm: 'bent', track: 'strength',
+    feeds: ['handstand', 'shoulderstand-press'],
+    tissue_load: 'moderate',
+  },
+  'ring-l-dip': {
+    id: 'ring-l-dip', name: 'Ring L-Dip',
+    category: 'shoulder', type: 'reps', targetReps: 4,
+    desc: 'Ring dip holding an L-sit throughout — legs straight and parallel to the floor, rings turned out at the top. Lower to 90° elbows, press to lockout without letting the legs drop.',
+    note: 'OG2 Rings Dips line L5 — the rung above ring dips',
+    muscles: { primary: ['chest', 'triceps'], secondary: ['shoulders', 'hip-flexors', 'rectus-abdominis'] },
+    pattern: 'vertical_push', arm: 'bent', track: 'strength',
+    feeds: ['muscle-up', 'planche', 'shoulderstand-press'],
+    tissue_load: 'moderate',
+  },
+  'wide-ring-row': {
+    id: 'wide-ring-row', name: 'Wide Ring Row',
+    category: 'pull', type: 'reps', targetReps: 8,
+    desc: 'Ring row with the straps set wide (hands well outside shoulders), body as horizontal as you can hold. Pull the rings to the chest, elbows out, full retraction at the top.',
+    note: 'OG2 Rows line L3 — the rung above ring rows',
+    muscles: { primary: ['lats', 'rear-delt'], secondary: ['biceps', 'traps'] },
+    pattern: 'horizontal_pull', arm: 'bent', track: 'strength',
+    feeds: ['muscle-up', 'front-lever'],
+    tissue_load: 'low',
+  },
+  'weighted-pistol': {
+    id: 'weighted-pistol', name: 'Weighted Pistol Squat',
+    category: 'legs', type: 'reps', targetReps: 5,
+    desc: 'Pistol squat to full depth holding a kettlebell or dumbbell at the chest (goblet) — the load counterbalances you. Start at ≤ 10 % bodyweight (≈ 9 kg); OG2 progresses to 1.2× bodyweight.',
+    note: 'OG2 Squats line L5 — the rung above bodyweight pistols',
+    muscles: { primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves', 'transverse-abdominis'] },
+    pattern: 'squat', arm: 'n/a', track: 'hypertrophy',
+    feeds: [],
+    tissue_load: 'moderate',
+  },
 };
