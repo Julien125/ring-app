@@ -964,7 +964,7 @@ export const EX = {
   'wall-hspu-deficit': {
     id: 'wall-hspu-deficit', name: 'Deficit Wall HSPU',
     category: 'shoulder', type: 'reps', targetReps: 3,
-    desc: 'Wall handstand with hands on parallettes or blocks. Lower until your head passes below hand level (full range), 3s descent, then press back to full lockout. OG2 Wall HSPU — the rung above head-to-floor HSPU.',
+    desc: 'Wall handstand with hands on parallettes, yoga blocks or two stable stacks of books. Lower until your head passes below hand level (full range), 3s descent, then press back to full lockout. OG2 Wall HSPU — the rung above head-to-floor HSPU.',
     note: 'OG2 HSPU line L5 — full-range overhead press',
     muscles: { primary: ['shoulders', 'front-delt', 'triceps'], secondary: ['serratus', 'transverse-abdominis'] },
     pattern: 'vertical_push', arm: 'bent', track: 'strength',
@@ -991,11 +991,11 @@ export const EX = {
     feeds: ['muscle-up', 'front-lever'],
     tissue_load: 'low',
   },
-  'weighted-pistol': {
-    id: 'weighted-pistol', name: 'Weighted Pistol Squat',
+  'band-pistol': {
+    id: 'band-pistol', name: 'Band-Resisted Pistol Squat',
     category: 'legs', type: 'reps', targetReps: 5,
-    desc: 'Pistol squat to full depth holding a kettlebell or dumbbell at the chest (goblet) — the load counterbalances you. Start at ≤ 10 % bodyweight (≈ 9 kg); OG2 progresses to 1.2× bodyweight.',
-    note: 'OG2 Squats line L5 — the rung above bodyweight pistols',
+    desc: 'Pistol squat to full depth with a resistance band under the working foot and looped over both shoulders (or held at the chest) — the band adds load at the top. Start with the lightest band; move to a heavier colour by LSTF.',
+    note: 'OG2 Squats line L5 (1.2× BW pistol) — band substitute: no free weights',
     muscles: { primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves', 'transverse-abdominis'] },
     pattern: 'squat', arm: 'n/a', track: 'hypertrophy',
     feeds: [],
