@@ -11,6 +11,8 @@ export const VOLUME = {
 };
 
 // ─── Mesocycle: 10 weeks ─────────────────────────────────
+//  RETIRED 2026-09-25 (Julian: "Body OS is the master commander") — app.js no longer reads
+//  PHASES: no multipliers, no deload week, no phase resets. Kept as a record only.
 //  Weeks  1–3  Strength I   : base volume, learn the movements
 //  Weeks  4–6  Strength II  : same volume, harder execution (tempo, pauses)
 //  Weeks  7–9  Hypertrophy  : +25% rounds, +40% reps — volume peak

@@ -2,13 +2,13 @@
 //  Ring App — Main Logic
 // ─────────────────────────────────────────────────────────
 
-import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, PHASES, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
+import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, VOLUME, SKILL_PROGRESSIONS, EX } from './data/program.js';
 
 // ─── Constants ────────────────────────────────────────────
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v69 · 2026-09-23';
+const APP_VERSION  = 'v70 · 2026-09-25';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -335,41 +335,16 @@ function currentScreen() {
 function q(sel) { return document.querySelector(sel); }
 
 // ─── Phase helpers ────────────────────────────────────────
-function phase() { return PHASES[state.currentWeek] || PHASES[1]; }
-
-// How many sessions remain until the phase label changes (for countdown badge)
-function sessionsUntilPhaseChange() {
-  const currentLabel = phase().label;
-  let w = state.currentWeek;
-  let weeksLeft = 0;
-  while (w <= 10 && (PHASES[w] || PHASES[1]).label === currentLabel) {
-    weeksLeft++;
-    w++;
-  }
-  const sessInCurrentWeek = 4 - (state.sessionCount % 4);
-  return sessInCurrentWeek + (weeksLeft - 1) * 4;
-}
-
-// Label of the phase that follows the current one
-function nextPhaseName() {
-  const currentLabel = phase().label;
-  for (let w = state.currentWeek + 1; w <= 11; w++) {
-    const p = PHASES[w] || PHASES[1]; // wraps to meso start
-    if (p.label !== currentLabel) return p.label;
-  }
-  return PHASES[1].label;
-}
+// Body OS is the master (Julian, 2026-09-25): the legacy 10-week mesocycle in data/phases.js
+// (Strength I/II → Hypertrophy → Deload) no longer touches anything. The Designer program sets
+// volume and LSTF handles recovery — no phase multipliers, no deload week, no phase resets.
+const BODY_OS_PHASE = { label: 'Body OS', phaseWeek: 1, phaseTotalWeeks: 1, roundMult: 1, repMult: 1, isDeload: false };
+function phase() { return BODY_OS_PHASE; }
 
 // The Designer program sets its own volume, so the Hypertrophy phase no longer
 // inflates it (+25% rounds / +40% reps). Deload still scales down.
-function phaseRoundMult() {
-  const ph = phase();
-  return ph.label === 'Hypertrophy' ? 1 : ph.roundMult;
-}
-function phaseRepMult() {
-  const ph = phase();
-  return ph.label === 'Hypertrophy' ? 1 : ph.repMult;
-}
+function phaseRoundMult() { return 1; }
+function phaseRepMult()   { return 1; }
 
 function getTargetReps(ex) {
   const mult = phaseRepMult();
@@ -955,16 +930,10 @@ function renderPatternCard() {
       card.style.display = 'none';
     };
   } else if (pattern.type === 'phase-readiness') {
-    actBtn.textContent = `Move to Phase ${state.currentWeek + 1}`;
-    actBtn.style.display = '';
-    actBtn.onclick = () => {
-      state.currentWeek = Math.min(state.currentWeek + 1, 10);
-      saveState();
-      pattern.dismissed = true;
-      saveAdaptations();
-      renderHome();
-      card.style.display = 'none';
-    };
+    // Legacy mesocycle prompt — retired 2026-09-25 (Body OS is the master). Clear any stored one.
+    pattern.dismissed = true;
+    saveAdaptations();
+    card.style.display = 'none';
   } else if (pattern.type === 'pr-peak') {
     actBtn.textContent = 'Got it — noted for next cycle';
     actBtn.style.display = '';
@@ -994,7 +963,7 @@ function renderHome() {
   // Date + week
   const now = new Date();
   q('#s01-date').textContent = now.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' });
-  q('#s01-week').textContent = `W${state.currentWeek}/10 · ${ph.label} (${ph.phaseWeek}/${ph.phaseTotalWeeks})`;
+  q('#s01-week').textContent = `W${state.currentWeek} · ${ph.label}`;
   q('#s01-version').textContent = APP_VERSION;
 
   // Week progress dots — Mon / Wed / Thu / Sat
@@ -1002,17 +971,13 @@ function renderHome() {
 
   // Streak + phase countdown
   const streak = getStreak();
-  const sessUntilPhaseChange = sessionsUntilPhaseChange();
-  const nextPhaseLabel = nextPhaseName();
   const metaEl = q('#s01-meta');
   if (metaEl) {
     const streakHtml = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
     const deloadHtml = ph.isDeload
       ? `<span class="meta-badge meta-badge--deload">Deload — back off, recover</span>`
       : '';
-    const phaseHtml  = !ph.isDeload && sessUntilPhaseChange <= 8
-      ? `<span class="meta-badge">${sessUntilPhaseChange} session${sessUntilPhaseChange !== 1 ? 's' : ''} → ${nextPhaseLabel}</span>`
-      : '';
+    const phaseHtml  = '';  // no phase countdown — Body OS has no calendar phases
     metaEl.innerHTML  = streakHtml + deloadHtml + phaseHtml;
     metaEl.style.display = (streakHtml || deloadHtml || phaseHtml) ? '' : 'none';
   }
@@ -1408,7 +1373,7 @@ function levelUpSkill(skillId) {
 
 // ─── S-12 Skills Overview ─────────────────────────────────
 function renderSkillsOverview() {
-  q('#s12-week').textContent = `W${state.currentWeek}/10 · ${phase().label}`;
+  q('#s12-week').textContent = `W${state.currentWeek} · ${phase().label}`;
 
   const list = q('#s12-list');
   list.innerHTML = '';
@@ -2417,19 +2382,9 @@ function finishSession({ partial = false } = {}) {
   state.log.push(entry);
   state.sessionCount++;
 
-  // Advance week every 4 sessions (mesocycle = 10 weeks)
-  if (state.sessionCount % 4 === 0) {
-    const prevPhaseLabel = (PHASES[state.currentWeek] || PHASES[1]).label;
-    state.currentWeek = state.currentWeek < 10 ? state.currentWeek + 1 : 1;
-    const newPhaseLabel  = (PHASES[state.currentWeek] || PHASES[1]).label;
-    // Safeguard: reset target adaptations on phase change so new phase starts fresh
-    if (prevPhaseLabel !== newPhaseLabel) {
-      adaptations.targets  = {};
-      adaptations.rests    = {};
-      adaptations.patterns = adaptations.patterns.filter(p => p.dismissed);
-      saveAdaptations();
-    }
-  }
+  // Week counter: +1 every 4 sessions, a plain count (no 10-week wrap, no phase-change reset —
+  // Body OS is the master, 2026-09-25).
+  if (state.sessionCount % 4 === 0) state.currentWeek++;
 
   saveState();
   clearActive();
@@ -2960,13 +2915,6 @@ function detectPersistentAsymmetry(exId) {
   return detectAsymmetry(last.exercises[exId].leftSecs, last.exercises[exId].rightSecs);
 }
 
-function detectPhaseReadiness() {
-  // Light session signal 3 sessions running
-  const relevant = state.log.slice(-3);
-  if (relevant.length < 3) return false;
-  return relevant.every(e => classifySession(e) === 'light');
-}
-
 // runPatternDetectors — called after each session save
 // Adds at most one new pattern per type to adaptations.patterns
 function runPatternDetectors(entry) {
@@ -3025,10 +2973,6 @@ function runPatternDetectors(entry) {
       msg: `${sessLabel} keeps running long. Trim SS D to 2 rounds to fit your schedule?` });
   }
 
-  if (detectPhaseReadiness()) {
-    addPattern({ type: 'phase-readiness',
-      msg: `You've been above target all week, every session. Ready to move to Phase ${state.currentWeek + 1}?` });
-  }
 
   saveAdaptations();
 }
@@ -3625,7 +3569,7 @@ function renderWeekDots() {
 // ─── S-13 Progress ────────────────────────────────────────
 function renderProgress() {
   const ph = phase();
-  q('#s13-week').textContent = `W${state.currentWeek}/10 · ${ph.label} (${ph.phaseWeek}/${ph.phaseTotalWeeks})`;
+  q('#s13-week').textContent = `W${state.currentWeek} · ${ph.label}`;
 
   const list = q('#s13-list');
   list.innerHTML = '';

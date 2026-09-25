@@ -17,7 +17,7 @@ Chalk on hands (large tap targets, no precision gestures) and outdoor bright sun
 | `data/program.js` | re-export shim — `EX`, `SKILL_PROGRESSIONS`, `VOLUME`/`PHASES`, `SESSIONS`/`FLEX_SESSIONS`/`HYPERTROPHY_SESSIONS` |
 | `data/sessions.js` | **written by the Body OS monthly pass** (Stage 3) |
 | `data/exercises.js` | the exercise database (`EX`) |
-| `data/skills.js` · `data/phases.js` | skill progressions · phases/volume |
+| `data/skills.js` · `data/phases.js` | skill progressions · volume zones (the 10-week `PHASES` mesocycle is **retired** since v70, 2026-09-25 — Body OS is the master; the app applies no phase multipliers, no deload) |
 | `EXERCISES.md` | exercises by session |
 | `EXERCISES_ENRICHED.md` | **generated** from `exercises.js` — regenerate, never hand-edit |
 
