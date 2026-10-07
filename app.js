@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, VOLUME, SKILL_PROGRESSIO
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v72 · 2026-10-07';
+const APP_VERSION  = 'v73 · 2026-10-07';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1806,12 +1806,16 @@ function renderReps(ex, ss, totalRounds) {
   // defaults to the target, so the last set got logged AT the number and the PR never moved —
   // and the PR is what lifts the target ceiling. Say it on the final round. Never on skill
   // work (quality) or high tendon-load moves (joints outrank speed).
-  if (A.round === totalRounds && !isSkillExercise(ex.id) && ex.tissue_load !== 'high') {
+  if (A.round === totalRounds && !isSkillExercise(ex.id) && ex.track !== 'skill' && ex.tissue_load !== 'high') {
     const pr   = getExPR(ex.id);
     const beat = (pr !== null ? pr : target) + 1;
     const noteEl = q('#s03-note');
     const cue = document.createElement('strong');
-    cue.textContent = `🔥 LAST SET — to technical failure: stop at the last clean, full-range rep. Log what you really got; ${beat}+ ${pr !== null ? 'is a new PR and ' : ''}moves your target up.`;
+    // OG2: strength work goes close to (not to) failure; hypertrophy goes to technical failure.
+    const how = ex.track === 'strength'
+      ? 'near technical failure: stop with one clean rep left'
+      : 'to technical failure: stop at the last clean, full-range rep';
+    cue.textContent = `🔥 LAST SET — ${how}. Log what you really got; ${beat}+ ${pr !== null ? 'is a new PR and ' : ''}moves your target up.`;
     noteEl.textContent = '';
     noteEl.appendChild(cue);
     if (ex.note) { noteEl.appendChild(document.createElement('br')); noteEl.appendChild(document.createTextNode(ex.note)); }

@@ -33,7 +33,7 @@ export const EX = {
   'hspu': {
     id: 'hspu', name: 'HSPU',
     category: 'shoulder', type: 'reps', targetReps: 5,
-    desc: 'Kick up to wall handstand. Lower head to floor with a 3s descent, then press back to full lockout. Full range only.',
+    desc: 'Kick up to wall handstand. Lower head to floor with a 3s descent, then press back to full lockout. Full range only. Elbows in, not flared: flaring is stronger but never builds the freestanding HSPU (OG2).',
     note: 'Max overhead press',
     muscles: { primary: ['shoulders', 'front-delt', 'triceps'], secondary: ['serratus', 'transverse-abdominis'] },
     pattern: 'vertical_push', arm: 'bent', track: 'strength',
@@ -231,7 +231,7 @@ export const EX = {
   'pike-push-up': {
     id: 'pike-push-up', name: 'Pike Push Up',
     category: 'shoulder', type: 'reps', targetReps: 8,
-    desc: 'Hips high in a pike / downward-dog position. Bend elbows and lower your head toward the floor between your hands, then press back up. Overhead-press pattern.',
+    desc: 'Hips high in a pike / downward-dog position. Bend elbows and lower your head toward the floor between your hands, then press back up. Overhead-press pattern. Elbows in, not flared (OG2: the freestanding-HSPU groove).',
     note: 'Overhead prep bridge',
     muscles: { primary: ['shoulders', 'front-delt'], secondary: ['triceps', 'serratus'] },
     pattern: 'vertical_push', arm: 'bent', track: 'strength',
@@ -241,7 +241,7 @@ export const EX = {
   'box-pike-push-up': {
     id: 'box-pike-push-up', name: 'Box Pike Push Up',
     category: 'shoulder', type: 'reps', targetReps: 5,
-    desc: 'Feet on a box or park bench, hands on the floor, hips stacked high over the shoulders. Lower the head toward the floor between your hands, then press back up. More bodyweight overhead than the floor pike — the bridge to the wall HSPU.',
+    desc: 'Feet on a box or park bench, hands on the floor, hips stacked high over the shoulders. Lower the head toward the floor between your hands, then press back up. More bodyweight overhead than the floor pike — the bridge to the wall HSPU. Elbows in, not flared (OG2).',
     note: 'OG2 HSPU L2 (Box HeSPU)',
     muscles: { primary: ['shoulders', 'front-delt'], secondary: ['triceps', 'serratus'] },
     pattern: 'vertical_push', arm: 'bent', track: 'strength',
