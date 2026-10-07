@@ -93,12 +93,13 @@ export const SESSIONS = [
         ],
       },
       {
-        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'none', rounds: 4,
+        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'none', rounds: 5,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['lateral-raise'], note: '4 x 12-15, last sets to failure, green band — shoulder -13.3% laggard; lateral-delt NOT in the computed skill-overlap set', targetReps: 15 },
-          { ...EX['bulgarian-split-squat'], note: '4 x 10-12, last set to failure — hips -12.5% laggard; legs uncovered by ring skills', targetReps: 12 },
-          { ...EX['bulgarian-push-up'], note: '4 x 8 on rings, deep stretch at the bottom — HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 8 },
+          { ...EX['lateral-raise'], note: '5 x 12-15, last sets to failure, green band — shoulder -13.3% laggard; lateral-delt NOT in the computed skill-overlap set', targetReps: 15 },
+          { ...EX['bulgarian-split-squat'], note: '5 x 10-12, last set to failure — hips -12.5% laggard; legs uncovered by ring skills', targetReps: 12 },
+          { ...EX['bulgarian-push-up'], note: '5 x 8 on rings, deep stretch at the bottom — HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 8 },
+          { ...EX['single-leg-deadlift'], note: '5 x 8 per leg, band under the foot, last set to failure — hamstrings + glutes. MEV fix 2026-10-07 (October experiment: ≥10 sets/muscle).', targetReps: 8 },
         ],
       },
       {
@@ -138,12 +139,13 @@ export const SESSIONS = [
         ],
       },
       {
-        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'low', rounds: 3,
+        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'low', rounds: 4,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['ring-hammer-curl'], note: '3 x 10-12, last set to failure — arm -25%, the WORST laggard; brachialis NOT in the skill-overlap set while biceps is. Commando Pull-up dropped this cycle to protect the lat MRV cap', targetReps: 12 },
-          { ...EX['face-pull'], note: '3 x 12-15 — shoulder laggard via rear/lateral delt + pressing health; lateral-delt not in the overlap set', targetReps: 15 },
-          { ...EX['nordic-curl'], note: '3 x 7, slow eccentric — hips -12.5% laggard via hamstrings, below_best (7 vs 12). HIGH tissue (eccentric), not straight-arm', targetReps: 7 },
+          { ...EX['ring-hammer-curl'], note: '4 x 10-12, last set to failure — arm -25%, the WORST laggard; brachialis NOT in the skill-overlap set while biceps is. Commando Pull-up dropped this cycle to protect the lat MRV cap', targetReps: 12 },
+          { ...EX['face-pull'], note: '4 x 12-15 — shoulder laggard via rear/lateral delt + pressing health; lateral-delt not in the overlap set', targetReps: 15 },
+          { ...EX['nordic-curl'], note: '4 x 7, slow eccentric — hips -12.5% laggard via hamstrings, below_best (7 vs 12). HIGH tissue (eccentric), not straight-arm', targetReps: 7 },
+          { ...EX['lateral-raise'], note: '4 x 12-15, green band, last set to failure — second lateral-delt dose of the week. MEV fix 2026-10-07 (October experiment: ≥10 sets/muscle).', targetReps: 15 },
         ],
       },
       {
@@ -179,18 +181,18 @@ export const SESSIONS = [
         id: 'B', label: 'Strength — feeds the pushed skills (LSTF)', rings: 'none', rounds: 4,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['pike-push-up'], note: '8-8-8-X (last to failure) — ladder READY (hspu L1 Pike HeSPU, 8/8/8/8 across 2 sessions) but the next rung (L2 Box HeSPU) is missing from exercises.js — keep as-is, propose adding it', targetReps: 8 },
+          { ...EX['box-pike-push-up'], note: '5-5-5-X (last to failure) — ladder step hspu L1 → L2 (Pike 8/8/8/8 across 2 sessions = ready; rung added 2026-10-07). Feet on a bench', targetReps: 5 },
           { ...EX['korean-dips'], note: '4 x 6, controlled depth — rear delt + long-head triceps. HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 6 },
           { ...EX['pseudo-planche-push-up'], note: '4 x 5, lean past the hands — HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 5 },
         ],
       },
       {
-        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'mid', rounds: 4,
+        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'mid', rounds: 5,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['ring-support-shrug'], note: '4 x 12-15, 1s hold at top — neck -9.6% laggard via traps; traps NOT in the overlap set', targetReps: 15 },
-          { ...EX['band-shrug'], note: '4 x 15, green band — ADDED this cycle, supplementary trap volume (a lower ladder rung than Ring Support Shrug, permitted alongside it)', targetReps: 15 },
-          { ...EX['pistol-squat'], note: '4 x 9, full depth — current 9 vs best 30, the biggest benchmark gap; hips laggard', targetReps: 9 },
+          { ...EX['ring-support-shrug'], note: '5 x 12-15, 1s hold at top — neck -9.6% laggard via traps; traps NOT in the overlap set', targetReps: 15 },
+          { ...EX['band-shrug'], note: '5 x 15, green band — ADDED this cycle, supplementary trap volume (a lower ladder rung than Ring Support Shrug, permitted alongside it)', targetReps: 15 },
+          { ...EX['pistol-squat'], note: '5 x 9, full depth — current 9 vs best 30, the biggest benchmark gap; hips laggard', targetReps: 9 },
         ],
       },
       {
@@ -222,11 +224,13 @@ export const SESSIONS = [
         ],
       },
       {
-        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'low', rounds: 5,
+        id: 'C', label: 'Hypertrophy — patch what the skills miss', rings: 'low', rounds: 4,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['single-leg-glute-bridge'], note: '5 x 12, pause at top — hips -12.5% laggard, glute isolation', targetReps: 12 },
-          { ...EX['ring-y-raise'], note: '5 x 12, very slow and controlled — shoulder/neck laggard via rear-delt + lower-trap. Set bumped to correct the week\'s push:pull skew', targetReps: 12 },
+          { ...EX['single-leg-glute-bridge'], note: '4 x 12, pause at top — hips -12.5% laggard, glute isolation', targetReps: 12 },
+          { ...EX['ring-y-raise'], note: '4 x 12, very slow and controlled — shoulder/neck laggard via rear-delt + lower-trap', targetReps: 12 },
+          { ...EX['ring-hamstring-curl'], note: '4 x 10, heels in the low rings, hips stay up — hamstrings. MEV fix 2026-10-07 (October experiment: ≥10 sets/muscle).', targetReps: 10 },
+          { ...EX['one-arm-ring-curl'], note: '4 x 8 per arm, alternate arms — biceps. Too hard at low rings? Step your feet back to stand more upright. MEV fix 2026-10-07 (October experiment: ≥10 sets/muscle).', targetReps: 8 },
         ],
       },
       {

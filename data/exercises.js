@@ -238,6 +238,16 @@ export const EX = {
     feeds: ['handstand', 'shoulderstand-press'],
     tissue_load: 'low',
   },
+  'box-pike-push-up': {
+    id: 'box-pike-push-up', name: 'Box Pike Push Up',
+    category: 'shoulder', type: 'reps', targetReps: 5,
+    desc: 'Feet on a box or park bench, hands on the floor, hips stacked high over the shoulders. Lower the head toward the floor between your hands, then press back up. More bodyweight overhead than the floor pike — the bridge to the wall HSPU.',
+    note: 'OG2 HSPU L2 (Box HeSPU)',
+    muscles: { primary: ['shoulders', 'front-delt'], secondary: ['triceps', 'serratus'] },
+    pattern: 'vertical_push', arm: 'bent', track: 'strength',
+    feeds: ['handstand', 'shoulderstand-press'],
+    tissue_load: 'low',
+  },
   'russian-push-up': {
     id: 'russian-push-up', name: 'Russian Push Up + Lateral Raise',
     category: 'shoulder', type: 'reps', targetReps: 8,
