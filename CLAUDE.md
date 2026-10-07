@@ -51,6 +51,9 @@ Changes under `data/` need no query bump, but the SW cache name should still mov
 ## Last Set to Failure cue (v71, 2026-10-07)
 The program writes "8-8-8-X", but the stepper defaults to the target, so the last set was logged *at* the number and the PR — which sets the target ceiling (PR − 1) — never moved. `renderReps` now shows **"🔥 LAST SET — to technical failure"** (v72: OG2 defines failure as the first rep you can't do with good form, so ugly reps never inflate the PR); v73: `track: strength` gets **near** technical failure (one clean rep left), hypertrophy goes **to** it (OG2 rep-continuum) on the final round, naming the number that beats the PR. Not on skill work — `SKILL_PROGRESSIONS` **or** `track: 'skill'` (v73: muscle-up negatives slipped through the first check) — nor `tissue_load: 'high'` (joints). Reps only; holds unchanged.
 
+## Earned rest week (v74, 2026-10-07)
+OG2 rest weeks, never on a calendar. `restWeekEarned()` offers one on the home screen when **≥ 14 sessions in 28 days**, or **≥ 12 in 28 days + an exercise whose best set over the last 8 weeks is no higher than in the 4 weeks before** (a stall at low frequency is undertraining, so no rest week), and none started in the last 28 days. Julian starts it (confirm). 7 days, reusing the old deload switches: `phase()` → `REST_WEEK` (rounds × 0.5, no bumps, no level-ups, no last-set cue, a "stop 2–3 reps short" line). Log entries carry `phase: 'Rest week'`; `state.restWeeks` is exported.
+
 ## Git
 - The **unattended** monthly pass auto-applies `sessions.js` and pushes when its gate passes.
 - **Interactive sessions commit but never push** — Julian pushes.

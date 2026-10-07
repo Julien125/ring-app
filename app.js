@@ -8,7 +8,7 @@ import { SESSIONS, FLEX_SESSIONS, HYPERTROPHY_SESSIONS, VOLUME, SKILL_PROGRESSIO
 const STORAGE_KEY  = 'ring-app-state';
 const ACTIVE_KEY   = 'ring-app-active';
 const CIRC         = 2 * Math.PI * 88; // SVG timer ring circumference
-const APP_VERSION  = 'v73 · 2026-10-07';
+const APP_VERSION  = 'v74 · 2026-10-07';
 
 // ─── Date helper (local timezone, avoids UTC offset bugs) ─
 const fmtLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -38,7 +38,7 @@ const MUSCLE_STRETCHES = {
 };
 
 // ─── State ────────────────────────────────────────────────
-let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [], otherActivities: [], steps: [], protein: [], homeSkills: [] };
+let state = { currentWeek: 1, sessionCount: 0, log: [], skillLevels: {}, skillHistory: [], otherActivities: [], steps: [], protein: [], homeSkills: [], restWeeks: [] };
 
 // ─── Adaptations (separate store — never mutates log) ─────
 const ADAPT_KEY = 'ring-app-adaptations';
@@ -339,11 +339,50 @@ function q(sel) { return document.querySelector(sel); }
 // (Strength I/II → Hypertrophy → Deload) no longer touches anything. The Designer program sets
 // volume and LSTF handles recovery — no phase multipliers, no deload week, no phase resets.
 const BODY_OS_PHASE = { label: 'Body OS', phaseWeek: 1, phaseTotalWeeks: 1, roundMult: 1, repMult: 1, isDeload: false };
-function phase() { return BODY_OS_PHASE; }
+
+// Earned rest week (Julian, 2026-10-07 — OG2: "rest weeks are extremely critical", but never on a
+// calendar). Offered, never imposed, when EITHER:
+//   ① frequency — ≥ 14 sessions in the last 28 days (3.5/wk held for 4 weeks), or
+//   ② plateau  — ≥ 12 sessions in 28 days AND an exercise's best set over the last 8 weeks is no
+//                higher than over the 4 weeks before (stuck two months while actually training;
+//                a stall at low frequency is undertraining, not fatigue — no rest week for that).
+// …and no rest week started in the last 28 days. 7 days: half the rounds, no target bumps, no
+// level-ups, no last-set cue. Sessions log with phase 'Rest week' so no pass reads them as maxes.
+const REST_WEEK = { label: 'Rest week', phaseWeek: 1, phaseTotalWeeks: 1, roundMult: 0.5, repMult: 1, isDeload: true };
+const REST_DAYS = 7, REST_EARN_FREQ = 14, REST_EARN_PLATEAU_FREQ = 12, REST_COOLDOWN_DAYS = 28;
+const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+function activeRestWeek() {
+  const rw = (state.restWeeks || []).at(-1);
+  return rw && dayDiff(rw.start, fmtLocal(new Date())) < REST_DAYS ? rw : null;
+}
+function restWeekEarned() {
+  const today = fmtLocal(new Date());
+  const last = (state.restWeeks || []).at(-1);
+  if (last && dayDiff(last.start, today) < REST_COOLDOWN_DAYS) return null;
+  const inDays = (e, lo, hi) => { const d = dayDiff(e.date, today); return d >= lo && d < hi; };
+  const real = state.log.filter(e => e.phase !== 'Rest week');
+  const n28 = real.filter(e => inDays(e, 0, 28)).length;
+  if (n28 >= REST_EARN_FREQ) return { reason: `${n28} sessions in 4 weeks` };
+  if (n28 < REST_EARN_PLATEAU_FREQ) return null;
+  const best = (id, lo, hi) => { const v = real.filter(e => inDays(e, lo, hi)).flatMap(e => (e.exercises?.[id]?.sets || []).filter(x => typeof x === 'number')); return v.length ? { max: Math.max(...v), n: real.filter(e => inDays(e, lo, hi) && e.exercises?.[id]?.sets?.length).length } : null; };
+  const ids = new Set(real.filter(e => inDays(e, 0, 56)).flatMap(e => Object.keys(e.exercises || {})));
+  for (const id of ids) {
+    if (isSkillExercise(id) || EX[id]?.track === 'skill') continue;
+    const recent = best(id, 0, 56), before = best(id, 56, 84);
+    if (recent && before && recent.n >= 4 && recent.max <= before.max) return { reason: `${EX[id]?.name || id} stuck for two months` };
+  }
+  return null;
+}
+function startRestWeek(reason) {
+  state.restWeeks = state.restWeeks || [];
+  state.restWeeks.push({ start: fmtLocal(new Date()), reason });
+  saveState();
+}
+function phase() { return activeRestWeek() ? REST_WEEK : BODY_OS_PHASE; }
 
 // The Designer program sets its own volume, so the Hypertrophy phase no longer
 // inflates it (+25% rounds / +40% reps). Deload still scales down.
-function phaseRoundMult() { return 1; }
+function phaseRoundMult() { return phase().roundMult; }
 function phaseRepMult()   { return 1; }
 
 function getTargetReps(ex) {
@@ -974,12 +1013,18 @@ function renderHome() {
   const metaEl = q('#s01-meta');
   if (metaEl) {
     const streakHtml = streak > 1 ? `<span class="meta-badge meta-badge--fire">🔥 ${streak}w streak</span>` : '';
+    const earned = !ph.isDeload ? restWeekEarned() : null;
     const deloadHtml = ph.isDeload
-      ? `<span class="meta-badge meta-badge--deload">Deload — back off, recover</span>`
-      : '';
+      ? `<span class="meta-badge meta-badge--deload">🛌 Rest week — half the sets, nothing to failure</span>`
+      : earned ? `<button class="meta-badge meta-badge--deload" id="s01-restweek">🛌 Rest week earned (${earned.reason}) — start it</button>` : '';
     const phaseHtml  = '';  // no phase countdown — Body OS has no calendar phases
     metaEl.innerHTML  = streakHtml + deloadHtml + phaseHtml;
     metaEl.style.display = (streakHtml || deloadHtml || phaseHtml) ? '' : 'none';
+    const rwBtn = q('#s01-restweek');
+    if (rwBtn) rwBtn.onclick = () => {
+      if (!confirm('Start a 7-day rest week? Half the sets, nothing to failure, no level-ups. Skills and mobility stay.')) return;
+      startRestWeek(earned.reason); renderHome();
+    };
   }
 
   // Weekly summary — show once after week advances
@@ -1271,7 +1316,7 @@ function buildSkillCard(skillId, opts = {}) {
     <div class="skill-card__actions">
       ${opts.showDone ? `<button class="skill-btn skill-btn--done" data-id="${skillId}">Mark done</button>` : ''}
       ${!achieved && !isDeload ? `<button class="skill-btn skill-btn--up" data-id="${skillId}">Level Up ↑</button>` : ''}
-      ${!achieved &&  isDeload ? `<span class="skill-card__deload-note">Deload — no level ups this week</span>` : ''}
+      ${!achieved &&  isDeload ? `<span class="skill-card__deload-note">Rest week — no level-ups</span>` : ''}
     </div>`;
 
   const el = document.createElement('div');
@@ -1806,7 +1851,7 @@ function renderReps(ex, ss, totalRounds) {
   // defaults to the target, so the last set got logged AT the number and the PR never moved —
   // and the PR is what lifts the target ceiling. Say it on the final round. Never on skill
   // work (quality) or high tendon-load moves (joints outrank speed).
-  if (A.round === totalRounds && !isSkillExercise(ex.id) && ex.track !== 'skill' && ex.tissue_load !== 'high') {
+  if (A.round === totalRounds && !phase().isDeload && !isSkillExercise(ex.id) && ex.track !== 'skill' && ex.tissue_load !== 'high') {
     const pr   = getExPR(ex.id);
     const beat = (pr !== null ? pr : target) + 1;
     const noteEl = q('#s03-note');
@@ -1816,6 +1861,15 @@ function renderReps(ex, ss, totalRounds) {
       ? 'near technical failure: stop with one clean rep left'
       : 'to technical failure: stop at the last clean, full-range rep';
     cue.textContent = `🔥 LAST SET — ${how}. Log what you really got; ${beat}+ ${pr !== null ? 'is a new PR and ' : ''}moves your target up.`;
+    noteEl.textContent = '';
+    noteEl.appendChild(cue);
+    if (ex.note) { noteEl.appendChild(document.createElement('br')); noteEl.appendChild(document.createTextNode(ex.note)); }
+  }
+  if (phase().isDeload && !isSkillExercise(ex.id)) {
+    // Rest week: the program note may still say "X (last to failure)" — this line overrides it.
+    const noteEl = q('#s03-note');
+    const cue = document.createElement('strong');
+    cue.textContent = '🛌 REST WEEK — every set stops 2–3 clean reps short of failure.';
     noteEl.textContent = '';
     noteEl.appendChild(cue);
     if (ex.note) { noteEl.appendChild(document.createElement('br')); noteEl.appendChild(document.createTextNode(ex.note)); }
@@ -3912,6 +3966,7 @@ function buildBackupPayload() {
     steps:           state.steps || [],             // daily step counts
     protein:         state.protein || [],           // daily yes/no, 160 g target (Body OS)
     homeSkills:      state.homeSkills || [],        // handstand block done at home (Body OS)
+    restWeeks:       state.restWeeks || [],         // earned rest weeks taken (Body OS, 2026-10-07)
   };
 }
 
