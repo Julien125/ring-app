@@ -49,7 +49,7 @@ Changes under `data/` need no query bump, but the SW cache name should still mov
 - Dates use `fmtLocal()` (local day). Note: the older steps/activity dialog uses `_todayKey()` = UTC date, so a step log between 00:00 and 02:00 local lands on the previous day.
 
 ## Last Set to Failure cue (v71, 2026-10-07)
-The program writes "8-8-8-X", but the stepper defaults to the target, so the last set was logged *at* the number and the PR — which sets the target ceiling (PR − 1) — never moved. `renderReps` now shows **"🔥 LAST SET — to failure"** on the final round, naming the number that beats the PR. Not on skill exercises (quality) or `tissue_load: 'high'` (joints). Reps only; holds unchanged.
+The program writes "8-8-8-X", but the stepper defaults to the target, so the last set was logged *at* the number and the PR — which sets the target ceiling (PR − 1) — never moved. `renderReps` now shows **"🔥 LAST SET — to technical failure"** (v72: OG2 defines failure as the first rep you can't do with good form, so ugly reps never inflate the PR) on the final round, naming the number that beats the PR. Not on skill exercises (quality) or `tissue_load: 'high'` (joints). Reps only; holds unchanged.
 
 ## Git
 - The **unattended** monthly pass auto-applies `sessions.js` and pushes when its gate passes.
