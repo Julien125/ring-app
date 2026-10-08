@@ -7,19 +7,20 @@ const WARMUP_PUSH = [
   { name: 'Wrist circles + shoulder CARs', duration: '2 min',  note: 'Joint prep' },
   { name: 'Lateral band walk',             duration: '2×15',   note: 'Glute med — prevents knee valgus in pistol' },
   { name: 'Tibialis raise',                duration: '2×20',   note: 'Anterior shin — balances Achilles load' },
+  { name: 'Seated pike compression lifts', duration: '2×10',   note: 'Manna / L-sit line — legs straight, hands beside knees, lift the heels. Pairs the handstand (shoulder flexion) with compression (2026-10-08)' },
 ];
 
 const WARMUP_PULL_WED = [
   { name: '90/90 breathing',             duration: '3 min',  note: 'IAP — 3×5 deep exhales' },
   { name: 'Dead hang',                    duration: '3×30s',  note: 'Grip + shoulder decompression' },
-  { name: 'German Hang',                  duration: '2×20s',  note: 'Back lever shoulder prep — rotate slowly into position, exit with control' },
+  { name: 'German Hang',                  duration: '2×20s',  note: 'Shoulder extension — back lever + manna prep. Rotate slowly into position, exit with control' },
   { name: 'Cat-cow + thoracic rotation',  duration: '2 min',  note: 'Spinal mobility before hinging' },
 ];
 
 const WARMUP_PULL_SAT = [
   { name: '90/90 breathing',  duration: '3 min',  note: 'IAP — 3×5 deep exhales' },
   { name: 'Dead hang',         duration: '3×30s',  note: 'Grip + shoulder decompression' },
-  { name: 'German Hang',       duration: '2×20s',  note: 'Back lever shoulder prep — rotate slowly into position, exit with control' },
+  { name: 'German Hang',       duration: '2×20s',  note: 'Shoulder extension — back lever + manna prep. Rotate slowly into position, exit with control' },
   { name: 'Band pull-aparts',  duration: '2×20',   note: 'Rear delt activation' },
 ];
 
