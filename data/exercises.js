@@ -248,6 +248,16 @@ export const EX = {
     feeds: ['handstand', 'shoulderstand-press'],
     tissue_load: 'low',
   },
+  'ring-pike-push-up': {
+    id: 'ring-pike-push-up', name: 'Ring Pike Push Up',
+    category: 'shoulder', type: 'reps', targetReps: 6,
+    desc: 'Rings low (a hand-width off the floor), feet on the floor or a box, hips high over the shoulders. Lower the head between the rings, then press to full lockout and turn the rings out at the top. Keep the rings still and close to the body the whole way. Elbows in, not flared (OG2).',
+    note: 'Ring instability in the overhead press: not a rung of the HSPU line (HSPU progresses on Monday), a different quality. Feeds the ring handstand. Added 2026-10-10 (Julian)',
+    muscles: { primary: ['shoulders', 'front-delt'], secondary: ['triceps', 'serratus'] },
+    pattern: 'vertical_push', arm: 'bent', track: 'strength',
+    feeds: ['ring-handstand', 'handstand'],
+    tissue_load: 'low',
+  },
   'russian-push-up': {
     id: 'russian-push-up', name: 'Russian Push Up + Lateral Raise',
     category: 'shoulder', type: 'reps', targetReps: 8,

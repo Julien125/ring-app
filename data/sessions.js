@@ -179,10 +179,10 @@ export const SESSIONS = [
         ],
       },
       {
-        id: 'B', label: 'Strength — feeds the pushed skills (LSTF)', rings: 'none', rounds: 4,
+        id: 'B', label: 'Strength — feeds the pushed skills (LSTF)', rings: 'low', rounds: 4,
         restIntra: 45, restRound: 120,
         exercises: [
-          { ...EX['box-pike-push-up'], note: '5-5-5-X (last to failure) — ladder step hspu L1 → L2 (Pike 8/8/8/8 across 2 sessions = ready; rung added 2026-10-07). Feet on a bench', targetReps: 5 },
+          { ...EX['ring-pike-push-up'], note: '6-6-6-X (last near failure, first session sets the max) — replaces Box Pike (2026-10-10, Julian): Box Pike was a step BELOW Monday\'s HSPU (L4), not up. This trains ring stability in the press, feeding the ring handstand. Rings low, turn out at the top', targetReps: 6 },
           { ...EX['korean-dips'], note: '4 x 6, controlled depth — rear delt + long-head triceps. HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 6 },
           { ...EX['pseudo-planche-push-up'], note: '4 x 5, lean past the hands — HIGH tissue, bent-arm. Standing override (Julian 2026-09-23), continues', targetReps: 5 },
         ],
