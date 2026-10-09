@@ -145,6 +145,7 @@ export const SESSIONS = [
         exercises: [
           { ...EX['ring-hammer-curl'], note: '4 x 10-12, last set to failure — arm -25%, the WORST laggard; brachialis NOT in the skill-overlap set while biceps is. Commando Pull-up dropped this cycle to protect the lat MRV cap', targetReps: 12 },
           { ...EX['face-pull'], note: '4 x 12-15 — shoulder laggard via rear/lateral delt + pressing health; lateral-delt not in the overlap set', targetReps: 15 },
+          { ...EX['push-up-rto'], note: '4 x 10-12, rings turned out at lockout, last set to failure — horizontal push top-up (Julian 2026-10-10): real pressing was 9 sets/week (Bulgarian PU + Pseudo Planche PU). A lower rung of the push-up line kept for VOLUME; the line progresses through Pseudo Planche (Fri)', targetReps: 12 },
           { ...EX['nordic-curl'], note: '4 x 7, slow eccentric — hips -12.5% laggard via hamstrings, below_best (7 vs 12). HIGH tissue (eccentric), not straight-arm', targetReps: 7 },
           { ...EX['lateral-raise'], note: '4 x 12-15, green band, last set to failure — second lateral-delt dose of the week. MEV fix 2026-10-07 (October experiment: ≥10 sets/muscle).', targetReps: 15 },
         ],
